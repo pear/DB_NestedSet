@@ -391,7 +391,7 @@ class DB_NestedSet {
             $nodeSet = array();
             $rootnodes = $this->getRootNodes(true);
             foreach($rootnodes AS $rid=>$rootnode) {
-                $nodeSet = $nodeSet+$this->getBranch($rootnode, true);
+                $nodeSet = $nodeSet+$this->getBranch($rootnode, $keepAsArray, $aliasFields, $addSQL);
             }
             return $nodeSet;
         }
