@@ -7,11 +7,7 @@
 *
 * @author       Daniel Khan <dk@webcluster.at>
 * @package      DB_NestedSetTest
-<<<<<<< TestBase.php
 * @version      $Revision$
-=======
-* @version      $Revision$
->>>>>>> 1.7
 * @access       public
 */
 Class TestBase extends PhpUnit_Testcase {
