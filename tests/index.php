@@ -12,13 +12,15 @@ ini_set('include_path',realpath(dirname(__FILE__).'/../').':'.ini_get('include_p
 
 
 require_once 'PHPUnit.php';
+require_once 'TestBase.php';
 require_once 'PHPUnit/GUI/HTML.php';
 require_once 'NestedSet.php';
+require_once 'UnitTest.php';
 ini_set('error_reporting',E_ALL);
 
-require_once 'PHPUnit/GUI/SetupDecorator.php';
+require_once 'PHPUnit/GUI/SetupDecorator.php';  
 
 $gui = new PHPUnit_GUI_SetupDecorator(new PHPUnit_GUI_HTML());
-$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php'));
+$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php','TestBase.php'));
 $gui->show();
 ?>

@@ -8,8 +8,7 @@
 * @version      $Revision$
 * @access       public
 */
-require_once 'PHPUnit.php';
-class DB_NestedSetTest extends PhpUnit_Testcase {
+class DB_NestedSetTest extends TestBase  {
     
     
     function setUp() {
