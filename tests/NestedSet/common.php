@@ -200,97 +200,51 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         }
         return true;
     }
+ 
     
-    function test_moveTree__sameSubtree() {
-        
-        // Perform NESE_MOVE_BEFORE/NESE_MOVE_AFTER and verify the results
-        $movemodes[] = NESE_MOVE_BEFORE;
-        $movemodes[] = NESE_MOVE_AFTER;
-        for($i=0;$i<count($movemodes);$i++) {
-            
-            $mvt = $movemodes[$i];
-            
-            // Build a nice random tree
-            $relationTree = $this->_createRandomNodes(3, 50);
-            $rootnodes =  $this->_NeSe->getRootNodes(true);
-            
-            $trootnodes = $rootnodes;
-            // Now traverse the rootnodes and try to move the rootnodes
-            foreach($rootnodes AS $rid=>$rootnode) {
-                
-                reset($trootnodes);
-                foreach($trootnodes AS $trid=>$trootnode) {
-                    
-                    // See if recursions get catched
-                    if($rid == $trid) {
-                        $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($rid, $trid, $mvt)), 'A recursion wasn not catched');
-                        continue;
-                    }
-                    
-                    $move_node_st1      = $this->_NeSe->pickNode($rid, true);
-                    $target_node_st1    = $this->_NeSe->pickNode($trid, true);
-                    
-                    if($move_node_st1['norder'] > $target_node_st1['norder']) {
-                        $tp = '>';
-                        if($mvt == NESE_MOVE_BEFORE) {
-                            $exp_order = $target_node_st1['norder'];
-                        } elseif($mvt == NESE_MOVE_AFTER) {
-                            $exp_order = $target_node_st1['norder'] + 1;
-                        }
-                    } elseif($move_node_st1['norder'] < $target_node_st1['norder']) {
-                        $tp = '<';
-                        if($mvt == NESE_MOVE_BEFORE) {
-                            $exp_order = $target_node_st1['norder'] - 1;
-                        } elseif($mvt == NESE_MOVE_AFTER) {
-                            $exp_order = $target_node_st1['norder'];
-                        }
-                    }
-                    
-                    $res_mvbefore = $this->_NeSe->moveTree($rid, $trid, $mvt);
-                    $this->assertEquals($rid, $res_mvbefore, 'moveRoot2Root [id]/[id] failed');
-                    
-                    $move_node_st2      = $this->_NeSe->pickNode($rid, true);
-                    $target_node_st2    = $this->_NeSe->pickNode($trid, true);
-                    
-                    $this->assertEquals($move_node_st1['rootid'], $move_node_st2['rootid'], "$mvt $tp $rid => $trid moveRoot2Root [rootid] failed");
-                    $this->assertEquals($move_node_st1['id'], $move_node_st2['id'], "$mvt $tp $rid => $trid moveRoot2Root [id] failed");
-                    $this->assertEquals($move_node_st1['level'], $move_node_st2['level'], "$mvt $tp $rid => $trid moveRoot2Root [level] failed");
-                    $this->assertEquals($exp_order, $move_node_st2['norder'], "$mvt $tp $rid => $trid moveRoot2Root [order] failed");
-                }
-                
-                // Now visit the children of the cuerrent rootnode
-                $this->_moveTree__sameSubtree($rootnode, $mvt);
-            }
-        }
-        return true;
-    }
-    
-    function test_moveTree__across() {
+    function test_moveTree() {
         
         $movemodes[] = NESE_MOVE_BEFORE;
         $movemodes[] = NESE_MOVE_AFTER;
+        $movemodes[] = NESE_MOVE_BELOW;
         for($j=0;$j<count($movemodes);$j++) {
-
+            
             $mvt = $movemodes[$j];
             
             // Build a nice random tree
-            $relationTree = $this->_createRandomNodes(3, 50);
+            $rnc = 2;
+            $depth = 3;
+            $npl = 2;
+            $relationTree = $this->_createSubNode($rnc, $depth, $npl);
+
+            $lastrid = false;
             $rootnodes =  $this->_NeSe->getRootNodes(true);
             $branches = array();
+            $allnodes1 = $this->_NeSe->getAllNodes(true);
             foreach($rootnodes AS $rid=>$rootnode) {
-                 $branch = $this->_NeSe->getSubBranch($rid, true);
-                 
-                 if(!empty($branch)) {
-                    $branches[] = $branch;   
-                 }
-                 
-                 if(count($branches) == 2) {
-                    $this->_moveTree__Across($branches, $mvt);
-                    $branches = array();   
-                 }
+                
+                if($lastrid) {
+                    $this->_NeSe->moveTree($rid, $lastrid, $mvt);
+                }
+                
+                $branch = $this->_NeSe->getBranch($rid, true);
+                if(!empty($branch)) {
+                    $branches[] = $branch;
+                }
+                
+                if(count($branches) == 2) {
+                    $this->_moveTree__Across($branches, $mvt, count($this->_NeSe->getAllNodes(true)));
+                    $branches = array();
+                }
+                $lastrid = $rid;
             }
-        }        
+
+            $allnodes2 = $this->_NeSe->getAllNodes(true);
+            // Just make sure that all the nodes are still there
+            $this->assertFalse(count(array_diff(array_keys($allnodes1), array_keys($allnodes2))), 'Nodes got lost during the move');
+        } 
     }
+
     
     // +----------------------------------------------+
     // | Testing query methods                        |
@@ -381,6 +335,59 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $parents = $this->_NeSe->getParents($nid,true);
             $exp_parents = array_reverse($this->_traverseParentRelations($relationTree, $nid, true), true);
             $this->assertEquals($exp_parents, $parents, 'Differs from relation traversal result.');
+        }
+        return true;
+    }
+    
+    /**
+    * tests_NestedSet_common::test_getParent()
+    *
+    * Build a simple tree run getParent() and compare it with the relation tree
+    *
+    * @access public
+    * @return bool True on completion
+    */
+    function test_getParent() {
+        $rnc = 3;
+        $depth = 2;
+        $npl = 3;
+        
+        // Create a new tree
+        $relationTree = $this->_createSubNode($rnc, $depth, $npl);
+        $allnodes = $this->_NeSe->getAllNodes(true);
+        // Walk trough all nodes and compare it's relations whith the one provided
+        // by the relation tree
+        foreach($allnodes AS $nid=>$node) {
+            
+            $parent = $this->_NeSe->getParent($nid, true);
+            if(!isset($relationTree[$nid]['parent'])) {
+                $this->assertFalse($parent, 'A rootnode returned a parent');
+                continue;
+            }
+            $this->assertEquals($relationTree[$nid]['parent'], $parent['id'], 'Relation tree parent doesn\'t match method return');
+        }
+        return true;
+    }
+    
+    function test_getSiblings() {
+        $rnc = 3;
+        $depth = 2;
+        $npl = 3;
+        
+        // Create a new tree
+        $relationTree = $this->_createSubNode($rnc, $depth, $npl);
+        $allnodes = $this->_NeSe->getAllNodes(true);
+        // Walk trough all nodes and compare it's relations whith the one provided
+        // by the relation tree
+        foreach($allnodes AS $nid=>$node) {
+            
+            if(!$children = $this->_NeSe->getChildren($nid, true)) {
+                continue;
+            }
+            foreach($children AS $cid=>$child) {
+                $siblings = $this->_NeSe->getSiblings($cid, true);
+                $this->assertEquals($children, $siblings, 'Children don\'t match getSiblings()');
+            }
         }
         return true;
     }
@@ -547,78 +554,26 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         }
         return true;
     }
+
     
     // +----------------------------------------------+
     // | Internal helper methods                      |
     // |----------------------------------------------+
     // | [PRIVATE]                                    |
     // +----------------------------------------------+
-
-    function _moveTree__Across($branches, $mvt) {       
+    
+    function _moveTree__Across($branches, $mvt, $nodecount) {
+        
         foreach($branches[0] AS $nodeid=>$node) {
+            
             foreach($branches[1] AS $tnodeid=>$tnode) {
                 $ret =  $this->_NeSe->moveTree($nodeid, $tnodeid, $mvt);
+                $this->assertEquals($nodecount, count($this->_NeSe->getAllNodes(true)), 'Node count changed');
             }
         }
-    }    
-    
-    function _moveTree__sameSubtree($parent, $mvt) {
-
-        $children = $this->_NeSe->getChildren($parent['id'], true);
-        if(empty($children)) {
-            return true;   
-        }
-        
-        $tchildren = $children;
-        
-        // Now traverse the children and try to move them
-        foreach( $children AS $cid=>$child) {
-            
-            reset($tchildren);
-            foreach($tchildren AS $tcid=>$tchild) {
-                
-                // See if recursions get catched
-                if($cid == $tcid) {
-                    $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($cid, $tcid, $mvt)), 'A recursion wasn not catched');
-                    continue;
-                }
-                
-                $move_node_st1      = $this->_NeSe->pickNode($cid, true);
-                $target_node_st1    = $this->_NeSe->pickNode($tcid, true);
-                
-                if($move_node_st1['norder'] > $target_node_st1['norder']) {
-                    $tp = '>';
-                    if($mvt == NESE_MOVE_BEFORE) {
-                        $exp_order = $target_node_st1['norder'];
-                    } elseif($mvt == NESE_MOVE_AFTER) {
-                        $exp_order = $target_node_st1['norder'] + 1;
-                    }
-                } elseif($move_node_st1['norder'] < $target_node_st1['norder']) {
-                    $tp = '<';
-                    if($mvt == NESE_MOVE_BEFORE) {
-                        $exp_order = $target_node_st1['norder'] - 1;
-                    } elseif($mvt == NESE_MOVE_AFTER) {
-                        $exp_order = $target_node_st1['norder'];
-                    }
-                }
-                
-                $res_mvbefore = $this->_NeSe->moveTree($cid, $tcid, $mvt);
-                $this->assertEquals($cid, $res_mvbefore, 'moveRoot2Root [id]/[id] failed');
-                
-                $move_node_st2      = $this->_NeSe->pickNode($cid, true);
-                $target_node_st2    = $this->_NeSe->pickNode($tcid, true);
-                
-                $this->assertEquals($parent['rootid'], $move_node_st2['rootid'], "$mvt $tp $cid => $tcid moveInsideLevel [rootid] failed");
-                $this->assertEquals($move_node_st1['id'], $move_node_st2['id'], "$mvt $tp $cid => $tcid moveInsideLevel [id] failed");
-                $this->assertEquals($move_node_st1['level'], $move_node_st2['level'], "$mvt $tp $cid => $tcid moveInsideLevel [level] failed");
-                $this->assertEquals($exp_order, $move_node_st2['norder'], "$mvt $tp $cid => $tcid moveInsideLevel [order] failed");
-            }
-            
-            $this->_moveTree__sameSubtree($child, $mvt);
-        }
-        return true;
+       
     }
-    
+ 
     function _deleteNodes($parentID, $keep=false) {
         $children = $this->_NeSe->getChildren($parentID, true);
         $dc = 0;
@@ -680,6 +635,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
     }
     
     function _createRandomNodes($rnc, $nbr) {
+        
         $rootnodes = $this->_createRootNodes($rnc);
         // Number of nodes to create
         $available_parents = array();
@@ -694,17 +650,21 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $choosemethod = mt_rand(1, 2);
             $target = $this->_NeSe->pickNode($available_parents[$randval], true);
             $nindex = $i;
-            
             $values = array();
             if($choosemethod == 1) {
                 $method = 'createSubNode';
+                $exp_target_lft_after = $target['l'];
+                $exp_target_rgt_after = $target['r']+2;
                 $values['STRNA'] = $target['name'].'.'.$nindex;
                 $parentid = $target['id'];
             } else {
                 $method = 'createRightNode';
+
                 if(isset($relationTree[$target['id']]['parent'])) {
                     $parentid = $relationTree[$target['id']]['parent'];
                     $parent =  $this->_NeSe->pickNode($parentid, true);
+                    $exp_target_lft_after = $parent['l'];
+                    $exp_target_rgt_after = $parent['r']+2;
                 } else {
                     $parentid = false;
                 }
@@ -723,9 +683,19 @@ class tests_NestedSet_common extends DB_NestedSetTest {
                 }
             }
             
-            
             $available_parents[] = $nid = $this->_NeSe->$method($target['id'], $values);
             
+            $target_after = false;             
+            if($method == 'createSubNode') {
+                $target_after = $this->_NeSe->pickNode($target['id'], true);
+            } elseif($parentid) {
+               $target_after = $this->_NeSe->pickNode($parent['id'], true);
+            }
+            
+            if($target_after) {
+                $this->assertEquals($exp_target_lft_after,  $target_after['l'], "Wrong LFT after $method");
+                $this->assertEquals($exp_target_rgt_after,  $target_after['r'], "Wrong RGT after $method");
+            }
             if($choosemethod == 1) {
                 // createSubNode()
                 $relationTree[$nid]['parent'] = $parentid;
@@ -763,6 +733,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         }
         // Test if all created nodes got returned
         $this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
+        
         return $relationTree;
     }
     
@@ -779,13 +750,13 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $values = array();
             $values['STRNA'] = 'disturb';
             
-
+            
             // Try to overwrite the rootid which should be set inside the method
             //$values['ROOTID'] = -100;
             $disturbidx = count($nodes);
             $disturb = 6;
             $nodes[$disturbidx] = $this->_NeSe->createRootnode($values, $disturb);
-
+            
         }
         
         for($i=0; $i<count($nodes); $i++) {
