@@ -147,7 +147,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
 
     function _quote($str) 
     {
-        return $this->db->getValue('text', $str);
+        return $this->db->getTextValue($str);
     }
 
     // }}}

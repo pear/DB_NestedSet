@@ -118,6 +118,9 @@ class DB_NestedSet_DB extends DB_NestedSet {
 
     function _quote($str) 
     {
+		if(method_exists($this->db, 'quoteSmart')) {
+			return $this->db->quoteSmart($str);
+		}
         return $this->db->quote($str);
     }
 
