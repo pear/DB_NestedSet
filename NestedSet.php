@@ -1719,7 +1719,7 @@ class DB_NestedSet {
             if (($source['rootid'] == $source['id']) &&
             ($target['rootid'] == $target['id'])) {
                 // We have to move a rootnode which is different from moving inside a tree
-                $nid = $this->_moveRoot2Root($source, $target, $pos, $copy);
+                $nid = $this->_moveRoot2Root($source, $target, $pos);
                 $this->_releaseLock(true);
                 return $nid;
             }
@@ -1733,9 +1733,15 @@ class DB_NestedSet {
 
 
         // We have to move between different levels and maybe subtrees - let's rock ;)
-        $this->_moveAcross($source, $target, $pos);
+        $moveID = $this->_moveAcross($source, $target, $pos);
         $this->_moveCleanup($copy);
         $this->_releaseLock(true);
+        
+        if(!$copy) {
+            return $id;   
+        } else {
+            return $moveID;   
+        }
     }
 
     // }}}
@@ -2014,7 +2020,7 @@ class DB_NestedSet {
             }
         }
         $this->_releaseLock();
-        return $source->id;
+        return $s_id;
     }
 
     // }}}
