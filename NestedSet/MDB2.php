@@ -95,12 +95,12 @@ class DB_NestedSet_MDB2 extends DB_NestedSet
     }
 
     // }}}
-    
+
     // {{{ _query()
     function _query($sql) {
     	return $this->db->query($sql);
     }
-    
+
     // {{{ _isDBError()
 
     /**
@@ -138,8 +138,8 @@ class DB_NestedSet_MDB2 extends DB_NestedSet
      */
     function _dropSequence($sequence)
     {
-        $this->db->loadManager();
-        return $this->db->dropSequence($sequence);
+        $this->db->loadModule('manager');
+        return $this->db->manager->dropSequence($sequence);
     }
 
     // }}}
