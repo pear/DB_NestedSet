@@ -33,7 +33,7 @@ require_once 'PEAR.php';
 
 // Error and message codes
 define('NESE_ERROR_RECURSION',    'E100');
-define('NESE_ERROR_NODRIVER',   'E200');
+define('NESE_ERROR_NODRIVER',     'E200');
 define('NESE_ERROR_NOHANDLER',    'E300');
 define('NESE_ERROR_TBLOCKED',     'E010');
 define('NESE_MESSAGE_UNKNOWN',    'E0');
@@ -48,7 +48,6 @@ define('NESE_MOVE_BEFORE', 'BE');
 define('NESE_MOVE_AFTER', 'AF');
 // for moving a node below another
 define('NESE_MOVE_BELOW', 'SUB');
-
 
 // Sortorders
 define('NESE_SORT_LEVEL', 'SLV');
@@ -301,6 +300,7 @@ class DB_NestedSet {
         }
 
         $this->flparams = array_flip($this->params);
+
         $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
         $this->secondarySort = $this->flparams[$this->_defaultSecondarySort];
         register_shutdown_function(array(&$this,'_DB_NestedSet'));
@@ -1042,7 +1042,7 @@ class DB_NestedSet {
             $dsql = sprintf('DELETE FROM %s',
             $this->node_table);
             $this->db->query($dsql);
-            $this->db->dropSequence($this->sequence_table);
+            $this->_dropSequence($this->sequence_table);
             // New order of the new node will be 1
             $addval[$this->flparams['norder']] = 1;
         } else {
@@ -1076,7 +1076,7 @@ class DB_NestedSet {
         // Sequence of node id (equals to root id in this case
 
         if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']]) || !isset($values[$this->flparams['rootid']])) {
-            $addval[$this->flparams['rootid']] = $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $addval[$this->flparams['rootid']] = $node_id = $addval[$this->flparams['id']] = $this->_nextId($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1195,7 +1195,7 @@ class DB_NestedSet {
         $addval[$this->flparams['level']] = $thisnode['level'] + 1;
 
         if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextId($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1329,7 +1329,7 @@ class DB_NestedSet {
         $addval[$this->flparams['level']] = $thisnode['level'];
 
         if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextId($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1382,13 +1382,14 @@ class DB_NestedSet {
     * @return mixed The node id or false on error
     */
     function createRightNode($id, $values) {
+
         if ($this->debug) {
             $this->_debugMessage('createRightNode($target, $values)');
         }
 
         $this->_verifyUserValues('createRootNode()', $values);
 
-        // invalid target node, bail out 
+        // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createRightNode()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
@@ -1463,7 +1464,7 @@ class DB_NestedSet {
         $addval[$this->flparams['level']] = $thisnode['level'];
 
         if(!$this->_dumbmode || !isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextId($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -2123,13 +2124,15 @@ class DB_NestedSet {
     * @return mixed False on error or the transformed node set.
     */
     function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
-        $result = $this->db->getAll($sql);
+        $result = $this->_getAll($sql);
         if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
             return false;
         }
 
         $nodes = array();
+
         $idKey = $fieldsAreAliased ? 'id' : $this->flparams['id'];
+
         foreach ($result as $row) {
             $node_id = $row[$idKey];
             if ($keepAsArray) {
@@ -2172,9 +2175,10 @@ class DB_NestedSet {
             $msg = "$message ($code) in file $file at line $line";
         } else {
             $msg = $errobj->getMessage();
-            $code = $errobj->getCode();     }
+            $code = $errobj->getCode();
+        }
 
-            PEAR::raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+        PEAR::raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
     }
 
     // {{{ __raiseError()
@@ -2497,11 +2501,10 @@ class DB_NestedSet {
         $arq = array();
         foreach($values AS $key => $val) {
             $k = trim($key);
-            $v = trim($val);
             if ($k) {
                 // To be used with the next mahor version
                 // $iv = in_array($this->params[$k], $this->_quotedParams) ? $this->_quote($v) : $v;
-                $iv = $this->_quote($v);
+                $iv = $this->_quote($val);
                 $arq[] = "$k=$iv";
             }
         }
@@ -2736,11 +2739,8 @@ class DB_NestedSet_Node {
             $this->$key = $val;
         }
     }
-
     // }}}
-
 }
 // }}}
-
 
 ?>
