@@ -14,13 +14,14 @@
 // | license@php.net so we can mail you a copy immediately.               |
 // +----------------------------------------------------------------------+
 // | Authors: Daniel Khan <dk@webcluster.at>                              |
+// | 		  Jason Rust  <jason@rustyparts.com>                          |
 // +----------------------------------------------------------------------+
-//
 // $Id$
 //
 
 // CREDITS:
 // --------
+// - Many thanks to Jason Rust for doing great improvements and cleanup work for the current release
 // - Thanks to Kristian Koehntopp for publishing an explanation of the Nested Set
 //   technique and for the great work he did and does for the php community
 // - Thanks to Daniel T. Gorski for his great tutorial on www.develnet.org
@@ -452,11 +453,14 @@ class DB_NestedSet extends PEAR {
      *             a set of NestedSet_Node objects? 
      * @param bool $aliasFields (optional) Should we alias the fields so they are the names
      *             of the parameter keys, or leave them as is? 
+     * @param string $idfield (optional) Which field has to be compared with $id?
+     *			   This is can be used to pick a node by other values (e.g. it's name).
+     *           
      *
      * @access public
      * @return mixed False on error, or an array of nodes 
      */
-    function pickNode($id, $keepAsArray = false, $aliasFields = true) 
+    function pickNode($id, $keepAsArray = false, $aliasFields = true, $idfield = 'id') 
     {
         $this->_debugMessage('pickNode($id)');
         if (is_object($id) && $id->id) {
@@ -466,10 +470,15 @@ class DB_NestedSet extends PEAR {
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s',
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
-                            $this->flparams['id'],
+                            $this->flparams[$idfield],
                             $this->db->quote($id)
                );
         $nodeSet = $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
+        
+        if(is_array($nodeSet) && $idfield != 'id') {
+        	$id = key($nodeSet);	
+        }
+        
         return isset($nodeSet[$id]) ? $nodeSet[$id] : false;
     }
 
