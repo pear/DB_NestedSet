@@ -508,13 +508,14 @@ Class DB_NestedSet extends PEAR {
         $clevel = $child->level;
         $crootid = $child->rootid;
         $cl = $child->l;
+        $cr = $child->r;
         $sql = "
-        SELECT $sel FROM $tb WHERE $froot = $crootid AND $flevel < $clevel AND $flft < $cl ORDER by $flevel $freh ASC";
-        return $this->db->getAll($sql);;
+        SELECT $sel FROM $tb WHERE $froot = $crootid AND $flevel < $clevel AND $flft < $cl AND $frgt > $cr ORDER by $flevel $freh ASC";
+        return $this->db->getAll($sql);
     }
 
     /**
-    * @access    private
+    * @access    private  
     */    
     function _dogetChildren($id) {
         
