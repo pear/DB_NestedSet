@@ -942,11 +942,15 @@ class DB_NestedSet {
         if ($this->debug) {
             $this->_debugMessage('createRootNode($values, $id = false, $first = false, $pos = \'AF\')');
         }
-
+        // Try to aquire a table lock
+        if (PEAR::isError($lock = $this->_setLock())) {
+            return $lock;
+        }
         $this->_verifyUserValues('createRootNode()', $values);
         // If they specified an id, see if the parent is valid
         if (!$first && ($id && !$parent = $this->pickNode($id, true))) {
             $epr = array('createRootNode()', $id);
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         } elseif ($first && $id) {
             // No notice for now.  But these 2 params don't make sense together
@@ -968,10 +972,7 @@ class DB_NestedSet {
                 $parent['norder'] = is_null($tmp_order) ? 0 : $tmp_order;
             }
         }
-        // Try to aquire a table lock
-        if (PEAR::isError($lock = $this->_setLock())) {
-            return $lock;
-        }
+
 
         $sql = array();
         $addval = array();
@@ -1057,14 +1058,17 @@ class DB_NestedSet {
         if ($this->debug) {
             $this->_debugMessage('createSubNode($id, $values)');
         }
-        // invalid parent id, bail out
-        if (!($thisnode = $this->pickNode($id, true))) {
-            $epr = array('createSubNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
-        }
+        
         // Try to aquire a table lock
         if (PEAR::isError($lock = $this->_setLock())) {
             return $lock;
+        }
+        
+        // invalid parent id, bail out
+        if (!($thisnode = $this->pickNode($id, true))) {
+            $epr = array('createSubNode()', $id);
+            $this->_releaseLock();
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
         $this->_verifyUserValues('createRootNode()', $values);
@@ -1160,18 +1164,22 @@ class DB_NestedSet {
             $this->_debugMessage('createLeftNode($target, $values)');
         }
 
+        if (PEAR::isError($lock = $this->_setLock())) {
+            return $lock;
+        }  
+        
         $this->_verifyUserValues('createLeftode()', $values);
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createLeftNode()', $id);
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
-        if (PEAR::isError($lock = $this->_setLock())) {
-            return $lock;
-        }
+
         // If the target node is a rootnode we virtually want to create a new root node
         if ($thisnode['rootid'] == $thisnode['id']) {
+        	$this->_releaseLock();
             return $this->createRootNode($values, $id, false, NESE_MOVE_BEFORE);
         }
 
@@ -1263,17 +1271,20 @@ class DB_NestedSet {
         if ($this->debug) {
             $this->_debugMessage('createRightNode($target, $values)');
         }
-
+        
+        if (PEAR::isError($lock = $this->_setLock())) {
+            return $lock;
+        }
+        
         $this->_verifyUserValues('createRootNode()', $values);
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createRightNode()', $id);
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
-        if (PEAR::isError($lock = $this->_setLock())) {
-            return $lock;
-        }
+
         // If the target node is a rootnode we virtually want to create a new root node
         if ($thisnode['rootid'] == $thisnode['id']) {
             $nid = $this->createRootNode($values, $id);
@@ -1352,15 +1363,18 @@ class DB_NestedSet {
         if ($this->debug) {
             $this->_debugMessage("deleteNode($id)");
         }
-        // invalid target node, bail out
-        if (!($thisnode = $this->pickNode($id, true))) {
-            $epr = array('deleteNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
-        }
-
         if (PEAR::isError($lock = $this->_setLock())) {
             return $lock;
         }
+                
+        // invalid target node, bail out
+        if (!($thisnode = $this->pickNode($id, true))) {
+            $epr = array('deleteNode()', $id);
+            $this->_releaseLock();
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
+        }
+
+
 
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeDelete'])) {
             // EVENT (NodeDelete)
@@ -1485,24 +1499,30 @@ class DB_NestedSet {
         if ($this->debug) {
             $this->_debugMessage('moveTree($id, $target, $pos, $copy = false)');
         }
+        
+        if (PEAR::isError($lock = $this->_setLock(true))) {
+            return $lock;
+        }
+        
         if ($id == $targetid && !$copy) {
             $epr = array('moveTree()');
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_RECURSION, PEAR_ERROR_RETURN, E_USER_NOTICE, $epr);
         }
         // Get information about source and target
         if (!($source = $this->pickNode($id, true))) {
             $epr = array('moveTree()', $id);
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
         if (!($target = $this->pickNode($targetid, true))) {
             $epr = array('moveTree()', $targetid);
+            $this->_releaseLock();
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
-        if (PEAR::isError($lock = $this->_setLock(true))) {
-            return $lock;
-        }
+
 
         $this->_relations = array();
         // This operations don't need callbacks except the copy handler
@@ -1962,7 +1982,7 @@ class DB_NestedSet {
      * @access private
      */
     function _raiseError($code, $mode, $option, $epr = array()) {
-        $message = vsprintf($this->_getMessage($code), $epr);
+    	$message = vsprintf($this->_getMessage($code), $epr);
         return PEAR::raiseError($message, $code, $mode, $option);
     }
     // }}}

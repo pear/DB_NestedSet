@@ -37,26 +37,21 @@
         </maintainer>
       </maintainers>
       <release>
-        <version>1.3.3</version>
-        <date>2004-04-31</date>
+        <version>1.3.4</version>
+        <date>2004-04-04</date>
         <state>beta</state>
         <notes>
-        This is mostly a bugfix release with little additions.
+        This is a quick fix to quoting problems in pgsql.
+        As MDB doesn't support all needed quoting methods for now it's not possible to use
+        any reserved words (key, order, group,...) for column names with MDB.
+        As soon as MDB also supports this it should work,
         Please test it as much as possible while I am now finally will finish the docs.
         Please file bugs using the great bug reporting system on pear.php.net.
         If no further bugs are found this branch will be turned to stable. 
         
-        + Added PEAR::HTML_Menu output driver
-          This driver is also useful if one wants to transform a tree into a nested array.
-          Use returnStructure() for this.
-        - Fixed Bug #510: NESE_SORT_PREORDER doesn't work with $aliasFields and $addSQL reported by Beat Kipfer
-        - Changed the SQL statement for setting a lock to be ANSI compatible. Thank's to Tobias Marquart
-        - Fixed wrong parameter count in getSiblings which caused $addSQL to be ignored. Thank's to Karsten Fernkorn.
-        - Fixed Bug #561: Reserved words are now escpaed using the quote() method of the DB layer. Thank's to c dot weyland at gmx dot de.
-        - Fixed Bug #600: Inconsitency in APPEND between methods. Now there is a new param for $addSQL called $addSQL['where'] which takes a SQL condition
-          without 'AND' or 'WHERE' at the beginning. Thank' s to Simon Hamilton and Beat Kipfer.
-        - Fixed Bug #808: use of other DB as mysql (MSSQL). Thank's to j dot forstner at a1 dot net.
-        - Fixed Bug #1097: getSubBranch does not work with sort_preorder. Thank's to Markus Cecot.
+        - Fixed Bug #1114: bug fix 561 flawed; single-quoting fields errors in pgsql reported by Andy Crain
+        + The TreeMenu output driver now supports all params supported by PEAR::HTML_TreeMenu
+          
         </notes>
         <filelist>
           <dir name="/" baseinstalldir="DB" role="php">
@@ -98,7 +93,29 @@
         </filelist>
       </release>
      <changelog>
-
+      <release>
+        <version>1.3.3</version>
+        <date>2004-04-31</date>
+        <state>beta</state>
+        <notes>
+        This is mostly a bugfix release with little additions.
+        Please test it as much as possible while I am now finally will finish the docs.
+        Please file bugs using the great bug reporting system on pear.php.net.
+        If no further bugs are found this branch will be turned to stable. 
+        
+        + Added PEAR::HTML_Menu output driver
+          This driver is also useful if one wants to transform a tree into a nested array.
+          Use returnStructure() for this.
+        - Fixed Bug #510: NESE_SORT_PREORDER doesn't work with $aliasFields and $addSQL reported by Beat Kipfer
+        - Changed the SQL statement for setting a lock to be ANSI compatible. Thank's to Tobias Marquart
+        - Fixed wrong parameter count in getSiblings which caused $addSQL to be ignored. Thank's to Karsten Fernkorn.
+        - Fixed Bug #561: Reserved words are now escpaed using the quote() method of the DB layer. Thank's to c dot weyland at gmx dot de.
+        - Fixed Bug #600: Inconsitency in APPEND between methods. Now there is a new param for $addSQL called $addSQL['where'] which takes a SQL condition
+          without 'AND' or 'WHERE' at the beginning. Thank' s to Simon Hamilton and Beat Kipfer.
+        - Fixed Bug #808: use of other DB as mysql (MSSQL). Thank's to j dot forstner at a1 dot net.
+        - Fixed Bug #1097: getSubBranch does not work with sort_preorder. Thank's to Markus Cecot.
+        </notes>
+      </release>
       <release>
         <version>1.3.2</version>
         <date>2003-12-29</date>
