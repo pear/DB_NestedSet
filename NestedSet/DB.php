@@ -50,7 +50,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
     * @param array $params Database column fields which should be returned
     *
     */
-    function DB_NestedSet_DB($dsn, $params = array())
+    function & DB_NestedSet_DB($dsn, $params = array())
     {
         $this->_debugMessage('DB_NestedSet_DB($dsn, $params = array())');
         $this->DB_NestedSet($params);

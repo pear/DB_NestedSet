@@ -347,7 +347,8 @@ class DB_NestedSet {
             }
             include_once($driverpath);
         }
-        return new $classname($dsn, $params);
+        $c =  & new $classname($dsn, $params);
+        return $c;
     }
     
     // }}}
