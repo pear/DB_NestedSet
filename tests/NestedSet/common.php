@@ -9,6 +9,7 @@
 * @access       public
 */
 require_once 'UnitTest.php';
+
 class tests_NestedSet_common extends DB_NestedSetTest {
     
     
@@ -28,7 +29,6 @@ class tests_NestedSet_common extends DB_NestedSetTest {
     * @return array Array of created rootnodes
     */
     function test_createRootNode($dist = false) {
-        
         return $this->_createRootNodes(15);
     }
     
@@ -177,6 +177,15 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         return true;
     }
     
+    /**
+    * tests_NestedSet_common::test_updateNode()
+    *
+    * Creates some nodes and tries to update them
+    *
+    * @access public
+    * @see _deleteNodes()
+    * @return bool True on completion
+    */
     function test_updateNode() {
         $rootnodes = $this->_createRootNodes(3);
         $x = 0;
@@ -188,8 +197,27 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $this->assertEquals('U'.$x, $rn['name'], 'Nodename update failed');
             $this->assertEquals($node['rootid'], $rn['rootid'], 'Rootid was overwritten');
             $x++;
-        } 
+        }
+        return true;
     }
+    
+    function test_moveTree() {
+        
+        // Build a nice random tree
+        $relationTree = $this->_createRandomNodes(3, 150);
+        
+        $rootnodes =  $this->_NeSe->getRootNodes(true);
+        
+        // First test if recursions are detected
+        foreach($rootnodes AS $rid=>$rootnode) {
+            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($rid, $rid, NESE_MOVE_BELOW)), 'A recursion wasn not catched');
+            $this->_testRecursionErrors($rootnode);
+            
+        }
+        
+        $this->fail('NOT IMPLEMENTED YET');
+    }
+    
     
     // +----------------------------------------------+
     // | Testing query methods                        |
@@ -453,6 +481,20 @@ class tests_NestedSet_common extends DB_NestedSetTest {
     // |----------------------------------------------+
     // | [PRIVATE]                                    |
     // +----------------------------------------------+
+    
+    function _testRecursionErrors($parent) {
+        $children = $this->_NeSe->getChildren($parent['id'], true);
+        if(empty($children)) {
+            return true;
+        }
+        foreach($children AS $cid=>$child) {
+            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_BELOW)), 'A recursion wasn not catched');
+            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_BEFORE)), 'A recursion wasn not catched');
+            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_AFTER)), 'A recursion wasn not catched');
+            $this->_testRecursionErrors($child);
+        }
+        return true;
+    }
     
     function _deleteNodes($parentID, $keep=false) {
         $children = $this->_NeSe->getChildren($parentID, true);
