@@ -1,65 +1,54 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
     <!DOCTYPE package SYSTEM "../package.dtd">
-    <package version="1.0"> 
+    <package version="1.0">
       <name>DB_NestedSet</name>
       <summary>API to build and query nested sets</summary>
       <description>
-		DB_NestedSet let's you create trees with infinite depth
-		inside a relational database.	
-		
-		The package provides a way to
-		- create/update/delete nodes
-		- query nodes, trees and subtrees
-		- copy (clone) nodes, trees and subtrees
-		- move nodes, trees and subtrees
-		- call event handlers on specific events like
-		  on node deletion
-		- output the tree (at the moment with PEAR::HTML_TreeMenu)
-		
-		The basic node actions should be pretty stable.
-		Event handlers and output API may need some testing.
+        DB_NestedSet let's you create trees with infinite depth
+        inside a relational database.
+
+        The package provides a way to
+        o create/update/delete nodes
+        o query nodes, trees and subtrees
+        o copy (clone) nodes, trees and subtrees
+        o move nodes, trees and subtrees
+        o call event handlers on specific events like
+          on node deletion
+        o output the tree with 
+          - PEAR::HTML_TreeMenu
+          - TigraMenu (http://www.softcomplex.com/products/tigra_menu/)
       </description>
       <license>PHP License</license>
-	  <homepage>http://oss.webcluster.at</homepage>
-      <maintainers> 
-        <maintainer> 
+          <homepage>http://oss.webcluster.at</homepage>
+      <maintainers>
+        <maintainer>
           <user>datenpunk</user>
           <name>Daniel Khan</name>
           <email>dk@webcluster.at</email>
           <role>lead</role>
         </maintainer>
-        <maintainer> 
+        <maintainer>
           <user>jrust</user>
           <name>Jason Rust</name>
           <email>jrust@rustyparts.com</email>
           <role>lead</role>
         </maintainer>
       </maintainers>
-      <release> 
-        <version>1.2</version>
-        <date>2003-05-07</date>
+      <release>
+        <version>1.2pl1</version>
+        <date>2003-05-08</date>
         <state>stable</state>
-        <notes> 
-			The core package is now stable.
-			You should be able to manipulate a nested set without problems.
-			
-			The output driver development will always be in progress and there
-			may always be drivers in beta state.
-			This package introduces an output driver for TigraMenu
-			(http://www.softcomplex.com/products/tigra_menu/)
-			and examples on using the output drivers.
-
-				- Fixed bug in triggerEvent() which produced an error on node move (Daniel Khan)
-				- Added isParent() which provides a simple way to query if a given node is parent of another given node. (Daniel Khan)
-				- Added a variable to pickNode() which can be used to get a node by another value than id (Daniel Khan)
-				- TreeMenu: Fixed bug where two sub nodes that both have children were not being processed correctly (Jason Rust)
-				- TreeMenu: Took off example usage since there is now an example page in docs/ (Jason Rust)
-				- TigraMenu: Initial import of TigraMenu output driver	
+        <notes>
+         - Fixed a bug which leads to the deletion of a node or subtree if a node
+           is moved into _itself_. 
+		   Thanks to Christian Reininger for catching this!
+         - Now a propper PEAR::Error object is returned in case of recursion instead of
+           returning false.
         </notes>
-        <filelist> 
-          <dir name="/" baseinstalldir="DB" role="php"> 
+        <filelist>
+          <dir name="/" baseinstalldir="DB" role="php">
             <file>NestedSet.php</file>
-            <dir name="NestedSet" role="php"> 
+            <dir name="NestedSet" role="php">
               <file>DB.php</file>
               <file>MDB.php</file>
               <file>Event.php</file>
@@ -67,7 +56,7 @@
               <file>TreeMenu.php</file>
             </dir>
           </dir>
-          <dir name="docs" role="doc"> 
+          <dir name="docs" role="doc">
             <file>README</file>
             <file>mysql.sql</file>
             <file>TreeMenu_example.php</file>
@@ -76,32 +65,54 @@
         </filelist>
       </release>
      <changelog>
+      <release>
+        <version>1.2</version>
+        <date>2003-05-05</date>
+        <state>stable</state>
+        <notes>
+         The core package is now stable.
+         You should be able to manipulate a nested set without problems.
+
+         The output driver development will always be in progress and there
+         may always be drivers in beta state.
+         This package introduces an output driver for TigraMenu
+         (http://www.softcomplex.com/products/tigra_menu/)
+         and examples on using the output drivers.
+
+          * Fixed bug in triggerEvent() which produced an error on node move (Daniel Khan)
+          * Added isParent() which provides a simple way to query if a given node is parent of another given node. (Daniel Khan)
+          * Added a variable to pickNode() which can be used to get a node by another value than id (Daniel Khan)
+          * TreeMenu: Fixed bug where two sub nodes that both have children were not being processed correctly (Jason Rust)
+          * TreeMenu: Took off example usage since there is now an example page in docs/ (Jason Rust)
+          * TigraMenu: Initial import of TigraMenu output driver
+        </notes>
+       </release>
      <release>
         <version>1.1-beta</version>
         <date>2003-04-29</date>
         <state>beta</state>
-        <notes> 
-        	- Added a unified API to access other output drivers
-        	- Added a output driver for HTML_TreeMenu (Jason Rust)
-        	- Added a variable '$idfield' to pickNode() which can be used to get a node by another value than id (Daniel Khan)
-        	- Made getChildren() consistent with how the other methods work in terms of the secondarySort property (Jason Rust)
-        	- Added new attribute: secondarySort. Normally it is the order field, but can be set to another field 
-        	  in the table such as name so that the tree can be displayed alphabetically. (Jason Rust)
-        	- Improved the error handling so that nasty fatal errors no longer occur if invalid ids are specified (Jason Rust)
-			- Now using the NESE_MOVE_* constants instead of AF, BE, and SUB (Jason Rust)
-			- Added vim folds (Jason Rust)
-			- Several style fixes to be compliant with PEAR style (Jason Rust)
-			- Several E_ALL fixes (Jason Rust)
-			- Avoid repetitive setting of variables by using sprintf to form the SQL queries in many of the _doget* methods (Jason Rust)
-			- db->quote() is now used to quote strings to be compliant with other databases (Jason Rust)
-			- Added new property: sequence_table so that it can be configurable (Jason Rust)
-			- Added new method: setDbOption in order to be able to set database options (Jason Rust)
-			- Added new method to NestedSet_Node: getData() to obtain the data from the node in an array (Jason Rust)
-			- NestedSet_Node no longer extends PEAR since it doesn't need to (Jason Rust)
-			- Fixed a bug for when moving a node within its level (Jason Rust)
-			- Locking does not produce DB "database not set" errors any longer since the database destructor calls the parent destructor first (Jason Rust)
-			- Fixed a bug in _dogetParents() which made it return also return the parent's sibblings (Daniel Khan)
-		</notes>  
-	  </release>    	
-     </changelog>
+        <notes>
+                - Added a unified API to access other output drivers
+                - Added a output driver for HTML_TreeMenu (Jason Rust)
+                - Added a variable '$idfield' to pickNode() which can be used to get a node by another value than id (Daniel Khan)
+                - Made getChildren() consistent with how the other methods work in terms of the secondarySort property (Jason Rust)
+                - Added new attribute: secondarySort. Normally it is the order field, but can be set to another field
+                  in the table such as name so that the tree can be displayed alphabetically. (Jason Rust)
+                - Improved the error handling so that nasty fatal errors no longer occur if invalid ids are specified (Jason Rust)
+                - Now using the NESE_MOVE_* constants instead of AF, BE, and SUB (Jason Rust)
+                - Added vim folds (Jason Rust)
+                - Several style fixes to be compliant with PEAR style (Jason Rust)
+                - Several E_ALL fixes (Jason Rust)
+                - Avoid repetitive setting of variables by using sprintf to form the SQL queries in many of the _doget* methods (Jason Rust)
+                - db->quote() is now used to quote strings to be compliant with other databases (Jason Rust)
+                - Added new property: sequence_table so that it can be configurable (Jason Rust)
+                - Added new method: setDbOption in order to be able to set database options (Jason Rust)
+                - Added new method to NestedSet_Node: getData() to obtain the data from the node in an array (Jason Rust)
+                - NestedSet_Node no longer extends PEAR since it doesn't need to (Jason Rust)
+                - Fixed a bug for when moving a node within its level (Jason Rust)
+                - Locking does not produce DB "database not set" errors any longer since the database destructor calls the parent destructor first (Jason Rust)
+                - Fixed a bug in _dogetParents() which made it return also return the parent's sibblings (Daniel Khan)
+                </notes>
+          </release>
+          </changelog>
    </package>

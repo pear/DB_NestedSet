@@ -1065,11 +1065,11 @@ class DB_NestedSet extends PEAR {
         }
 
         // We have a recursion - let's stop
-        if (($target->rootid == $source->rootid) && 
-            (($source->l < $target->l) && 
-             ($source->r > $target->r))) {
-            $this->raiseError($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
-            return false;
+        if (($target->rootid == $source->rootid) &&
+            (($source->l <= $target->l) &&
+             ($source->r >= $target->r))) {
+        
+            return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);                             
         }
         
         // Insert/move before or after
