@@ -41,8 +41,8 @@
         <notes>
          - Fixed a bug which leads to the deletion of a node or subtree if a node
            is moved into _itself_. 
-		   Thanks to Christian Reininger for catching this!
-         - Now a propper PEAR::Error object is returned in case of recursion instead of
+           Thanks to Christian Reininger for catching this!
+         - Now a proper PEAR::Error object is returned in case of recursion instead of
            returning false.
         </notes>
         <filelist>
