@@ -967,7 +967,7 @@ class DB_NestedSet {
                     $this->flparams['norder'],
                     $this->node_table,
                     $this->flparams['l']);
-                $tmp_order = $this->db->getOne($qry);
+                $tmp_order = $this->_getOne($qry);
                 // If null, then it's the first one
                 $parent['norder'] = is_null($tmp_order) ? 0 : $tmp_order;
             }
@@ -980,7 +980,7 @@ class DB_NestedSet {
         // Shall we delete the existing tree (reinit)
         if ($first) {
             $dsql = sprintf('DELETE FROM %s', $this->node_table);
-            $this->db->query($dsql);
+            $this->_query($dsql);
             $this->_dropSequence($this->sequence_table);
             // New order of the new node will be 1
             $addval[$this->flparams['norder']] = 1;
@@ -1008,7 +1008,7 @@ class DB_NestedSet {
         }
         // Sequence of node id (equals to root id in this case
         if (!$this->_dumbmode || !$node_id = isset($values[$this->flparams['id']]) || !isset($values[$this->flparams['rootid']])) {
-            $addval[$this->flparams['rootid']] = $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $addval[$this->flparams['rootid']] = $node_id = $addval[$this->flparams['id']] = $this->_nextID($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1023,7 +1023,7 @@ class DB_NestedSet {
         // Insert the new node
         $sql[] = sprintf('INSERT INTO %s (%s) VALUES (%s)', $this->node_table, implode(', ', array_keys($qr)), implode(', ', $qr));
         foreach ($sql as $qry) {
-            $res = $this->db->query($qry);
+            $res = $this->_query($qry);
             $this->_testFatalAbort($res, __FILE__, __LINE__);
         }
         // EVENT (nodeCreate)
@@ -1110,7 +1110,7 @@ class DB_NestedSet {
         $addval[$this->flparams['norder']] = 1;
         $addval[$this->flparams['level']] = $thisnode['level'] + 1;
         if (!$this->_dumbmode || !$node_id = isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextID($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1122,7 +1122,7 @@ class DB_NestedSet {
 
         $sql[] = sprintf('INSERT INTO %s (%s) VALUES (%s)', $this->node_table, implode(', ', array_keys($qr)), implode(', ', $qr));
         foreach ($sql as $qry) {
-            $res = $this->db->query($qry);
+            $res = $this->_query($qry);
             $this->_testFatalAbort($res, __FILE__, __LINE__);
         }
         // EVENT (NodeCreate)
@@ -1218,7 +1218,7 @@ class DB_NestedSet {
         $addval[$this->flparams['rootid']] = $thisnode['rootid'];
         $addval[$this->flparams['level']] = $thisnode['level'];
         if (!$this->_dumbmode || !$node_id = isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextID($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1230,7 +1230,7 @@ class DB_NestedSet {
         // Insert the new node
         $sql[] = sprintf('INSERT INTO %s (%s) VALUES (%s)', $this->node_table, implode(', ', array_keys($qr)), implode(', ', $qr));
         foreach ($sql as $qry) {
-            $res = $this->db->query($qry);
+            $res = $this->_query($qry);
             $this->_testFatalAbort($res, __FILE__, __LINE__);
         }
         // EVENT (NodeCreate)
@@ -1327,7 +1327,7 @@ class DB_NestedSet {
         $addval[$this->flparams['rootid']] = $thisnode['rootid'];
         $addval[$this->flparams['level']] = $thisnode['level'];
         if (!$this->_dumbmode || !isset($values[$this->flparams['id']])) {
-            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
+            $node_id = $addval[$this->flparams['id']] = $this->_nextID($this->sequence_table);
         } else {
             $node_id = $values[$this->flparams['id']];
         }
@@ -1339,7 +1339,7 @@ class DB_NestedSet {
         // Insert the new node
         $sql[] = sprintf('INSERT INTO %s (%s) VALUES (%s)', $this->node_table, implode(', ', array_keys($qr)), implode(', ', $qr));
         foreach ($sql as $qry) {
-            $res = $this->db->query($qry);
+            $res = $this->_query($qry);
             $this->_testFatalAbort($res, __FILE__, __LINE__);
         }
         // EVENT (NodeCreate)
@@ -1424,7 +1424,7 @@ class DB_NestedSet {
         }
 
         foreach ($sql as $qry) {
-            $res = $this->db->query($qry);
+            $res = $this->_query($qry);
             $this->_testFatalAbort($res, __FILE__, __LINE__);
         }
         $this->_releaseLock();
@@ -1470,7 +1470,7 @@ class DB_NestedSet {
             $this->node_table,
             $qr,
             $this->flparams['id'], $id);
-        $res = $this->db->query($sql);
+        $res = $this->_query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
         $this->_releaseLock();
         return true;
@@ -1721,14 +1721,14 @@ class DB_NestedSet {
 
         if (!empty($updates)) {
             for($i = 0;$i < count($updates);$i++) {
-                $res = $this->db->query($updates[$i]);
+                $res = $this->_query($updates[$i]);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
 
         if (!empty($pupdates)) {
             for($i = 0;$i < count($pupdates);$i++) {
-                $res = $this->db->query($pupdates[$i]);
+                $res = $this->_query($pupdates[$i]);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
@@ -1785,20 +1785,20 @@ class DB_NestedSet {
                             $fid!=$t_id AND
                             $fid!=$s_id AND
                             $froot=$fid";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
                 $sql = "UPDATE $tb SET $freh=$t_order -1 WHERE $fid=$s_id";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             } elseif ($pos == NESE_MOVE_AFTER) {
                 $sql = "UPDATE $tb SET $freh=$freh-1
                         WHERE $freh BETWEEN $s_order AND $t_order AND
                             $fid!=$s_id AND
                             $froot=$fid";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
                 $sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
@@ -1809,10 +1809,10 @@ class DB_NestedSet {
                         WHERE $freh BETWEEN $t_order AND $s_order AND
                             $fid != $s_id AND
                             $froot=$fid";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
                 $sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             } elseif ($pos == NESE_MOVE_AFTER) {
                 $sql = "UPDATE $tb SET $freh=$freh+1
@@ -1820,10 +1820,10 @@ class DB_NestedSet {
                         $fid!=$t_id AND
                         $fid!=$s_id AND
                         $froot=$fid";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
                 $sql = "UPDATE $tb SET $freh=$t_order+1 WHERE $fid = $s_id";
-                $res = $this->db->query($sql);
+                $res = $this->_query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
@@ -1924,7 +1924,7 @@ class DB_NestedSet {
      * @return mixed False on error or the transformed node set.
      */
     function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
-        $result = $this->db->getAll($sql);
+        $result = $this->_getAll($sql);
         if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
             return false;
         }
@@ -2150,7 +2150,7 @@ class DB_NestedSet {
         $sql = sprintf('SELECT lockID FROM %s WHERE lockTable=%s',
             $this->lock_table,
             $this->_quote($this->node_table)) ;
-        $res = $this->db->query($sql);
+        $res = $this->_query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
         if ($this->_numRows($res)) {
             return new PEAR_Error($this->_getMessage(NESE_ERROR_TBLOCKED), NESE_ERROR_TBLOCKED);
@@ -2195,7 +2195,7 @@ class DB_NestedSet {
             $this->_lockExclusive = true;
         }
 
-        $res = $this->db->query($sql);
+        $res = $this->_query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
         return $lockID;
     }
@@ -2223,7 +2223,7 @@ class DB_NestedSet {
         $sql = "DELETE FROM $tb
                 WHERE lockTable=" . $this->_quote($stb) . " AND
                     lockID=" . $this->_quote($lockID);
-        $res = $this->db->query($sql);
+        $res = $this->_query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
         $this->_structureTableLock = false;
         if ($this->_restcache) {
@@ -2248,7 +2248,7 @@ class DB_NestedSet {
         $sql = "DELETE FROM $tb
                 WHERE lockTable=" . $this->_quote($stb) . " AND
                     lockStamp < $lockTTL";
-        $res = $this->db->query($sql);
+        $res = $this->_query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
     }
     // }}}
