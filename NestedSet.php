@@ -756,7 +756,6 @@ class DB_NestedSet {
                 $this->node_table, $this->secondarySort);
         } elseif ($this->_sortMode == NESE_SORT_PREORDER) {
             $firstsort = $this->flparams['l'];
-            $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s
                     WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s 
                     ORDER BY %s.%s ASC',
