@@ -269,4 +269,56 @@ class DB_NestedSet_CoolMenu extends DB_NestedSet_Output {
             }
             if(count($level_array['properties'])){
                 foreach($level_array['properties'] as $prop_key => $prop_val){
-                    $
+                    $level_properties .= $this->_menuName . ".level[$level_id].$prop_key=$prop_val\n";
+                }
+            }
+        }
+        return $level_properties;
+    }
+
+
+    /**
+    * Creates the JavaScript code which sets properties for each level defined.
+    *
+    * @access private
+    * @param array $options Array of menu structure parameters ($options['menu']['properties']).
+    * @return string The JS defining menu structure, e.g. CMenu3.zIndex=100...
+    */
+    function _buildMenuProperties($properties)
+    {
+        foreach($properties as $prop_key => $prop_val){
+            $menu_properties .= $this->_menuName . ".$prop_key=$prop_val\n";
+        }
+        $menu_properties .= $this->_menuName . ".barClass=\"backgroundStyle\"\n";
+        return "\n/*Menu properties*/\n$menu_properties\n";
+    }
+
+
+    // }}}
+    // {{{ printTree()
+
+    /**
+    * Print's the current tree using the output driver
+    *
+    * @access public
+    * @param void
+    * @return string The complete JS for the menu.
+    */
+    function printTree()
+    {
+        if (!$options = $this->_getOptions('printTree')) {
+            return PEAR::raiseError("CoolMenu::printTree() needs options. See CoolMenu::setOptions()", NESEO_ERROR_NO_OPTIONS, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+        }
+        echo $this->_buildStyles($options);
+        echo "\n\n<script>\n" . $this->_menuName . "=new makeCM(\"" . $this->_menuName . "\")\n";
+        echo $this->_buildMenuProperties($options['menu']['properties']);
+        echo $this->_buildLevelProperties($options);
+        echo "\n\n";
+        echo $this->_structCoolMenu;
+        echo "\n\n";
+        echo $this->_menuName . ".construct()\n</script>";
+    }
+
+    // }}}
+}
+?>
