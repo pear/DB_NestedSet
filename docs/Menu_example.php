@@ -36,6 +36,27 @@ CREATE TABLE `nested_set` (
   KEY `right_left` (`id`,`parent_id`,`left_id`,`right_id`)
 ) TYPE=MyISAM;
 
+
+CREATE TABLE `tb_nodes` (
+  `STRID` int(11) NOT NULL auto_increment,
+  `ROOTID` int(11) NOT NULL default '0',
+  `l` int(11) NOT NULL default '0',
+  `r` int(11) NOT NULL default '0',
+  `parent` int(11) NOT NULL default '0',
+  `STREH` int(11) NOT NULL default '0',
+  `LEVEL` int(11) NOT NULL default '0',
+  `STRNA` char(128) NOT NULL default '',
+  PRIMARY KEY  (`STRID`),
+  KEY `ROOTID` (`ROOTID`),
+  KEY `STREH` (`STREH`),
+  KEY `l` (`l`),
+  KEY `r` (`r`),
+  KEY `LEVEL` (`LEVEL`),
+  KEY `SRLR` (`ROOTID`,`l`,`r`),
+  KEY `parent` (`parent`)
+) TYPE=MyISAM ;
+
+
 #
 # Dumping data for table `nested_set`
 #
