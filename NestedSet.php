@@ -2001,7 +2001,7 @@ class DB_NestedSet {
     * @return mixed False on error or the transformed node set.
     */
     function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
-        $result = $this->_getAll($sql);
+        $result = $this->db->getAll($sql);
         if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
             return false;
         }
