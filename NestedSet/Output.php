@@ -23,6 +23,7 @@
 
 define('NESEO_ERROR_NO_METHOD',    'E1000');
 define('NESEO_DRIVER_NOT_FOUND',   'E1100');
+define('NESEO_ERROR_NO_OPTIONS',   'E2100');
 
 // }}}
 // {{{ DB_NestedSet_Output:: class
