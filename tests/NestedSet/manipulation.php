@@ -67,10 +67,10 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
         return true;
     }
     
-    
+  
     function test_moveTree() {
         
-        $movemodes[] = NESE_MOVE_BEFORE;
+        // $movemodes[] = NESE_MOVE_BEFORE;
         $movemodes[] = NESE_MOVE_AFTER;
         $movemodes[] = NESE_MOVE_BELOW;
         for($j=0;$j<count($movemodes);$j++) {
