@@ -50,7 +50,7 @@ require_once 'HTML/TreeMenu.php';
  *     'linkField' => 'link',
  * );
  * $menu =& DB_NestedSet_TreeMenu::createFromStructure($params);
- * $list =& new HTML_TreeMenu_Listbox($menu);
+ * $list =& HTML_TreeMenu_Listbox($menu);
  * $list->toHtml();
  *
  * @author       Jason Rust <jrust@rustyparts.com>
@@ -59,9 +59,13 @@ require_once 'HTML/TreeMenu.php';
  * @access       public
  */
 // }}}
-class DB_NestedSet_TreeMenu {
+class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // {{{ createFromStructure()
 
+    function &DB_NestedSet_TreeMenu($params) {
+    	$this->treeMenu = & $this->_createFromStructure($params);
+    }
+    
     /**
      * Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
      * of the DB_NestedSet class.  The needed parameters are:
@@ -79,7 +83,7 @@ class DB_NestedSet_TreeMenu {
      * @access public
      * @return object A HTML_TreeMenu object
      */
-    function &createFromStructure($params)
+    function &_createFromStructure($params)
     {
         // Basically we go through the array of nodes checking to see 
         // if each node has children and if so recursing.  The reason this
@@ -135,7 +139,7 @@ class DB_NestedSet_TreeMenu {
                 $recurseParams['structure'] = $children;
                 $recurseParams['treeMenu'] =& $parentNode;
                 $recurseParams['currentLevel']++;
-                DB_NestedSet_TreeMenu::createFromStructure($recurseParams);
+                DB_NestedSet_TreeMenu::_createFromStructure($recurseParams);
             }
         }
 
@@ -143,5 +147,17 @@ class DB_NestedSet_TreeMenu {
     }
 
     // }}}
+    
+    function printTree() {
+		$options = $this->_getOptions('printTree');
+    	$tree = &new HTML_TreeMenu_DHTML($this->treeMenu, $options);
+    	$tree->printMenu();
+    }
+    
+    function printListbox() {
+    	$options = $this->_getOptions('printListbox');
+    	$listBox  = &new HTML_TreeMenu_Listbox($this->treeMenu, $options);
+    	$listBox->printMenu();
+    }
 }
 ?>
