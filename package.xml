@@ -54,6 +54,7 @@
               <file>Event.php</file>
               <file>Output.php</file>
               <file>TreeMenu.php</file>
+              <file>TigraMenu.php</file>
             </dir>
           </dir>
           <dir name="docs" role="doc">

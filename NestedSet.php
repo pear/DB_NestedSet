@@ -889,7 +889,7 @@ class DB_NestedSet extends PEAR {
 			// What we have to do is virtually an insert of a node after the last child
 			// So we don't have to proceed creating a subnode
 			$newNode =& $this->createRightNode($last->id, $values);
-			return $newNode->id;
+			return $newNode;
 		}
 		
 		// invalid parent id, bail out
@@ -1038,7 +1038,7 @@ class DB_NestedSet extends PEAR {
 		// EVENT (NodeCreate)
 		$thisnode =& $this->pickNode($node_id);
 		$this->triggerEvent('nodeCreate', $thisnode);
-		return $thisnode;
+		return $node_id;
 	}
 	
 	// }}}
@@ -1176,7 +1176,7 @@ class DB_NestedSet extends PEAR {
 		if (PEAR::isError($lock = $this->_setLock())) {
 			return $lock;
 		}
-		
+
 		// This operations don't need callbacks except the copy handler
 		// which ignores this setting
 		$this->skipCallbacks = true;
@@ -1277,7 +1277,6 @@ class DB_NestedSet extends PEAR {
 		
 		if ($pos != NESE_MOVE_BELOW) {
 			$c_id = $this->createRightNode($t_id, $values);
-			$clone = $this->pickNode($c_id);
 			if ($pos == NESE_MOVE_BEFORE) {
 				$this->moveTree($c_id, $t_id, $pos);
 			}
@@ -1287,6 +1286,7 @@ class DB_NestedSet extends PEAR {
 		}
 		
 		$relations[$s_id] = $c_id;
+
 		$children = $this->getChildren($source, false, true, true);
 		$first = true;
 		if ($children) {
@@ -1301,7 +1301,7 @@ class DB_NestedSet extends PEAR {
 				}
 			}
 		}
-		
+
 		$this->_moveCleanup($relations, $copy);
 		if(!$copy) {
 			return $source->id;
@@ -1964,6 +1964,7 @@ class DB_NestedSet extends PEAR {
 			$k = trim($key);
 			$v = trim($val);
 			if ($k) {
+				
 				$arq[] = "$k=" . $this->db->quote($v);
 			}
 		}
