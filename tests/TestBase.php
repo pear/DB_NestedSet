@@ -33,39 +33,26 @@ Class TestBase extends PhpUnit_Testcase {
             	$p = $this->_NeSe->getParent($nodeid, true);
 				
 				if($mvt == NESE_MOVE_BELOW) {
-				if($tnode['id'] != $p['id']) {
-
-					
-					// <DEBUG>
-					echo "\n<pre>TARGET<br>\n";
-					print_r($tnode);
-					echo "\n</pre><br>\n";
-					// </DEBUG>
-					
-					// <DEBUG>
-					echo "\n<pre>PARENT<br>\n";
-					print_r($p);
-					echo "\n</pre><br>\n";
-					// </DEBUG>
-					
-					// <DEBUG>
-					echo "\n<pre>mnode:<br>\n";
-					print_r($mnode);
-					echo "\n</pre><br>\n";
-					// </DEBUG>
-	
-					
-				}
 					$this->assertEquals($tnode['id'], $p['id'], 'Move below failed');
 				}
 				
 				
 				if($mnode['id'] != $mnode['rootid']) {
 					$this->assertEquals($p['id'], $mnode['parent'], 'Parent ID is wrong');
-				} else {
-					// <DEBUG>
-					// printf("<b>%s = %s</b><br>\n", $mnode['parent'], $p['id']);
-					// </DEBUG>
+					if($p['id'] != $mnode['parent']) {
+						// <DEBUG>
+						   // <DEBUG>
+						       echo "\n<pre>\n";
+						       print_r($p);
+						       echo "\n</pre>\n";
+						   // </DEBUG>
+							// <DEBUG>
+							    echo "\n<pre>\n";
+							    print_r($mnode);
+							    echo "\n</pre>\n";
+							// </DEBUG>
+						// </DEBUG>
+					}
 				}
 			}
         }

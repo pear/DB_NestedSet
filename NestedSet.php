@@ -184,7 +184,7 @@ class DB_NestedSet {
     * @var array An array of field ids that must exist in the table
     * @access private
     */
-    var $_requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level', 'parent');
+    var $_requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level');
     
     /**
     * @var bool Skip the callback events?
@@ -1622,7 +1622,7 @@ class DB_NestedSet {
 
 
         // We have to move between different levels and maybe subtrees - let's rock ;)
-        $moveID = $this->_moveAcross($source, $target, $pos);
+        $moveID = $this->_moveAcross($source, $target, $pos, true);
         $this->_moveCleanup($copy);
         $this->_releaseLock(true);
         
@@ -1665,7 +1665,7 @@ class DB_NestedSet {
     * @see        _r_moveAcross
     * @see        _moveCleanup
     */
-    function _moveAcross($source, $target, $pos) {
+    function _moveAcross($source, $target, $pos, $first=false) {
         if ($this->debug) {
             $this->_debugMessage('_moveAcross($source, $target, $pos, $copy = false)');
         }
@@ -1674,7 +1674,7 @@ class DB_NestedSet {
         // because of the node move
         $values = array();
         foreach($this->params as $key => $val) {
-            if ($source[$val] && !in_array($val, $this->_requiredParams)) {
+            if ($source[$val] && $val != 'parent' && !in_array($val, $this->_requiredParams)) {
                 $values[$key] = trim($source[$val]);
             }
         }
@@ -1693,7 +1693,20 @@ class DB_NestedSet {
             $clone_id = $this->createSubNode($target['id'], $values);
             break;
         }
-
+		
+		if($first && isset($this->flparams['parent'])) {
+			$t_parent = $this->getParent($clone_id, true, true, array(), false);
+			$t_parent_id = $t_parent['id'];
+		} elseif(isset($this->flparams['parent'])) {
+			if(isset($source['parent'])) {
+				$t_parent_id = $source['parent'];
+			} else {
+				$t_parent = $this->getParent($source['id'], true, true, array(), false);
+				$t_parent_id = $t_parent['id'];
+			}
+		} else {
+			$t_parent_id = false;
+		}
 
         $children = $this->getChildren($source['id'], true, true, true);
 
@@ -1710,8 +1723,9 @@ class DB_NestedSet {
             }
         }
 
-        $this->_relations[$source['id']] = $clone_id;
-        return $clone_id;
+        $this->_relations[$source['id']]['clone'] = $clone_id;
+		$this->_relations[$source['id']]['parent'] = $t_parent_id;
+		return $clone_id;
     }
 
     // }}}
@@ -1734,11 +1748,14 @@ class DB_NestedSet {
 
         $deletes = array();
         $updates = array();
+		$pupdates = array();
         $tb = $this->node_table;
         $fid = $this->flparams['id'];
         $froot = $this->flparams['rootid'];
         foreach($relations AS $key => $val) {
-            $clone = $this->pickNode($val);
+			$cloneid = $val['clone'];
+			$parentID = $val['parent'];
+            $clone = $this->pickNode($cloneid);
             if ($copy) {
                 // EVENT (NodeCopy)
 
@@ -1754,20 +1771,31 @@ class DB_NestedSet {
             // Only it's position
             // If one needs a callback here please let me know
 
+			if(!empty($parentID)) {
+                $sql = sprintf('UPDATE %s SET %s=%s WHERE %s=%s',
+                $this->node_table,
+                $this->flparams['parent'],
+                $parentID,
+                $fid,
+                $key);		
+				$pupdates[] = $sql;	
+			}
+			
             $deletes[] = $key;
-            // It's isn't a rootnode
+			
+			// It's isn't a rootnode
             if ($clone->id != $clone->rootid) {
                 $sql = sprintf('UPDATE %s SET %s=%s WHERE %s=%s',
                     $this->node_table,
                     $fid, $key,
-                    $fid, $val);
+                    $fid, $cloneid);
                 $updates[] = $sql;
             } else {
                 $sql = sprintf('UPDATE %s SET %s=%s, %s=%s WHERE %s=%s', 
-                        $tb,
+                        $this->node_table,
                         $fid, $key,
-                        $froot, $val,
-                        $fid, $val);
+                        $froot, $cloneid,
+                        $fid, $cloneid);
                 $updates[] = $sql;
                 $orootid = $clone->rootid;
 
@@ -1792,25 +1820,14 @@ class DB_NestedSet {
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
-
-        //update parent ids if kept in db, must do after other updates
-        if(isset($this->flparams['parent'])) {
-            foreach($relations AS $key => $val) {
-                $parent = $this->getParent($key, true, true, array(), false);
-                $parentID = (isset($parent[$fid]))?$parent[$fid]:'0';
-
-                $sql = sprintf('UPDATE %s SET %s=%s WHERE %s=%s',
-                $this->node_table,
-                $this->flparams['parent'],
-                $parentID,
-                $fid,
-                $key);
-
-                $res = $this->db->query($sql);
+		
+        if(!empty($pupdates)) {
+            for($i=0;$i<count($pupdates);$i++) {
+                $res = $this->db->query($pupdates[$i]);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
-
+				
         return true;
     }
 
