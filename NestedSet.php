@@ -304,8 +304,7 @@ class DB_NestedSet extends PEAR {
 		$this->flparams['rootid'],
 		$this->secondarySort
 		);
-		$GLOBALS['DB_NestedSet_DB'] = &$this->db;
-		$gares = $this->cache->call('DB_NestedSet_DB->getAll', $sql);
+		
 		if(!$this->_caching) {
 			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
