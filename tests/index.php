@@ -42,9 +42,8 @@ require_once 'PHPUnit/GUI/SetupDecorator.php';
 
 $gui = new PHPUnit_GUI_SetupDecorator(new PHPUnit_GUI_HTML());
 
-$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php','TestBase.php'));
+$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php','TestBase.php', 'NestedSet/CVS'));
 
 $gui->show();
 
 ?>
-

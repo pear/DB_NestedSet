@@ -24,9 +24,50 @@ Class TestBase extends PhpUnit_Testcase {
 
             foreach($branches[1] AS $tnodeid=>$tnode) {
                 $ret =  $this->_NeSe->moveTree($nodeid, $tnodeid, $mvt);
+                if(PEAR::isError($ret)) {
+					continue;
+				}
+				$mnode = $this->_NeSe->pickNode($ret, true);
                 $this->assertEquals($ret, $nodeid, 'Nodeid was not returned as expected');
-                $this->assertEquals($nodecount, count($this->_NeSe->getAllNodes(true)), 'Node count changed');
-            }
+				$this->assertEquals($nodecount, count($this->_NeSe->getAllNodes(true)), 'Node count changed');
+            	$p = $this->_NeSe->getParent($nodeid, true);
+				
+				if($mvt == NESE_MOVE_BELOW) {
+				if($tnode['id'] != $p['id']) {
+
+					
+					// <DEBUG>
+					echo "\n<pre>TARGET<br>\n";
+					print_r($tnode);
+					echo "\n</pre><br>\n";
+					// </DEBUG>
+					
+					// <DEBUG>
+					echo "\n<pre>PARENT<br>\n";
+					print_r($p);
+					echo "\n</pre><br>\n";
+					// </DEBUG>
+					
+					// <DEBUG>
+					echo "\n<pre>mnode:<br>\n";
+					print_r($mnode);
+					echo "\n</pre><br>\n";
+					// </DEBUG>
+	
+					
+				}
+					$this->assertEquals($tnode['id'], $p['id'], 'Move below failed');
+				}
+				
+				
+				if($mnode['id'] != $mnode['rootid']) {
+					$this->assertEquals($p['id'], $mnode['parent'], 'Parent ID is wrong');
+				} else {
+					// <DEBUG>
+					// printf("<b>%s = %s</b><br>\n", $mnode['parent'], $p['id']);
+					// </DEBUG>
+				}
+			}
         }
 
     }
