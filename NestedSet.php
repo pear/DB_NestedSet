@@ -1834,6 +1834,7 @@ class DB_NestedSet {
      *                  $addSQL = array(
      *                  'cols' => 'tb2.col2, tb2.col3',         // Additional tables/columns
      *                  'join' => 'LEFT JOIN tb1 USING(STRID)', // Join statement
+	 * 					'where' => 'A='B' AND C='D', 			// Where statement without 'WHERE' OR 'AND' in front
      *                  'append' => 'GROUP by tb1.STRID');      // Group condition
      * @param string $type The type of SQL.  Can be 'cols', 'join', or 'append'.
      * @access private 
