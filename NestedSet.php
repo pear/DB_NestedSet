@@ -203,7 +203,7 @@ class DB_NestedSet {
     * @var array The above parameters flipped for easy access
     * @access private
     */
-    var $_flparams = array();
+    var $flparams = array();
 
     /**
     *
@@ -300,9 +300,9 @@ class DB_NestedSet {
             $this->params = $params;
         }
 
-        $this->_flparams = array_flip($this->params);
-        $this->sequence_table = $this->node_table . '_' . $this->_flparams['id'];
-        $this->secondarySort = $this->_flparams[$this->_defaultSecondarySort];
+        $this->flparams = array_flip($this->params);
+        $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
+        $this->secondarySort = $this->flparams[$this->_defaultSecondarySort];
         register_shutdown_function(array(&$this,'_DB_NestedSet'));
     }
 
@@ -390,7 +390,7 @@ class DB_NestedSet {
             $this->_addSQL($addSQL, 'join'),
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
-            $this->_flparams['level'],
+            $this->flparams['level'],
             $this->node_table,
             $this->secondarySort);
         } elseif ($this->_sortMode == NESE_SORT_PREORDER) {
@@ -443,9 +443,9 @@ class DB_NestedSet {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->_flparams['id'],
+        $this->flparams['id'],
         $this->node_table,
-        $this->_flparams['rootid'],
+        $this->flparams['rootid'],
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
         $this->secondarySort);
@@ -492,14 +492,14 @@ class DB_NestedSet {
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
         if($this->_sortMode == NESE_SORT_LEVEL) {
-            $firstsort = $this->_flparams['level'];
+            $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
             $this->node_table,
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
-            $this->_flparams['rootid'],
+            $this->flparams['rootid'],
             $thisnode['rootid'],
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
@@ -507,14 +507,14 @@ class DB_NestedSet {
             $this->node_table,
             $this->secondarySort);
         } elseif($this->_sortMode == NESE_SORT_PREORDER) {
-            $firstsort = $this->_flparams['l'];
+            $firstsort = $this->flparams['l'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
             $this->node_table,
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
-            $this->_flparams['rootid'],
+            $this->flparams['rootid'],
             $thisnode['rootid'],
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
@@ -574,20 +574,20 @@ class DB_NestedSet {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->_flparams['rootid'],
+        $this->flparams['rootid'],
         $child['rootid'],
         $this->node_table,
-        $this->_flparams['level'],
+        $this->flparams['level'],
         $child['level'],
         $this->node_table,
-        $this->_flparams['l'],
+        $this->flparams['l'],
         $child['l'],
         $this->node_table,
-        $this->_flparams['r'],
+        $this->flparams['r'],
         $child['r'],
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
-        $this->_flparams['level']);
+        $this->flparams['level']);
 
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -641,7 +641,7 @@ class DB_NestedSet {
 
         $addSQL['append'] = sprintf('AND %s.%s = %s',
         $this->node_table,
-        $this->_flparams['level'],
+        $this->flparams['level'],
         $child['level']-1);
 
         $nodeSet =  $this->getParents($id, $keepAsArray, $aliasFields, $addSQL);
@@ -729,13 +729,13 @@ class DB_NestedSet {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->_flparams['rootid'],
+        $this->flparams['rootid'],
         $parent['rootid'],
         $this->node_table,
-        $this->_flparams['level'],
+        $this->flparams['level'],
         $parent['level'],
         $this->node_table,
-        $this->_flparams['l'],
+        $this->flparams['l'],
         $parent['l'],
         $parent['r'],
         $this->_addSQL($addSQL, 'append'),
@@ -787,21 +787,21 @@ class DB_NestedSet {
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         if($this->_sortMode == NESE_SORT_LEVEL) {
-            $firstsort = $this->_flparams['level'];
+            $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
             $this->node_table,
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
-            $this->_flparams['l'],
+            $this->flparams['l'],
             $parent['l'],
             $parent['r'],
             $this->node_table,
-            $this->_flparams['rootid'],
+            $this->flparams['rootid'],
             $parent['rootid'],
             $this->node_table,
-            $this->_flparams['id'],
+            $this->flparams['id'],
             $this->_addSQL($addSQL, 'append'),
             $id,
             $this->node_table,
@@ -810,22 +810,22 @@ class DB_NestedSet {
             $this->secondarySort
             );
         } elseif($this->_sortMode == NESE_SORT_PREORDER) {
-            $firstsort = $this->_flparams['l'];
-            $firstsort = $this->_flparams['level'];
+            $firstsort = $this->flparams['l'];
+            $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s ORDER BY %s.%s  ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
             $this->node_table,
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
-            $this->_flparams['l'],
+            $this->flparams['l'],
             $parent['l'],
             $parent['r'],
             $this->node_table,
-            $this->_flparams['rootid'],
+            $this->flparams['rootid'],
             $parent['rootid'],
             $this->node_table,
-            $this->_flparams['id'],
+            $this->flparams['id'],
             $this->_addSQL($addSQL, 'append'),
             $id,
             $this->node_table,
@@ -891,7 +891,7 @@ class DB_NestedSet {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->_flparams[$idfield],
+        $this->flparams[$idfield],
         $id,
         $this->_addSQL($addSQL, 'append'));
 
@@ -1035,7 +1035,7 @@ class DB_NestedSet {
 
         $sql = array();
         $addval = array();
-        $addval[$this->_flparams['level']] = 1;
+        $addval[$this->flparams['level']] = 1;
 
         // Shall we delete the existing tree (reinit)
         if ($first) {
@@ -1044,45 +1044,45 @@ class DB_NestedSet {
             $this->db->query($dsql);
             $this->db->dropSequence($this->sequence_table);
             // New order of the new node will be 1
-            $addval[$this->_flparams['norder']] = 1;
+            $addval[$this->flparams['norder']] = 1;
         } else {
             // Let's open a gap for the new node
             if($_pos == NESE_MOVE_AFTER) {
-                $addval[$this->_flparams['norder']] = $parent['norder'] + 1;
+                $addval[$this->flparams['norder']] = $parent['norder'] + 1;
                 $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s > %s',
                 $this->node_table,
-                $this->_flparams['norder'],
-                $this->_flparams['norder'],
-                $this->_flparams['id'],
-                $this->_flparams['rootid'],
-                $this->_flparams['norder'],
+                $this->flparams['norder'],
+                $this->flparams['norder'],
+                $this->flparams['id'],
+                $this->flparams['rootid'],
+                $this->flparams['norder'],
                 $parent['norder']);
             } elseif($_pos == NESE_MOVE_BEFORE) {
-                $addval[$this->_flparams['norder']] = $parent['norder'];
+                $addval[$this->flparams['norder']] = $parent['norder'];
                 $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s >= %s',
                 $this->node_table,
-                $this->_flparams['norder'],
-                $this->_flparams['norder'],
-                $this->_flparams['id'],
-                $this->_flparams['rootid'],
-                $this->_flparams['norder'],
+                $this->flparams['norder'],
+                $this->flparams['norder'],
+                $this->flparams['id'],
+                $this->flparams['rootid'],
+                $this->flparams['norder'],
                 $parent['norder']);
             }
         }
 
-        if(isset($this->_flparams['parent'])) {
-           $addval[$this->_flparams['parent']] = 0;
+        if(isset($this->flparams['parent'])) {
+           $addval[$this->flparams['parent']] = 0;
         }
         // Sequence of node id (equals to root id in this case
 
-        if(!$this->_dumbmode || !$node_id=isset($values[$this->_flparams['id']]) || !isset($values[$this->_flparams['rootid']])) {
-            $addval[$this->_flparams['rootid']] = $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
+        if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']]) || !isset($values[$this->flparams['rootid']])) {
+            $addval[$this->flparams['rootid']] = $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
         } else {
-            $node_id = $values[$this->_flparams['id']];
+            $node_id = $values[$this->flparams['id']];
         }
         // Left/Right values for rootnodes
-        $addval[$this->_flparams['l']] = 1;
-        $addval[$this->_flparams['r']] = 2;
+        $addval[$this->flparams['l']] = 1;
+        $addval[$this->flparams['r']] = 2;
         // Transform the node data hash to a query
         if (!$qr = $this->_values2Query($values, $addval)) {
             $this->_releaseLock();
@@ -1169,35 +1169,35 @@ class DB_NestedSet {
                 %s=IF(%s>=%s, %s+2, %s)
                 WHERE %s=%s',
         $this->node_table,
-        $this->_flparams['l'],
-        $this->_flparams['l'],
+        $this->flparams['l'],
+        $this->flparams['l'],
         $thisnode['r'],
-        $this->_flparams['l'],
-        $this->_flparams['l'],
-        $this->_flparams['r'],
-        $this->_flparams['r'],
+        $this->flparams['l'],
+        $this->flparams['l'],
+        $this->flparams['r'],
+        $this->flparams['r'],
         $thisnode['r'],
-        $this->_flparams['r'],
-        $this->_flparams['r'],
-        $this->_flparams['rootid'],
+        $this->flparams['r'],
+        $this->flparams['r'],
+        $this->flparams['rootid'],
         $thisnode['rootid']
         );
 
         $addval = array();
-        if(isset($this->_flparams['parent'])) {
-           $addval[$this->_flparams['parent']] = $thisnode['id'];
+        if(isset($this->flparams['parent'])) {
+           $addval[$this->flparams['parent']] = $thisnode['id'];
         }
 
-        $addval[$this->_flparams['l']] = $thisnode['r'];
-        $addval[$this->_flparams['r']] = $thisnode['r'] + 1;
-        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
-        $addval[$this->_flparams['norder']] = 1;
-        $addval[$this->_flparams['level']] = $thisnode['level'] + 1;
+        $addval[$this->flparams['l']] = $thisnode['r'];
+        $addval[$this->flparams['r']] = $thisnode['r'] + 1;
+        $addval[$this->flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->flparams['norder']] = 1;
+        $addval[$this->flparams['level']] = $thisnode['level'] + 1;
 
-        if(!$this->_dumbmode || !$node_id=isset($values[$this->_flparams['id']])) {
-            $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
+        if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']])) {
+            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
         } else {
-            $node_id = $values[$this->_flparams['id']];
+            $node_id = $values[$this->flparams['id']];
         }
         if (!$qr = $this->_values2Query($values, $addval)) {
             $this->_releaseLock();
@@ -1275,8 +1275,8 @@ class DB_NestedSet {
 
         $addval = array();
         $parent = $this->getParent($id, true);
-        if(isset($this->_flparams['parent'])) {
-           $addval[$this->_flparams['parent']] = $parent['id'];
+        if(isset($this->flparams['parent'])) {
+           $addval[$this->flparams['parent']] = $parent['id'];
         }
 
         $sql = array();
@@ -1286,15 +1286,15 @@ class DB_NestedSet {
                         WHERE
                         %s=%s AND %s>=%s AND %s=%s AND %s BETWEEN %s AND %s',
         $this->node_table,
-        $this->_flparams['norder'],
-        $this->_flparams['norder'],
-        $this->_flparams['rootid'],
+        $this->flparams['norder'],
+        $this->flparams['norder'],
+        $this->flparams['rootid'],
         $thisnode['rootid'],
-        $this->_flparams['norder'],
+        $this->flparams['norder'],
         $thisnode['norder'],
-        $this->_flparams['level'],
+        $this->flparams['level'],
         $thisnode['level'],
-        $this->_flparams['l'],
+        $this->flparams['l'],
         $parent['l'],
         $parent['r']);
 
@@ -1306,32 +1306,32 @@ class DB_NestedSet {
                 %s=IF(%s>=%s, %s+2, %s)
                 WHERE %s=%s',
                 $this->node_table,
-                $this->_flparams['l'],
-                $this->_flparams['l'],
+                $this->flparams['l'],
+                $this->flparams['l'],
                 $thisnode['l'],
-                $this->_flparams['l'],
-                $this->_flparams['l'],
-                $this->_flparams['r'],
-                $this->_flparams['r'],
+                $this->flparams['l'],
+                $this->flparams['l'],
+                $this->flparams['r'],
+                $this->flparams['r'],
                 $thisnode['r'],
-                $this->_flparams['r'],
-                $this->_flparams['r'],
-                $this->_flparams['rootid'],
+                $this->flparams['r'],
+                $this->flparams['r'],
+                $this->flparams['rootid'],
                 $thisnode['rootid']
         );
 
 
 
-        $addval[$this->_flparams['norder']] = $thisnode['norder'];
-        $addval[$this->_flparams['l']] = $thisnode['l'];
-        $addval[$this->_flparams['r']] = $thisnode['l']+1;
-        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
-        $addval[$this->_flparams['level']] = $thisnode['level'];
+        $addval[$this->flparams['norder']] = $thisnode['norder'];
+        $addval[$this->flparams['l']] = $thisnode['l'];
+        $addval[$this->flparams['r']] = $thisnode['l']+1;
+        $addval[$this->flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->flparams['level']] = $thisnode['level'];
 
-        if(!$this->_dumbmode || !$node_id=isset($values[$this->_flparams['id']])) {
-            $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
+        if(!$this->_dumbmode || !$node_id=isset($values[$this->flparams['id']])) {
+            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
         } else {
-            $node_id = $values[$this->_flparams['id']];
+            $node_id = $values[$this->flparams['id']];
         }
         if (!$qr = $this->_values2Query($values, $addval)) {
             $this->_releaseLock();
@@ -1382,14 +1382,13 @@ class DB_NestedSet {
     * @return mixed The node id or false on error
     */
     function createRightNode($id, $values) {
-
         if ($this->debug) {
             $this->_debugMessage('createRightNode($target, $values)');
         }
 
         $this->_verifyUserValues('createRootNode()', $values);
 
-        // invalid target node, bail out
+        // invalid target node, bail out 
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createRightNode()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
@@ -1411,8 +1410,8 @@ class DB_NestedSet {
 
         $addval = array();
         $parent = $this->getParent($id, true);
-        if(isset($this->_flparams['parent'])) {
-           $addval[$this->_flparams['parent']] = $parent['id'];
+        if(isset($this->flparams['parent'])) {
+           $addval[$this->flparams['parent']] = $parent['id'];
         }
 
         $sql = array();
@@ -1421,15 +1420,15 @@ class DB_NestedSet {
                         WHERE
                         %s=%s AND %s>%s AND %s=%s AND %s BETWEEN %s AND %s',
         $this->node_table,
-        $this->_flparams['norder'],
-        $this->_flparams['norder'],
-        $this->_flparams['rootid'],
+        $this->flparams['norder'],
+        $this->flparams['norder'],
+        $this->flparams['rootid'],
         $thisnode['rootid'],
-        $this->_flparams['norder'],
+        $this->flparams['norder'],
         $thisnode['norder'],
-        $this->_flparams['level'],
+        $this->flparams['level'],
         $thisnode['level'],
-        $this->_flparams['l'],
+        $this->flparams['l'],
         $parent['l'],
         $parent['r']);
 
@@ -1443,30 +1442,30 @@ class DB_NestedSet {
                 %s=IF(%s>%s, %s+2, %s)
                 WHERE %s=%s',
         $this->node_table,
-        $this->_flparams['l'],
-        $this->_flparams['l'],
+        $this->flparams['l'],
+        $this->flparams['l'],
         $thisnode['r'],
-        $this->_flparams['l'],
-        $this->_flparams['l'],
-        $this->_flparams['r'],
-        $this->_flparams['r'],
+        $this->flparams['l'],
+        $this->flparams['l'],
+        $this->flparams['r'],
+        $this->flparams['r'],
         $thisnode['r'],
-        $this->_flparams['r'],
-        $this->_flparams['r'],
-        $this->_flparams['rootid'],
+        $this->flparams['r'],
+        $this->flparams['r'],
+        $this->flparams['rootid'],
         $thisnode['rootid']
         );
 
-        $addval[$this->_flparams['norder']] = $thisnode['norder'] + 1;
-        $addval[$this->_flparams['l']] = $thisnode['r'] + 1;
-        $addval[$this->_flparams['r']] = $thisnode['r'] + 2;
-        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
-        $addval[$this->_flparams['level']] = $thisnode['level'];
+        $addval[$this->flparams['norder']] = $thisnode['norder'] + 1;
+        $addval[$this->flparams['l']] = $thisnode['r'] + 1;
+        $addval[$this->flparams['r']] = $thisnode['r'] + 2;
+        $addval[$this->flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->flparams['level']] = $thisnode['level'];
 
-        if(!$this->_dumbmode || !isset($values[$this->_flparams['id']])) {
-            $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
+        if(!$this->_dumbmode || !isset($values[$this->flparams['id']])) {
+            $node_id = $addval[$this->flparams['id']] = $this->db->nextId($this->sequence_table);
         } else {
-            $node_id = $values[$this->_flparams['id']];
+            $node_id = $values[$this->flparams['id']];
         }
         if (!$qr = $this->_values2Query($values, $addval)) {
             $this->_releaseLock();
@@ -1530,10 +1529,10 @@ class DB_NestedSet {
         // Delete the node
         $sql[] = sprintf('DELETE FROM %s WHERE %s BETWEEN %s AND %s AND %s=%s',
         $this->node_table,
-        $this->_flparams['l'],
+        $this->flparams['l'],
         $thisnode['l'],
         $thisnode['r'],
-        $this->_flparams['rootid'],
+        $this->flparams['rootid'],
         $thisnode['rootid']
         );
 
@@ -1546,23 +1545,23 @@ class DB_NestedSet {
                             WHERE %s=%s AND
                             (%s>%s OR %s>%s)',
             $this->node_table,
-            $this->_flparams['l'],
-            $this->_flparams['l'],
+            $this->flparams['l'],
+            $this->flparams['l'],
             $thisnode['l'],
-            $this->_flparams['l'],
+            $this->flparams['l'],
             $len,
-            $this->_flparams['l'],
-            $this->_flparams['r'],
-            $this->_flparams['r'],
+            $this->flparams['l'],
+            $this->flparams['r'],
+            $this->flparams['r'],
             $thisnode['l'],
-            $this->_flparams['r'],
+            $this->flparams['r'],
             $len,
-            $this->_flparams['r'],
-            $this->_flparams['rootid'],
+            $this->flparams['r'],
+            $this->flparams['rootid'],
             $thisnode['rootid'],
-            $this->_flparams['l'],
+            $this->flparams['l'],
             $thisnode['l'],
-            $this->_flparams['r'],
+            $this->flparams['r'],
             $thisnode['r']
             );
 
@@ -1570,15 +1569,15 @@ class DB_NestedSet {
 
             $sql[] = sprintf('UPDATE %s SET %s=%s-1 WHERE %s=%s AND %s=%s AND %s>%s AND %s BETWEEN %s AND %s',
             $this->node_table,
-            $this->_flparams['norder'],
-            $this->_flparams['norder'],
-            $this->_flparams['rootid'],
+            $this->flparams['norder'],
+            $this->flparams['norder'],
+            $this->flparams['rootid'],
             $thisnode['rootid'],
-            $this->_flparams['level'],
+            $this->flparams['level'],
             $thisnode['level'],
-            $this->_flparams['norder'],
+            $this->flparams['norder'],
             $thisnode['norder'],
-            $this->_flparams['l'],
+            $this->flparams['l'],
             $parent['l'],
             $parent['r']);
 
@@ -1586,11 +1585,11 @@ class DB_NestedSet {
             // A rootnode was deleted and we only have to close the gap inside the order
             $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s > %s',
             $this->node_table,
-            $this->_flparams['norder'],
-            $this->_flparams['norder'],
-            $this->_flparams['rootid'],
-            $this->_flparams['id'],
-            $this->_flparams['norder'],
+            $this->flparams['norder'],
+            $this->flparams['norder'],
+            $this->flparams['rootid'],
+            $this->flparams['id'],
+            $this->flparams['norder'],
             $thisnode['norder']);
         }
         for($i=0;$i<count($sql);$i++) {
@@ -1642,7 +1641,7 @@ class DB_NestedSet {
         $sql = sprintf('UPDATE %s SET %s WHERE %s = %s',
         $this->node_table,
         $qr,
-        $this->_flparams['id'],
+        $this->flparams['id'],
         $id);
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
@@ -1840,8 +1839,8 @@ class DB_NestedSet {
         $deletes = array();
         $updates = array();
         $tb = $this->node_table;
-        $fid = $this->_flparams['id'];
-        $froot = $this->_flparams['rootid'];
+        $fid = $this->flparams['id'];
+        $froot = $this->flparams['rootid'];
         foreach($relations AS $key => $val) {
             $clone = $this->pickNode($val);
             if ($copy) {
@@ -1949,9 +1948,9 @@ class DB_NestedSet {
         }
 
         $tb = $this->node_table;
-        $fid = $this->_flparams['id'];
-        $froot = $this->_flparams['rootid'];
-        $freh = $this->_flparams['norder'];
+        $fid = $this->flparams['id'];
+        $froot = $this->flparams['rootid'];
+        $freh = $this->flparams['norder'];
         $s_order = $source['norder'];
         $t_order = $target['norder'];
         $s_id = $source['id'];
@@ -2130,7 +2129,7 @@ class DB_NestedSet {
         }
 
         $nodes = array();
-        $idKey = $fieldsAreAliased ? 'id' : $this->_flparams['id'];
+        $idKey = $fieldsAreAliased ? 'id' : $this->flparams['id'];
         foreach ($result as $row) {
             $node_id = $row[$idKey];
             if ($keepAsArray) {
@@ -2302,7 +2301,7 @@ class DB_NestedSet {
 
             // only update sequence to reflect new table if they haven't set it manually
             if (!$hasSetSequence && $key == 'node_table') {
-                $this->sequence_table = $this->node_table . '_' . $this->_flparams['id'];
+                $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
             }
             if($key == 'cache' && is_object($val)) {
                 $this->_caching = true;
@@ -2649,10 +2648,10 @@ class DB_NestedSet {
 
             $values = array();
             foreach($sibling AS $key=>$val) {
-                if(!isset($copy->_flparams[$key])) {
+                if(!isset($copy->flparams[$key])) {
                     continue;
                 }
-                $values[$copy->_flparams[$key]] = $val;
+                $values[$copy->flparams[$key]] = $val;
             }
 
             if(!$firstSet) {
