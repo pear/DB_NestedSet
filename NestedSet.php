@@ -252,16 +252,27 @@ class DB_NestedSet extends PEAR {
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	*
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
+	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getAllNodes($keepAsArray = false, $aliasFields = true)
+	function getAllNodes($keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getAllNodes()');
-		$sql = sprintf('SELECT %s FROM %s ORDER BY %s, %s ASC',
+		$sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
+		$this->_addSQL($addSQL, 'append'),
 		$this->node_table,
 		$this->flparams['level'],
+		$this->node_table,
 		$this->secondarySort
 		);
 		
@@ -289,6 +300,11 @@ class DB_NestedSet extends PEAR {
 	*             a set of NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
 	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
@@ -335,23 +351,34 @@ class DB_NestedSet extends PEAR {
 	*             a set of NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
 	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getBranch($id, $keepAsArray = false, $aliasFields = true)
+	function getBranch($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getBranch($id)');
 		if (!($thisnode = $this->_getNodeObject($id))) {
 			return false;
 		}
 		
-		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s, %s ASC',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams['rootid'],
 		$this->db->quote($thisnode->rootid),
+		$this->_addSQL($addSQL, 'append'),
+		$this->node_table,
 		$this->flparams['level'],
+		$this->node_table,
 		$this->secondarySort
 		);
 		if(!$this->_caching) {
@@ -379,28 +406,41 @@ class DB_NestedSet extends PEAR {
 	*             a set of NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
 	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getParents($id, $keepAsArray = false, $aliasFields = true)
+	function getParents($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getParents($id)');
 		if (!($child = $this->_getNodeObject($id))) {
 			return false;
 		}
 		
-		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s<%s AND %s<%s AND %s>%s ORDER BY %s ASC',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s AND %s.%s<%s AND %s.%s<%s AND %s.%s>%s %s ORDER BY %s.%s ASC',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams['rootid'],
 		$child->rootid,
+		$this->node_table,
 		$this->flparams['level'],
 		$child->level,
+		$this->node_table,
 		$this->flparams['l'],
 		$child->l,
+		$this->node_table,
 		$this->flparams['r'],
 		$child->r,
+		$this->_addSQL($addSQL, 'append'),
+		$this->node_table,
 		$this->flparams['level']
 		);
 		if(!$this->_caching) {
@@ -431,6 +471,11 @@ class DB_NestedSet extends PEAR {
 	* @param bool $forceNorder (optional) Force the result to be ordered by the norder
 	*             param (as opposed to the value of secondary sort).  Used by the move and
 	*             add methods.
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
 	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
@@ -491,27 +536,38 @@ class DB_NestedSet extends PEAR {
 	*             a set of NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
+	* @param array $addSQL Array of additional params to pass to the query:
+	*               $addSQL = array(
+	*	           'cols' => 'tb2.col2, tb2.col3', 			// Additional tables/columns
+	*	           'join' => 'LEFT JOIN tb1 USING(STRID)', 	// Join statement
+	*	           'append' => 'GROUP by tb1.STRID'); 		// Group condition
 	*
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getSubBranch($id, $keepAsArray = false, $aliasFields = true)
+	function getSubBranch($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getSubBranch($id)');
 		if (!($parent = $this->_getNodeObject($id))) {
 			return false;
 		}
 		
-		$sql = sprintf('SELECT %s FROM %s WHERE %s BETWEEN %s AND %s AND %s=%s AND %s!=%s',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams['l'],
 		$parent->l,
 		$parent->r,
+		$this->node_table,
 		$this->flparams['rootid'],
 		$this->db->quote($parent->rootid),
+		$this->node_table,
 		$this->flparams['id'],
-		$this->db->quote($id)
+		$this->db->quote($id),
+		$this->_addSQL($addSQL, 'append')
 		);
 		if(!$this->_caching) {
 			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
