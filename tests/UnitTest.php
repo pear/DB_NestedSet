@@ -50,7 +50,7 @@ class DB_NestedSetTest extends TestBase  {
 
         $tb = $this->_NeSe->node_table;
         $sql = "DELETE FROM $tb";
-        // $this->_NeSe->db->query($sql);
+        $this->_NeSe->db->query($sql);
     }
 }
 ?>
