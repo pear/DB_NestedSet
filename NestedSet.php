@@ -162,7 +162,7 @@ class DB_NestedSet {
     var $cache = false;
     
     /**
-    * Specify the sortmode of the query methods
+    * Specify the sortMode of the query methods
     * NESE_SORT_LEVEL is the 'old' sorting method and sorts a tree by level
     * all nodes of level 1, all nodes of level 2,...
     * NESE_SORT_PREORDER will sort doing a preorder walk.
@@ -171,9 +171,15 @@ class DB_NestedSet {
     * in this mode 
     *
     * @var constant Order method (NESE_SORT_LEVEL|NESE_SORT_PREORDER)
-    * @access public
+    * @access private
     */
-    var $sortmode   = NESE_SORT_LEVEL;
+    var $_sortMode   = NESE_SORT_LEVEL;
+    
+    /**
+    * @var array Available sortModes
+    * @access private
+    */    
+    var $_sortModes = array(NESE_SORT_LEVEL, NESE_SORT_PREORDER);
     
     /**
     * @var array An array of field ids that must exist in the table
@@ -376,7 +382,7 @@ class DB_NestedSet {
             $this->_debugMessage('getAllNodes()');
         }
         
-        if($this->sortmode == NESE_SORT_LEVEL) {
+        if($this->_sortMode == NESE_SORT_LEVEL) {
             $sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
@@ -387,7 +393,7 @@ class DB_NestedSet {
             $this->_flparams['level'],
             $this->node_table,
             $this->secondarySort);
-        } elseif ($this->sortmode == NESE_SORT_PREORDER) {
+        } elseif ($this->_sortMode == NESE_SORT_PREORDER) {
             $nodeSet = array();
             $rootnodes = $this->getRootNodes(true);
             foreach($rootnodes AS $rid=>$rootnode) {
@@ -483,9 +489,9 @@ class DB_NestedSet {
         }
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('getBranch()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
-        if($this->sortmode == NESE_SORT_LEVEL) {
+        if($this->_sortMode == NESE_SORT_LEVEL) {
             $firstsort = $this->_flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
@@ -500,7 +506,7 @@ class DB_NestedSet {
             $firstsort,
             $this->node_table,
             $this->secondarySort);
-        } elseif($this->sortmode == NESE_SORT_PREORDER) {
+        } elseif($this->_sortMode == NESE_SORT_PREORDER) {
             $firstsort = $this->_flparams['l'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s ASC',
             $this->_getSelectFields($aliasFields),
@@ -528,7 +534,7 @@ class DB_NestedSet {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
         }
-        if($this->sortmode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
+        if($this->_sortMode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
             uasort($nodeSet, array($this, '_secSort'));
         }
         return $nodeSet;
@@ -557,7 +563,7 @@ class DB_NestedSet {
         }
         if (!($child = $this->pickNode($id, true))) {
             $epr = array('getParents()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
         
         $sql = sprintf('SELECT %s %s FROM %s %s
@@ -621,7 +627,7 @@ class DB_NestedSet {
         }
         if (!($child = $this->pickNode($id, true))) {
             $epr = array('getParent()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
         
         if($child['id'] == $child['rootid']) {
@@ -674,7 +680,7 @@ class DB_NestedSet {
         
         if (!($sibling = $this->pickNode($id, true))) {
             $epr = array('getSibling()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
         
         $parent = $this->getParent($sibling, true);
@@ -709,13 +715,12 @@ class DB_NestedSet {
         
         if (!($parent = $this->pickNode($id, true))) {
             $epr = array('getChildren()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
         if (!$parent || $parent['l'] == ($parent['r'] - 1)) {
             return false;
         }
         
-        $orderBy = $forceNorder ? $this->_flparams['norder'] : $this->secondarySort;
         $sql = sprintf('SELECT %s %s FROM %s %s
                         WHERE %s.%s=%s AND %s.%s=%s+1 AND %s.%s BETWEEN %s AND %s %s
                         ORDER BY %s.%s ASC',
@@ -735,7 +740,7 @@ class DB_NestedSet {
         $parent['r'],
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
-        $orderBy);
+        $this->secondarySort);
         
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -781,25 +786,52 @@ class DB_NestedSet {
             $epr = array('getSubBranch()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
-        
-        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s ORDER BY %s',
-        $this->_getSelectFields($aliasFields),
-        $this->_addSQL($addSQL, 'cols'),
-        $this->node_table,
-        $this->_addSQL($addSQL, 'join'),
-        $this->node_table,
-        $this->_flparams['l'],
-        $parent['l'],
-        $parent['r'],
-        $this->node_table,
-        $this->_flparams['rootid'],
-        $parent['rootid'],
-        $this->node_table,
-        $this->_flparams['id'],
-        $this->_addSQL($addSQL, 'append'),
-        $id,
-        $this->_flparams['l']
-        );
+        if($this->_sortMode == NESE_SORT_LEVEL) {
+            $firstsort = $this->_flparams['level'];       
+            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s ORDER BY %s.%s, %s.%s ASC',
+            $this->_getSelectFields($aliasFields),
+            $this->_addSQL($addSQL, 'cols'),
+            $this->node_table,
+            $this->_addSQL($addSQL, 'join'),
+            $this->node_table,
+            $this->_flparams['l'],
+            $parent['l'],
+            $parent['r'],
+            $this->node_table,
+            $this->_flparams['rootid'],
+            $parent['rootid'],
+            $this->node_table,
+            $this->_flparams['id'],
+            $this->_addSQL($addSQL, 'append'),
+            $id,
+            $this->node_table,
+            $firstsort,
+            $this->node_table,
+            $this->secondarySort
+            );
+        } elseif($this->_sortMode == NESE_SORT_PREORDER) {
+            $firstsort = $this->_flparams['l'];
+            $firstsort = $this->_flparams['level'];       
+            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s ORDER BY %s.%s  ASC',
+            $this->_getSelectFields($aliasFields),
+            $this->_addSQL($addSQL, 'cols'),
+            $this->node_table,
+            $this->_addSQL($addSQL, 'join'),
+            $this->node_table,
+            $this->_flparams['l'],
+            $parent['l'],
+            $parent['r'],
+            $this->node_table,
+            $this->_flparams['rootid'],
+            $parent['rootid'],
+            $this->node_table,
+            $this->_flparams['id'],
+            $this->_addSQL($addSQL, 'append'),
+            $id,
+            $this->node_table,
+            $firstsort
+            );            
+        }
         
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -812,6 +844,9 @@ class DB_NestedSet {
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
+        }
+        if($this->params[$this->secondarySort] != $this->_defaultSecondarySort) {
+            uasort($nodeSet, array($this, '_secSort'));
         }
         return $nodeSet;
     }
@@ -982,7 +1017,7 @@ class DB_NestedSet {
         
         if(!$first && (!$id || !$parent = $this->pickNode($id, true))) {
             $epr = array('createRootNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         } elseif($first && $id) {
             
             // No notice for now.
@@ -1067,8 +1102,7 @@ class DB_NestedSet {
         // EVENT (nodeCreate)
         
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            $thisnode = &$this->pickNode($node_id);
-            $this->triggerEvent('nodeCreate', $this->pickNode($id));
+            $this->triggerEvent('nodeCreate', $this->pickNode($node_id));
         }
         $this->_releaseLock();
         return $node_id;
@@ -1104,7 +1138,7 @@ class DB_NestedSet {
         // invalid parent id, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createSubNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
 
         // Try to aquire a table lock
@@ -1128,7 +1162,7 @@ class DB_NestedSet {
             return $newNode;
         }
         
-        
+        $sql = array();
         $sql[] = sprintf('
                 UPDATE %s SET 
                 %s=IF(%s>=%s, %s+2, %s),
@@ -1225,7 +1259,7 @@ class DB_NestedSet {
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createLeftNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
         
         if(PEAR::isError($lock=$this->_setLock())) {
@@ -1358,7 +1392,7 @@ class DB_NestedSet {
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createRightNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
         
         if(PEAR::isError($lock=$this->_setLock())) {
@@ -1475,7 +1509,7 @@ class DB_NestedSet {
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('deleteNode()', $id);
-            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
         }
         
         if (PEAR::isError($lock = $this->_setLock())) {
@@ -1488,10 +1522,6 @@ class DB_NestedSet {
         }
         
         $parent = $this->getParent($id, true);
-        $plft = $parent['l'];
-        $prgt = $parent['r'];
-
-        
         $len = $thisnode['r'] - $thisnode['l'] + 1;
         
         
@@ -1504,4 +1534,1214 @@ class DB_NestedSet {
         $thisnode['l'],
         $thisnode['r'],
         $this->_flparams['rootid'],
+        $thisnode['rootid']
+        );
+
+        if ($thisnode['id'] != $thisnode['rootid']) {
+
+            // The node isn't a rootnode so close the gap          
+            $sql[] = sprintf('UPDATE %s SET
+                            %s=IF(%s>%s, %s-%s, %s),
+                            %s=IF(%s>%s, %s-%s, %s)
+                            WHERE %s=%s AND
+                            (%s>%s OR %s>%s)',
+            $this->node_table,
+            $this->_flparams['l'],
+            $this->_flparams['l'],
+            $thisnode['l'],
+            $this->_flparams['l'],
+            $len,
+            $this->_flparams['l'],
+            $this->_flparams['r'],
+            $this->_flparams['r'],
+            $thisnode['l'],
+            $this->_flparams['r'],
+            $len,
+            $this->_flparams['r'],
+            $this->_flparams['rootid'],
+            $thisnode['rootid'],
+            $this->_flparams['l'],
+            $thisnode['l'],
+            $this->_flparams['r'],
+            $thisnode['r']
+            );
+            
+            // Re-order
+            
+            $sql[] = sprintf('UPDATE %s SET %s=%s-1 WHERE %s=%s AND %s=%s AND %s>%s AND %s BETWEEN %s AND %s',
+            $this->node_table,
+            $this->_flparams['norder'],
+            $this->_flparams['norder'],
+            $this->_flparams['rootid'],
+            $thisnode['rootid'],
+            $this->_flparams['level'],
+            $thisnode['level'],
+            $this->_flparams['norder'],
+            $thisnode['norder'],
+            $this->_flparams['l'],
+            $parent['l'],
+            $parent['r']);
+            
+        } else {
+            // A rootnode was deleted and we only have to close the gap inside the order
+            $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s > %s',
+            $this->node_table,
+            $this->_flparams['norder'],
+            $this->_flparams['norder'],
+            $this->_flparams['rootid'],
+            $this->_flparams['id'],
+            $this->_flparams['norder'],
+            $thisnode['norder']);
+        }
+        for($i=0;$i<count($sql);$i++) {
+            $res = $this->db->query($sql[$i]);
+            $this->_testFatalAbort($res, __FILE__,  __LINE__);
+        }
+        $this->_releaseLock();
+        return true;
+    }
+    
+    // }}}
+    // {{{ updateNode()
+    
+    /**
+    * Changes the payload of a node
+    *
+    * @param int    $id Node ID
+    * @param array  $values Hash with param => value pairs of the node (see $this->params)
+    * @param bool  $_intermal Internal use only. Used to skip value validation. Leave this as it is.
+    *
+    * @access public 
+    * @return bool True if the update is successful
+    */
+    function updateNode($id, $values, $_internal=false) {
+        if ($this->debug) {
+            $this->_debugMessage('updateNode($id, $values)');
+        }
+
+        if (PEAR::isError($lock = $this->_setLock())) {
+            return $lock;
+        }
+        
+        if(!$_internal) {
+            $this->_verifyUserValues('createRootNode()', $values);
+        }
+        
+        $eparams = array('values' => $values);
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeUpdate'])) {
+            // EVENT (NodeUpdate)
+            $this->triggerEvent('nodeUpdate', $this->pickNode($id), $eparams);
+        }
+
+        $addvalues = array();
+        if (!$qr = $this->_values2Query($values, $addvalues)) {
+            $this->_releaseLock();
+            return false;
+        }
+        
+        $sql = sprintf('UPDATE %s SET %s WHERE %s = %s',
+        $this->node_table,
+        $qr,
+        $this->_flparams['id'],
+        $id);
+        $res = $this->db->query($sql);
+        $this->_testFatalAbort($res, __FILE__,  __LINE__);
+        $this->_releaseLock();
+        return true;
+    }
+    
+    
+    
+    // }}}
+    // +----------------------------------------------+ 
+    // | Moving and copying                           |
+    // |----------------------------------------------+
+    // | [PUBLIC]                                     |
+    // +----------------------------------------------+
+    // {{{ moveTree()
+    
+    /**
+    * Wrapper for node moving and copying
+    *
+    * @param int    $id Source ID
+    * @param int    $target Target ID
+    * @param constant  $pos Position (use one of the NESE_MOVE_* constants)
+    * @param bool   $copy Shall we create a copy
+    *
+    * @see _moveInsideLevel
+    * @see _moveAcross
+    * @see _moveRoot2Root
+    * @access public
+    * @return int ID of the moved node or false on error
+    */
+    function moveTree($id, $targetid, $pos, $copy = false) {
+        
+        if ($this->debug) {
+            $this->_debugMessage('moveTree($id, $target, $pos, $copy = false)');
+        }
+        if($id == $targetid && !$copy) {
+            // TRIGGER BOGUS MESSAGE
+            return false;
+        }
+
+        // Get information about source and target
+        if (!($source = $this->pickNode($id, true))) {
+            $epr = array('moveTree()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
+        }
+        
+        if (!($target = $this->pickNode($targetid, true))) {
+            $epr = array('moveTree()', $targetid);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR, $epr);
+        }
+
+        if (PEAR::isError($lock = $this->_setLock(true))) {
+            return $lock;
+        }
+        
+        $this->_relations = array();
+        // This operations don't need callbacks except the copy handler
+        // which ignores this setting
+        $this->_skipCallbacks = true;
+                
+        if(!$copy) {
+            // We have a recursion - let's stop
+            if (($target['rootid'] == $source['rootid']) &&
+            (($source['l'] <= $target['l']) &&
+            ($source['r'] >= $target['r']))) {
+                $this->_releaseLock(true);
+                $epr = array('moveTree()');
+                return $this->_raiseError(NESE_ERROR_RECURSION, PEAR_ERROR_RETURN, E_USER_NOTICE, $epr);                
+            }
+            
+            // Insert/move before or after
+            
+            if (($source['rootid'] == $source['id']) &&
+            ($target['rootid'] == $target['id'])) {
+                // We have to move a rootnode which is different from moving inside a tree
+                $nid = $this->_moveRoot2Root($source, $target, $pos, $copy);
+                $this->_releaseLock(true);
+                return $nid;
+            }
+        } elseif(($target['rootid'] == $source['rootid']) &&
+        (($source['l'] < $target['l']) &&
+        ($source['r'] > $target['r']))) {
+            $this->_releaseLock(true);
+            $epr = array('moveTree()');
+            return $this->_raiseError(NESE_ERROR_RECURSION, PEAR_ERROR_RETURN, E_USER_NOTICE, $epr); 
+        }
+        
+        
+        // We have to move between different levels and maybe subtrees - let's rock ;)
+        $this->_moveAcross($source, $target, $pos);
+        $this->_moveCleanup($copy);
+        $this->_releaseLock(true);
+    }
+    
+    // }}}
+    // {{{ _moveAcross()
+    
+    /**
+    * Moves nodes and trees to other subtrees or levels
+    *
+    * <pre>
+    * [+] <--------------------------------+
+    * +-[\] root1 [target]                 |
+    *     <-------------------------+      |p
+    * +-\ root2                     |      |
+    * | |                           |      | 
+    * | |-- subnode1 [target]       |      |B
+    * | |-- subnode2 [new]          |S     |E
+    * | |-- subnode3                |U     |F
+    * |                             |B     |O
+    * +-\ root3                     |      |R
+    *   |-- subnode 3.1             |      |E
+    *   |-\ subnode 3.2 [source] >--+------+
+    *     |-- subnode 3.2.1
+    *</pre>
+    *
+    * @param     object NodeCT $source   Source node
+    * @param     object NodeCT $target   Target node
+    * @param     string    $pos          Position [SUBnode/BEfore]
+    * @param     bool         $copy                Shall we create a copy
+    *
+    * @access    private
+    * @see        moveTree
+    * @see        _r_moveAcross
+    * @see        _moveCleanup
+    */
+    function _moveAcross($source, $target, $pos) {
+        if ($this->debug) {
+            $this->_debugMessage('_moveAcross($source, $target, $pos, $copy = false)');
+        }
+        
+        // Get the current data from a node and exclude the id params which will be changed
+        // because of the node move
+        $values = array();
+        foreach($this->params as $key => $val) {
+            if ($source[$val] && !in_array($val, $this->_requiredParams)) {
+                $values[$key] = trim($source[$val]);
+            }
+        }
+        
+        switch($pos) {
+            
+            case NESE_MOVE_BEFORE:
+            $clone_id = $this->createLeftNode($target['id'], $values);
+            break;
+            
+            case NESE_MOVE_AFTER:
+            $clone_id = $this->createRightNode($target['id'], $values);
+            break;
+            
+            case NESE_MOVE_BELOW:
+            $clone_id = $this->createSubNode($target['id'], $values);
+            break;
+        }
+        
+        
+        $children = $this->getChildren($source['id'], true, true, true);
+        
+        
+        if ($children) {
+            $pos = NESE_MOVE_BELOW;
+            $sclone_id = $clone_id;
+            // Recurse through the child nodes
+            foreach($children AS $cid => $child) {
+                $sclone = $this->pickNode($sclone_id, true);
+                $sclone_id = $this->_moveAcross($child, $sclone, $pos);
+                
+                $pos = NESE_MOVE_AFTER;
+            }
+        }
+        
+        $this->_relations[$source['id']] = $clone_id;
+        return $clone_id;
+    }
+    
+    // }}}
+    // {{{ _moveCleanup()
+    
+    /**
+    * Deletes the old subtree (node) and writes the node id's into the cloned tree
+    *
+    *
+    * @param     array    $relations        Hash in der Form $h[alteid]=neueid
+    * @param     array    $copy                     Are we in copy mode?
+    * @access    private
+    */
+    function _moveCleanup($copy = false) {
+        
+        $relations = $this->_relations;
+        if ($this->debug) {
+            $this->_debugMessage('_moveCleanup($relations, $copy = false)');
+        }
+        
+        $deletes = array();
+        $updates = array();
+        $tb = $this->node_table;
+        $fid = $this->_flparams['id'];
+        $froot = $this->_flparams['rootid'];
+        foreach($relations AS $key => $val) {
+            $clone = $this->pickNode($val);
+            if ($copy) {
+                // EVENT (NodeCopy)
+                
+                $eparams = array('clone' => $clone);
+                
+                if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCopy'])) {
+                    $this->triggerEvent('nodeCopy', $this->pickNode($key), $eparams);
+                }
+                continue;
+            }
+            
+            // No callbacks here because the node itself doesn't get changed
+            // Only it's position
+            // If one needs a callback here please let me know
+            
+            $deletes[] = $key;
+            // It's isn't a rootnode
+            if ($clone->id != $clone->rootid) {
+                
+                
+                $sql = sprintf('UPDATE %s SET %s=%s WHERE %s = %s',
+                $this->node_table,
+                $fid,
+                $key,
+                $fid,
+                $val);
+                $updates[] = $sql;
+            } else {
+                $sql = sprintf('UPDATE %s SET %s=%s, %s=%s WHERE %s=%s',
+                            $tb,
+                            $fid,
+                            $key,
+                            $froot,
+                            $val,
+                            $fid,
+                            $val);
+                
+                $updates[] = $sql;
+                $orootid = $clone->rootid;
+                
+                $sql = sprintf('UPDATE %s SET %s=%s WHERE %s=%s',
+                            $tb,
+                            $froot,
+                            $key,
+                            $froot,
+                            $orootid);
+                $updates[] = $sql;
+            }
+            $this->_skipCallbacks = false;
+        }
+        
+        if(!empty($deletes)) {
+            for($i=0;$i<count($deletes);$i++) {
+                $this->deleteNode($deletes[$i]);
+            }
+        }
+        
+        if(!empty($updates)) {
+            for($i=0;$i<count($updates);$i++) {
+                $res = $this->db->query($updates[$i]);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+            }
+        }
+        
+        return true;
+    }
+    
+    // }}}
+    // {{{ _moveRoot2Root()
+    
+    /**
+    * Moves rootnodes
+    *
+    * <pre>
+    * +-- root1
+    * |
+    * +-\ root2
+    * | |
+    * | |-- subnode1 [target]
+    * | |-- subnode2 [new]
+    * | |-- subnode3
+    * |
+    * +-\ root3
+    *  [|]  <-----------------------+
+    *   |-- subnode 3.1 [target]    |
+    *   |-\ subnode 3.2 [source] >--+
+    *     |-- subnode 3.2.1
+    * </pre>
+    *
+    * @param     object NodeCT $source    Source
+    * @param     object NodeCT $target    Target
+    * @param     string $pos              BEfore | AFter
+    * @access    private
+    * @see        moveTree
+    */
+    function _moveRoot2Root($source, $target, $pos) {
+        
+        if ($this->debug) {
+            $this->_debugMessage('_moveRoot2Root($source, $target, $pos, $copy)');
+        }
+        if(PEAR::isError($lock=$this->_setLock())) {
+            return $lock;
+        }
+        
+        $tb = $this->node_table;
+        $fid = $this->_flparams['id'];
+        $froot = $this->_flparams['rootid'];
+        $freh = $this->_flparams['norder'];
+        $s_order = $source['norder'];
+        $t_order = $target['norder'];
+        $s_id = $source['id'];
+        $t_id = $target['id'];
+        
+        
+        if ($s_order < $t_order) {
+            if ($pos == NESE_MOVE_BEFORE) {
+                $sql = "UPDATE $tb SET $freh=$freh-1
+                        WHERE $freh BETWEEN $s_order AND $t_order AND
+                            $fid!=$t_id AND
+                            $fid!=$s_id AND
+                            $froot=$fid";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+                $sql = "UPDATE $tb SET $freh=$t_order -1 WHERE $fid=$s_id";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+            }
+            elseif($pos == NESE_MOVE_AFTER) {
+                
+                $sql = "UPDATE $tb SET $freh=$freh-1
+                        WHERE $freh BETWEEN $s_order AND $t_order AND
+                            $fid!=$s_id AND
+                            $froot=$fid";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+                
+                $sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+            }
+        }
+        
+        if ($s_order > $t_order) {
+            if ($pos == NESE_MOVE_BEFORE) {
+                $sql = "UPDATE $tb SET $freh=$freh+1
+                        WHERE $freh BETWEEN $t_order AND $s_order AND
+                            $fid != $s_id AND
+                            $froot=$fid";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+                
+                $sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+            }
+            elseif ($pos == NESE_MOVE_AFTER) {
+                $sql = "UPDATE $tb SET $freh=$freh+1
+                        WHERE $freh BETWEEN $t_order AND $s_order AND
+                        $fid!=$t_id AND
+                        $fid!=$s_id AND
+                        $froot=$fid";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+                
+                $sql = "UPDATE $tb SET $freh=$t_order+1 WHERE $fid = $s_id";
+                $res = $this->db->query($sql);
+                $this->_testFatalAbort($res, __FILE__, __LINE__);
+            }
+        }
+        $this->_releaseLock();
+        return $source->id;
+    }
+    
+    // }}} 
+    // +-----------------------+
+    // | Helper methods        |
+    // +-----------------------+
+
+    // }}}
+    // {{{ _secSort()
+    
+    /**
+    * Callback for uasort used to sort siblings
+    *
+    * @access private
+    */
+    function _secSort($node1, $node2) {
+        // Within the same level?
+        if($node1['level'] != $node2['level']) { 
+            return strnatcmp($node1['l'], $node2['l']);  
+        }
+
+        // Are they siblings?
+        $p1 = $this->getParent($node1);
+        $p2 = $this->getParent($node2); 
+        if($p1['id'] != $p2['id']) { 
+            return strnatcmp($node1['l'], $node2['l']);  
+        }         
+        
+        // Same field value? Use the lft value then
+        $field = $this->params[$this->secondarySort]; 
+        if($node1[$field] == $node2[$field]) {
+            return strnatcmp($node1['l'], $node2[l]);
+        }
+        
+        // Compare between siblings with different field value
+        return strnatcmp($node1[$field], $node2[$field]);
+    }
+    
+    // }}}
+    // {{{ _addSQL()
+    
+    /**
+    * Adds a specific type of SQL to a query string
+    *
+    * @param array $addSQL The array of SQL strings to add.  Example value:
+    *               $addSQL = array(
+    *               'cols' => 'tb2.col2, tb2.col3',         // Additional tables/columns
+    *               'join' => 'LEFT JOIN tb1 USING(STRID)', // Join statement
+    *               'append' => 'GROUP by tb1.STRID');      // Group condition
+    * @param string $type The type of SQL.  Can be 'cols', 'join', or 'append'.
+    *
+    * @access private
+    * @return string The SQL, properly formatted
+    */
+    function _addSQL($addSQL, $type) {
+        if (!isset($addSQL[$type])) {
+            return '';
+        }
+        
+        switch($type) {
+            case 'cols':
+            return ', ' . $addSQL[$type];
+            default:
+            return $addSQL[$type];
+        }
+    }
+    
+    // }}}
+    // {{{ _getSelectFields()
+    
+    /**
+    * Gets the select fields based on the params
+    *
+    * @param bool $aliasFields Should we alias the fields so they are the names of the
+    *             parameter keys, or leave them as is?
+    *
+    * @access private
+    * @return string A string of query fields to select
+    */
+    function _getSelectFields($aliasFields) {
+        $queryFields = array();
+        foreach ($this->params as $key => $val) {
+            $tmp_field = $this->node_table . '.' . $key;
+            if ($aliasFields) {
+                $tmp_field .= ' AS ' . $val;
+            }
+            $queryFields[] = $tmp_field;
+        }
+        
+        $fields = implode(', ', $queryFields);
+        return $fields;
+    }
+    
+    // }}}    
+    // {{{ _processResultSet()    
+    
+    /**
+    * Processes a DB result set by checking for a DB error and then transforming the result
+    * into a set of DB_NestedSet_Node objects or leaving it as an array.
+    *
+    * @param string $sql The sql query to be done
+    * @param bool $keepAsArray Keep the result as an array or transform it into a set of
+    *             DB_NestedSet_Node objects?
+    * @param bool $fieldsAreAliased Are the fields aliased?
+    *
+    * @access    private
+    * @return mixed False on error or the transformed node set.
+    */
+    function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
+        $result = $this->db->getAll($sql);
+        if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
+            return false;
+        }
+        
+        $nodes = array();
+        $idKey = $fieldsAreAliased ? 'id' : $this->_flparams['id'];
+        foreach ($result as $row) {
+            $node_id = $row[$idKey];
+            if ($keepAsArray) {
+                $nodes[$node_id] = $row;
+            } else {
+                // Create an instance of the node container
+                $nodes[$node_id] =& new DB_NestedSet_Node($row);
+            }
+            
+        }
+        return $nodes;
+    }
+    
+    // }}}
+    // {{{ _testFatalAbort()    
+    
+    /**
+    * Error Handler
+    *
+    * Tests if a given ressource is a PEAR error object
+    * ans raises a fatal error in case of an error object
+    *
+    * @param        object  PEAR::Error $errobj     The object to test
+    * @param        string  $file   The filename wher the error occured
+    * @param        int     $line   The line number of the error
+    * @return   void
+    * @access private
+    */
+    function _testFatalAbort($errobj, $file, $line) {
+        if (!$this->_isDBError($errobj)) {
+            return false;
+        }
+        
+        if ($this->debug) {
+            $this->_debugMessage('_testFatalAbort($errobj, $file, $line)');
+        }
+        if ($this->debug) {
+            $message = $errobj->getUserInfo();
+            $code = $errobj->getCode();
+            $msg = "$message ($code) in file $file at line $line";
+        } else {
+            $msg = $errobj->getMessage();
+            $code = $errobj->getCode();     }
+            
+            PEAR::raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+    }
+    
+    // {{{ __raiseError()    
+
+    /**
+    * @access private
+    */    
+    function _raiseError($code, $mode, $option, $epr=array()) {
+        $message = vsprintf($this->_getMessage($code), $epr);
+        return PEAR::raiseError($message, $code, $mode, $option);
+    }
+    
+    // }}}
+    
+    // {{{ addListener()
+    
+    /**
+    * Add an event listener
+    *
+    * Adds an event listener and returns an ID for it
+    *
+    * @param        string $event           The ivent name
+    * @param        string  $listener       The listener object
+    * @return   string
+    * @access public
+    */
+    function addListener($event, &$listener) {
+        $listenerID = uniqid('el');
+        $this->eventListeners[$event][$listenerID] =& $listener;
+        $this->_hasListeners[$event] = true;
+        return $listenerID;
+    }
+    
+    // }}}
+    // {{{ removeListener()
+    
+    /**
+    * Removes an event listener
+    *
+    * Removes the event listener with the given ID
+    *
+    * @param        string $event           The ivent name
+    * @param        string  $listenerID     The listener's ID
+    * @return   bool
+    * @access public
+    */
+    function removeListener($event, $listenerID) {
+        unset($this->eventListeners[$event][$listenerID]);
+        if (!isset($this->eventListeners[$event]) ||
+        !is_array($this->eventListeners[$event]) ||
+        count($this->eventListeners[$event]) == 0) {
+            unset($this->_hasListeners[$event]);
+        }
+        return true;
+    }
+    
+    // }}}
+    // {{{ triggerEvent()
+    
+    /**
+    * Triggers and event an calls the event listeners
+    *
+    * @param        string $event   The Event that occured
+    * @param        object node $node A Reference to the node object which was subject to changes
+    * @param        array $eparams  A associative array of params which may be needed by the handler
+    * @return   bool
+    * @access public
+    */
+    function triggerEvent($event, &$node, $eparams = false) {
+        if ($this->_skipCallbacks || !isset($this->_hasListeners[$event])) {
+            return false;
+        }
+        
+        foreach($this->eventListeners[$event] as $key => $val) {
+            if (!method_exists($val, 'callEvent')) {
+                return new PEAR_Error($this->_getMessage(NESE_ERROR_NOHANDLER), NESE_ERROR_NOHANDLER);
+            }
+            
+            $val->callEvent($event, $node, $eparams);
+        }
+        
+        return true;
+    }
+    
+    // }}}
+    // {{{ apiVersion()
+    
+    function apiVersion() {
+        return array(
+        'package:'=>$this->_packagename,
+        'majorversion'=>$this->_majorversion,
+        'minorversion'=>$this->_minorversion,
+        'version'=>sprintf('%s.%s',$this->_majorversion, $this->_minorversion),
+        'revision'=>str_replace('$', '',"$Revision$")
+        );
+    }
+    
+    // }}}
+    // {{{ setAttr()
+    
+    /**
+    * Sets an object attribute
+    *
+    * @param        array $attr     An associative array with attributes
+    *
+    * @return   bool
+    * @access public
+    */
+    function setAttr($attr) {
+        static $hasSetSequence;
+        if (!isset($hasSetSequence)) {
+            $hasSetSequence = false;
+        }
+        
+        if (!is_array($attr) || count($attr) == 0) {
+            return false;
+        }
+        
+        foreach ($attr as $key => $val) {
+            $this->$key = $val;
+            if ($key == 'sequence_table') {
+                $hasSetSequence = true;
+            }
+            
+            // only update sequence to reflect new table if they haven't set it manually
+            if (!$hasSetSequence && $key == 'node_table') {
+                $this->sequence_table = $this->node_table . '_' . $this->_flparams['id'];
+            }
+            if($key == 'cache' && is_object($val)) {
+                $this->_caching = true;
+                $GLOBALS['DB_NestedSet'] = & $this;
+            }
+        }
+        
+        return true;
+    }
+    
+    // }}}
+    // {{{ setsortMode()
+    /**
+    * This enables you to set specific options for each output method
+    *
+    * @param constant $sortMode
+    *
+    * @access public
+    * @return Current sortMode
+    */
+    function setsortMode($sortMode=false) {
+        if($sortMode && in_array($sortMode, $this->_sortModes)) {
+            $this->_sortMode = $sortMode;   
+        } else {
+            return $this->_sortMode;   
+        }
+        return $this->_sortMode;   
+    }
+    // }}}      
+    // {{{ setDbOption()
+    
+    /**
+    * Sets a db option.  Example, setting the sequence table format
+    *
+    * @var string $option The option to set
+    * @var string $val The value of the option
+    *
+    * @access public
+    * @return void
+    */
+    function setDbOption($option, $val) {
+        $this->db->setOption($option, $val);
+    }
+    
+    // }}}
+    // {{{ testLock()
+    
+    /**
+    * Tests if a database lock is set
+    *
+    * @access public
+    */
+    function testLock() {
+        if ($this->debug) {
+            $this->_debugMessage('testLock()');
+        }
+        
+        if($lockID = $this->_structureTableLock) {
+            return $lockID;
+        }
+        $this->_lockGC();        
+        $sql = sprintf('SELECT lockID FROM %s WHERE lockTable=%s',
+                    $this->lock_table,
+                    $this->_quote($this->node_table)) ;
+        
+        $res = $this->db->query($sql);
+        $this->_testFatalAbort($res, __FILE__, __LINE__);
+
+        if ($this->_numRows($res)) {
+            return new PEAR_Error($this->_getMessage(NESE_ERROR_TBLOCKED),NESE_ERROR_TBLOCKED);
+        }
+        
+        return false;
+    }
+    
+    // }}}
+    // {{{ _setLock()
+    
+    /**
+    * @access private
+    */
+    function _setLock($exclusive=false) {
+        $lock = $this->testLock();
+        if(PEAR::isError($lock)) {
+            return $lock;
+        }
+
+        if ($this->debug) {
+            $this->_debugMessage('_setLock()');
+        }
+        if($this->_caching) {
+            @$this->cache->flush('function_cache');
+            $this->_caching = false;
+            $this->_restcache = true;
+        }
+
+        if (!$lockID = $this->_structureTableLock) {
+            $lockID = $this->_structureTableLock = uniqid('lck-');
+
+            $sql = sprintf('INSERT INTO %s SET lockID=%s, lockTable=%s, lockStamp=%s',
+            $this->lock_table,
+            $this->_quote($lockID),
+            $this->_quote($this->node_table),
+            time());
+
+        } else {
+            $sql = sprintf('UPDATE %s set lockStamp=%s WHERE lockID=%s AND lockTable=%s',
+                        $this->lock_table,
+                        time(),
+                        $this->_quote($lockID),
+                        $this->_quote($this->node_table));
+        }    
+        if($exclusive) {
+            $this->_lockExclusive = true;   
+        }
+        
+        $res = $this->db->query($sql);
+        $this->_testFatalAbort($res, __FILE__, __LINE__);
+        return $lockID;
+    }
+    
+    // }}}
+    // {{{ _releaseLock()
+    
+    /**
+    * @access private
+    */
+    function _releaseLock($exclusive=false) {
+        if ($this->debug) {
+            $this->_debugMessage('_releaseLock()');
+        }
+        
+        if($exclusive) {
+            $this->_lockExclusive = false;   
+        }
+        
+        if ((!$lockID = $this->_structureTableLock) || $this->_lockExclusive) {
+            return false;
+        }
+
+        $tb = $this->lock_table;
+        $stb = $this->node_table; 
+        $sql = "DELETE FROM $tb
+                WHERE lockTable=" . $this->_quote($stb) . " AND
+                    lockID=" . $this->_quote($lockID);
+
+        $res = $this->db->query($sql);
+        $this->_testFatalAbort($res, __FILE__, __LINE__);
+        $this->_structureTableLock = false;
+        if($this->_restcache) {
+            $this->_caching = true; 
+            $this->_restcache = false;
+        }
+        return true;
+    }
+    
+    // }}}
+    // {{{ _lockGC()
+    
+    /**
+    * @access private
+    */
+    function _lockGC() {
+        if ($this->debug) {
+            $this->_debugMessage('_lockGC()');
+        }
+        $tb = $this->lock_table;
+        $stb = $this->node_table;
+        $lockTTL = time() - $this->lockTTL;
+        $sql = "DELETE FROM $tb
+                WHERE lockTable=" . $this->_quote($stb) . " AND
+                    lockStamp < $lockTTL";
+
+        $res = $this->db->query($sql);
+        $this->_testFatalAbort($res, __FILE__, __LINE__);
+    }
+    
+    // }}}
+    // {{{ _values2Query()
      
+    /**
+    * @access private
+    */
+    function _values2Query($values, $addval = false) {
+
+        if ($this->debug) {
+            $this->_debugMessage('_values2Query($values, $addval = false)');
+        }
+        if (is_array($addval)) {
+            $values = $values + $addval;
+        }
+        
+        $arq = array();
+        foreach($values AS $key => $val) {
+            $k = trim($key);
+            $v = trim($val);
+            if ($k) { 
+                // To be used with the next mahor version
+                // $iv = in_array($this->params[$k], $this->_quotedParams) ? $this->_quote($v) : $v;
+                $iv = $this->_quote($v);
+                $arq[] = "$k=$iv";
+            }
+        }
+        
+        if (!is_array($arq) || count($arq) == 0) {
+            return false;
+        }
+        
+        $query = implode(', ', $arq);
+        return $query;
+    }
+
+    // }}}
+    // {{{ _verifyUserValues()
+         
+    /**
+    * Clean values from protected or unknown columns
+    *
+    * @var string $caller The calling method
+    * @var string $values The values array
+    *
+    * @access private
+    * @return void
+    */    
+    function _verifyUserValues($caller, &$values) {
+        
+        if($this->_dumbmode) {
+            return true;   
+        }
+        foreach($values AS $field=>$value) {
+            if(!isset($this->params[$field])) {
+                $epr = array(  
+                $caller,
+                sprintf('Unknown column/param \'%s\'', $field));
+                $this->_raiseError(NESE_ERROR_WRONG_MPARAM, PEAR_ERROR_RETURN, E_USER_NOTICE, $epr);
+                unset($values[$field]);        
+            } else {
+                $flip = $this->params[$field];
+                if(in_array($flip, $this->_requiredParams)) {
+                    $epr = array(  
+                    $caller,
+                    sprintf('\'%s\' is autogenerated and can\'t be passed - it will be ignored', $field));
+                    $this->_raiseError(NESE_ERROR_WRONG_MPARAM, PEAR_ERROR_RETURN, E_USER_NOTICE, $epr);
+                    unset($values[$field]);
+                }
+            }
+        }
+    }
+     
+    // }}}
+    // {{{ _debugMessage()
+     
+    /**
+    * @access private
+    */
+    function _debugMessage($msg) {
+        if ($this->debug) {
+            $time = $this->_getmicrotime();
+            echo "$time::Debug:: $msg<br />\n";
+        }
+    }
+    
+    // }}}
+    // {{{ _getMessage()
+    
+    /**
+    * @access private
+    */
+    function _getMessage($code) {
+        if ($this->debug) {
+            $this->_debugMessage('_getMessage($code)');
+        }
+        return isset($this->messages[$code]) ? $this->messages[$code] : $this->messages[NESE_MESSAGE_UNKNOWN];
+        
+    }
+
+    // }}}
+    // {{{ _getmicrotime()
+    
+    /**
+    * @access private
+    */
+    function _getmicrotime() {
+        list($usec, $sec) = explode(' ', microtime());
+        return ((float)$usec + (float)$sec);
+    }
+    
+    // }}}
+    // {{{ convertTreeModel()
+    
+    /**
+    * Convert a <1.3 tree into a 1.3 tree format
+    *
+    * This will convert the tree into a format needed for some new features in
+    * 1.3. Your <1.3 tree will still work without converting but some new features
+    * like preorder sorting won't work as expected.
+    * 
+    * <pre>
+    * Usage:
+    * - Create a new node table (tb_nodes2) from the current node table (tb_nodes1) (only copy the structure).
+    * - Create a nested set instance of the 'old' set (NeSe1) and one of the new set (NeSe2)
+    * - Now you have 2 identical objects where only node_table differs
+    * - Call DB_NestedSet::convertTreeModel(&$orig, &$copy);
+    * - After that you have a cleaned up copy of tb_nodes1 inside tb_nodes2
+    * </pre>
+    *
+    * @param object DB_NestedSet $orig  Nested set we want to copy
+    * @param object DB_NestedSet $copy  Object where the new tree is copied to
+    * @param integer $_parent           ID of the parent node (private)
+    *
+    * @static
+    * @access private
+    * @return bool True uns success
+    */
+    function convertTreeModel(&$orig, &$copy, $_parent=false) {
+       
+        static $firstSet;
+        
+        $isRoot = false;
+        if(!$_parent) {
+            if(!is_object($orig) || !is_object($copy)) {
+                return false;   
+            }
+            if($orig->node_table == $copy->node_table) {
+             return false;   
+            }
+            $copy->_dumbmode = true;
+            $orig->sortMode = NESE_SORT_LEVEL;
+            $copy->sortMode = NESE_SORT_LEVEL;
+            $sibl = $orig->getRootNodes(true);
+            $isRoot = true;
+        } else {
+            $sibl = $orig->getChildren($_parent, true);
+        }
+        
+        if(empty($sibl)) {
+            return false;   
+        }
+        
+        foreach($sibl AS $sid=>$sibling) {
+            unset($sibling['l']);
+            unset($sibling['r']);
+            unset($sibling['norder']);
+            
+            $values = array();
+            foreach($sibling AS $key=>$val) {
+                if(!isset($copy->_flparams[$key])) {
+                    continue;   
+                } 
+                $values[$copy->_flparams[$key]] = $val;
+            } 
+             
+            if(!$firstSet) {
+                $psid = $copy->createRootNode($values, false, true);
+                $firstSet = true;
+            } elseif($isRoot) {
+                $psid = $copy->createRightNode($psid, $values);
+            } else {
+                $copy->createSubNode($_parent, $values);  
+            }
+            
+            DB_NestedSet::convertTreeModel($orig, $copy, $sid);
+        }
+        return true;
+    } 
+    // }}}
+    // {{{ _numRows()
+    /**
+    * Fetches the number of rows the last query returned
+    * @access private
+    * @abstract
+    */  
+    function _numRows($res) {
+    }
+    // }}}
+    // {{{ _isDBError()
+    /**
+    * Returns true if a db return value is an error object
+    * @access private
+    * @abstract
+    */  
+    function _isDBError($err) {    
+    }
+    // }}}
+    // {{{ quote()       
+    /**
+    * Quotes a string to use it inside queries
+    * @access private
+    * @abstract
+    */  
+    function _quote($str) {
+    }
+        
+}
+ 
+// {{{ DB_NestedSet_Node:: class
+
+/**
+* Generic class for node objects
+*
+* @autor Daniel Khan <dk@webcluster.at>;
+* @version $Revision$
+* @package DB_NestedSet
+*
+* @access private
+*/
+
+class DB_NestedSet_Node {
+    // {{{ constructor
+    
+    /**
+    * Constructor
+    */
+    function DB_NestedSet_Node($data) {
+        if (!is_array($data) || count($data) == 0) {
+            return new PEAR_ERROR($data, NESE_ERROR_PARAM_MISSING);
+        }
+        
+        $this->setAttr($data);
+        return true;
+    }
+    
+    // }}}
+    // {{{ setAttr()
+    
+    function setAttr($data) {
+        if(!is_array($data) || count($data) == 0) {
+            return false;
+        }
+        
+        foreach ($data as $key => $val) {
+            $this->$key = $val;
+        }
+    }
+    
+    // }}}
+
+}
+// }}}
+
+
+?>
