@@ -34,7 +34,6 @@ require_once 'PEAR.php';
 
 // {{{ constants
 
-
 // Error and message codes
 define('NESE_ERROR_RECURSION',    'E100');
 define('NESE_DRIVER_NOT_FOUND',   'E200');
@@ -43,7 +42,6 @@ define('NESE_ERROR_TBLOCKED',     'E010');
 define('NESE_MESSAGE_UNKNOWN',    'E0');
 define('NESE_ERROR_NOTSUPPORTED', 'E1');
 define('NESE_ERROR_PARAM_MISSING','E400');
-define('NESE_ERROR_UNKNOWN_PARAM','E401');
 define('NESE_ERROR_NOT_FOUND',    'E500');
 
 // for moving a node before another
@@ -82,15 +80,7 @@ class DB_NestedSet extends PEAR {
     'LEVEL' => 'level',
     'STRNA' => 'name'
     );
-    
-    /**
-    * @var array An array of fieldnames which shouldn't be updated by external calls
-    * @access private
-    */    
-    var $_protected_params = array(
-    'id', 'rootid', 'l', 'r', 'norder', 'level'
-    );
-    
+
     /**
     * @var array The above parameters flipped for easy access
     * @access private
@@ -193,7 +183,6 @@ class DB_NestedSet extends PEAR {
     NESE_ERROR_NOTSUPPORTED => 'Method not supported yet',
     NESE_ERROR_NOHANDLER    => 'Event handler not found',
     NESE_ERROR_PARAM_MISSING=> 'Parameter missing',
-    NESE_ERROR_UNKNOWN_PARAM  => 'An unknown parameter was passed',
     NESE_MESSAGE_UNKNOWN    => 'Unknown error or message',
     NESE_ERROR_NOT_FOUND    => 'Node not found',
     );
@@ -897,36 +886,36 @@ class DB_NestedSet extends PEAR {
         $freh = $this->flparams['norder'];
         $flevel = $this->flparams['level'];
         $tb = $this->node_table;
-        
-        $values[$flevel] = 1;
+        $addval = array();
+        $addval[$flevel] = 1;
         // Shall we delete the existing tree (reinit)
         if ($first) {
             $sql = "DELETE FROM $tb";
             $this->db->query($sql);
             $this->db->dropSequence($this->sequence_table);
             // New order of the new node will be 1
-            $values[$freh] = 1;
+            $addval[$freh] = 1;
         } else {
             // Let's open a gap for the new node
             $parent = $this->pickNode($id);
             if (!$parent) {
                 // invalid parent node, order will be 1
-                $values[$freh] = 1;
+                $addval[$freh] = 1;
                 // no gap to make
                 $first = true;
             }
             else {
-                $values[$freh] = $parent->norder + 1;
+                $addval[$freh] = $parent->norder + 1;
             }
         }
 
         // Sequence of node id (equals to root id in this case
-        $values[$froot] = $node_id = $values[$fid] = $this->db->nextId($this->sequence_table);
+        $addval[$froot] = $node_id = $addval[$fid] = $this->db->nextId($this->sequence_table);
         // Left/Right values for rootnodes
-        $values[$flft] = 1;
-        $values[$frgt] = 2;
+        $addval[$flft] = 1;
+        $addval[$frgt] = 2;
         // Transform the node data hash to a query
-        if (!$qr = $this->_values2Query($values)) {
+        if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
 
@@ -942,9 +931,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
+        // EVENT (nodeCreate)
+        $thisnode = &$this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            // EVENT (nodeCreate)
-            $thisnode = &$this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1026,14 +1015,14 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
-        
-        $values[$flft] = $rgt;
-        $values[$frgt] = $rgt + 1;
-        $values[$froot] = $rootid;
-        $values[$freh] = 1;
-        $values[$flevel] = $plevel + 1;
-        $node_id = $values[$fid] = $this->db->nextId($this->sequence_table);
-        if (!$qr = $this->_values2Query($values)) {
+        $addval = array();
+        $addval[$flft] = $rgt;
+        $addval[$frgt] = $rgt + 1;
+        $addval[$froot] = $rootid;
+        $addval[$freh] = 1;
+        $addval[$flevel] = $plevel + 1;
+        $node_id = $addval[$fid] = $this->db->nextId($this->sequence_table);
+        if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
 
@@ -1041,9 +1030,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
+        // EVENT (NodeCreate)
+        $thisnode = $this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            // EVENT (NodeCreate)
-            $thisnode = $this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1104,7 +1093,7 @@ class DB_NestedSet extends PEAR {
         $level = $thisnode->level;
         $parent_order = $thisnode->norder;
         $tb = $this->node_table;
-        
+        $addval = array();
         $parents = $this->getParents($id);
         $parent = array_pop($parents);
         $plft = $parent->l;
@@ -1128,13 +1117,13 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
-        $values[$freh] = $parent_order + 1;
-        $values[$flft] = $rgt + 1;
-        $values[$frgt] = $rgt + 2;
-        $values[$froot] = $rootid;
-        $values[$flevel] = $level;
-        $node_id = $values[$fid] = $this->db->nextId($this->sequence_table);
-        if (!$qr = $this->_values2Query($values)) {
+        $addval[$freh] = $parent_order + 1;
+        $addval[$flft] = $rgt + 1;
+        $addval[$frgt] = $rgt + 2;
+        $addval[$froot] = $rootid;
+        $addval[$flevel] = $level;
+        $node_id = $addval[$fid] = $this->db->nextId($this->sequence_table);
+        if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
 
@@ -1143,9 +1132,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
+        // EVENT (NodeCreate)
+        $thisnode =& $this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            // EVENT (NodeCreate)
-            $thisnode =& $this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1249,20 +1238,19 @@ class DB_NestedSet extends PEAR {
         if (PEAR::isError($lock = $this->_setLock())) {
             return $lock;
         }
-        
+
         if (!($thisnode =& $this->pickNode($id))) {
             return false;
         }
 
-       
+        $eparams = array('values' => $values);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeUpdate'])) {
-             $eparams = array('values' => $values);
             // EVENT (NodeUpdate)
             $this->triggerEvent('nodeUpdate', $thisnode, $eparams);
         }
         $fid = $this->flparams['id'];
-        
-        if (!$qr = $this->_values2Query($values, true)) {
+        $addvalues = array();
+        if (!$qr = $this->_values2Query($values, $addvalues)) {
             return false;
         }
 
@@ -1514,11 +1502,10 @@ class DB_NestedSet extends PEAR {
         foreach($relations AS $key => $val) {
             $clone = $this->pickNode($val);
             if ($copy) {
-                
+                // EVENT (NodeCopy)
+                $thisnode =& $this->pickNode($key);
+                $eparams = array('clone' => $clone);
                 if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCopy'])) {
-                    // EVENT (NodeCopy)
-                    $thisnode =& $this->pickNode($key);
-                    $eparams = array('clone' => $clone);
                     $this->triggerEvent('nodeCopy', $thisnode, $eparams);
                 }
                 continue;
@@ -2109,20 +2096,18 @@ class DB_NestedSet extends PEAR {
     /**
     * @access private
     */
-    function _values2Query($values, $protected=false) {
+    function _values2Query($values, $addval = false) {
         if ($this->debug) {
-            $this->_debugMessage('_values2Query($values)');
+            $this->_debugMessage('_values2Query($values, $addval = false)');
         }
+        if (is_array($addval)) {
+            $values = array_merge($values, $addval); 
+        }
+
         $arq = array();
         foreach($values AS $key => $val) {
-
-            if(!in_array($key, $this->flparams)) {
-                $this->raiseError("Unknown param $key passed", NESE_ERROR_UNKNOWN_PARAM, PEAR_ERROR_TRIGGER, E_USER_ERROR);
-            } elseif($protected && in_array($this->params[$key], $this->_protected_params)) {
-                continue;   
-            }
             $k = trim($key);
-            $v = trim($val); 
+            $v = trim($val);
             if ($k) {
 
                 $arq[] = "$k=" . $this->db->quote($v);
