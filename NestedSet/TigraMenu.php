@@ -36,6 +36,7 @@
 */
 // }}}
 class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
+    // {{{{ properties
 	
 	/**
 	* The depth of the current menu.
@@ -70,7 +71,8 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @access private
 	*/	
 	var $_strlenByLevel	= array();
-	
+
+    // }}}
 	// {{{ DB_NestedSet_TigraMenu
 	
 	/**
@@ -150,19 +152,18 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 			isset($node[$params['linkField']]) ? "'".$node[$params['linkField']]."'" : 'null'
 			);
 			
-			if(!$this->_strlenByLevel[$params['currentLevel']-$this->_levelOffset] || strlen($node[$params['textField']]) > $this->_strlenByLevel[$params['currentLevel']-$this->_levelOffset]) {
-				$this->_strlenByLevel[$params['currentLevel']-$this->_levelOffset] = strlen($node[$params['textField']]);
+			if (!$this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset] || 
+                strlen($node[$params['textField']]) > $this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset]) {
+				$this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset] = strlen($node[$params['textField']]);
 			};
 			
 			$tigraMenu = $tigraMenu.$this->_openSubMenu($tag);
-			
 			
 			// see if it has children
 			if (($node['r'] - 1) != $node['l']) {
 				$children = array();
 				// harvest all the children
 				$tempStructure = $params['structure'];
-				reset($tempStructure);
 				foreach ($tempStructure as $childKey => $childNode) {
 					if (!isset($childNode['hit']) &&
 					$node['rootid'] == $childNode['rootid'] &&
@@ -196,8 +197,8 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @param int $menu_id ID of the menu needed to use more than one menu on a page
 	* @return string The JavaScript piece
 	*/
-	function _openMenu($menu_id=1) {
-		
+	function _openMenu($menu_id=1) 
+    {
 		$str = false;
 		$str = $str."var MENU_ITEMS".$menu_id." = new Array();\n";
 		$str = $str."MENU_ITEMS".$menu_id." = [\n";
@@ -214,8 +215,8 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @param array $tag Contains the content of the current item (name, link)
 	* @return string The JavaScript piece
 	*/
-	function _openSubMenu($tag) {
-		
+	function _openSubMenu($tag) 
+    {
 		$rtag = implode(', ', $tag);
 		return "\n[".$rtag.',';
 	}
@@ -229,9 +230,10 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @access private
 	* @return string The JavaScript piece
 	*/	
-	function _closeMenu() {
+	function _closeMenu() 
+    {
 		
-		return "];";
+		return '];';
 	}
 
 	// }}}
@@ -243,7 +245,8 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @access private
 	* @return string The JavaScript piece
 	*/		
-	function _closeSubMenu() {		
+	function _closeSubMenu() 
+    {
 		return "\n],";
 	}
 	
@@ -259,43 +262,33 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @param array $childStyles Array of style attributes for the sub items
 	* @return string The JavaScript piece
 	*/		
-	function _addStyles($menu_id, $rootStyles, $childStyles = false) {
-		
-		if(!$childStyles) {
+	function _addStyles($menu_id, $rootStyles, $childStyles = false) 
+    {
+		if (!$childStyles) {
 			$childStyles = $rootStyles;
 		}
 		
 		$styles = array();
-		reset($rootStyles);
-		foreach($rootStyles AS $key=>$val) {
-			
-			reset($val);
-			foreach($val AS $skey=>$sval) {
+		foreach ($rootStyles as $key => $val) {
+			foreach ($val as $skey => $sval) {
 				$styles["'$key'"][$skey][] = "'$sval'";
 			}
 		}
 		
-		reset($childStyles);
-		foreach($childStyles AS $key=>$val) {
-			
-			reset($val);
-			foreach($val AS $skey=>$sval) {
-				for($i=1;$i<=$this->_levels;$i++) {
+		foreach ($childStyles as $key => $val) {
+			foreach ($val as $skey => $sval) {
+				for ($i = 1; $i <= $this->_levels; $i++) {
 					$styles["'$key'"][$skey][] = "'$sval'";
 				}
 			}
 		}
 		
 		$menustyles = false;
-		$menustyles = $menustyles.'var MENU_STYLES'.$menu_id." = new Array();\n";
-		reset($styles);
-		foreach ($styles AS $key=>$val) {
-			
+		$menustyles = $menustyles . 'var MENU_STYLES'.$menu_id." = new Array();\n";
+		foreach ($styles as $key => $val) {
 			$menustyles = $menustyles.'MENU_STYLES'.$menu_id."[$key] = [\n";
-			
-			reset($val);
-			foreach($val AS $skey=>$sval) {
-				$menustyles = $menustyles."'$skey', [".implode(', ', $sval)."],\n";
+			foreach ($val as $skey => $sval) {
+				$menustyles = $menustyles . "'$skey', [".implode(', ', $sval)."],\n";
 			}
 			$menustyles = $menustyles."];\n";
 		}
@@ -315,35 +308,32 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* @param array $childGeometry  Array of geometry attributes for the sub items
 	* @return string The JavaScript piece
 	*/		
-	function _addGeometry($menu_id, $rootGeometry, $childGeometry = false) {
-		
-		
-		if(!$childGeometry) {
+	function _addGeometry($menu_id, $rootGeometry, $childGeometry = false) 
+    {
+		if (!$childGeometry) {
 			$childGeometry = $rootGeometry;
 		}
 		
 		$params = array();
 		$geometry = array();
-		reset($rootGeometry);
-		foreach($rootGeometry AS $key=>$val) {
-			
+		foreach ($rootGeometry as $key => $val) {
 			$geometry["'$key'"][] = $val;
 			$incr = false;
-			if(preg_match("/,/",$val)) {
+			if (strpos($val, ',') !== false) {
 				list($start, $interval) = explode(',',$val);
 				$incr = true;
 			}
 			
 			$ratio = false;
-			if($key == 'width' && preg_match("/\*/",$val)) {
+			if ($key == 'width' && strpos($val, '*') !== false) {
 				$ratio = trim(str_replace('*','', $val));
 			}
-			if($incr) {
+			if ($incr) {
 				$val = trim($interval);
-				if($key == 'left' && preg_match("/[+-]/", $interval)) {
+				if ($key == 'left' && preg_match('/[+-]/', $interval)) {
 					$val = $params[0]['width'] + trim($val);
 				}
-			} elseif($incr) {
+			} elseif ($incr) {
 				$val = trim($start);
 			} elseif ($ratio) {
 				$val = $ratio * $this->_strlenByLevel[0];
@@ -352,25 +342,23 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 			$params[0][$key] = $val;
 		}
 		
-		reset($childGeometry);
-		foreach($childGeometry AS $key=>$val) {
+		foreach($childGeometry as $key => $val) {
 			$incr = false;
-			if(preg_match("/,/",$val)) {
-				list($start, $interval) = explode(',',$val);
+			if (strpos($val, ',') !== false) {
+				list($start, $interval) = explode(',', $val);
 				$incr = true;
 			}
 			
 			$ratio = false;
-			if($key == 'width' && preg_match("/\*/",$val)) {
-				$ratio = trim(str_replace('*','', $val));
+			if ($key == 'width' && strpos($val, '*') !== false) {
+				$ratio = trim(str_replace('*', '', $val));
 			}
 			
-			
-			for($i=1;$i<=$this->_levels;$i++) {
-				if($incr && isset($lastval[$key])) {
+			for ($i = 1; $i <= $this->_levels; $i++) {
+				if ($incr && isset($lastval[$key])) {
 					$val = trim($interval);
-					if($key == 'block_left' && preg_match("/[+-]/", $interval)) {
-						$val = $params[$i-1]['width'] + trim($val);
+					if($key == 'block_left' && preg_match('/[+-]/', $interval)) {
+						$val = $params[$i - 1]['width'] + trim($val);
 					}
 				} elseif($incr) {
 					$val = trim($start);
@@ -389,11 +377,9 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 		}
 		
 		$pos = false;
-		$pos = $pos.'var MENU_POS'.$menu_id." = new Array();\n";
-		reset($geometry);
-		foreach ($geometry AS $key=>$val) {
-			
-			$pos = $pos.'MENU_POS'.$menu_id."[$key] = [".implode(', ', $val)."];\n";
+		$pos = $pos . 'var MENU_POS'.$menu_id." = new Array();\n";
+		foreach ($geometry as $key => $val) {
+			$pos = $pos . 'MENU_POS' . $menu_id . "[$key] = [" . implode(', ', $val) . "];\n";
 		}
 		
 		return $pos;
@@ -407,13 +393,13 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	*
 	* @access public
 	*/
-	function printTree() {
-		
-		if(!$options = $this->_getOptions('printTree')) {
-			$this->raiseError("TigraMenu::printTree() needs options. See TigraMenu::setOptions()", NESEO_ERROR_NO_OPTIONS, PEAR_ERROR_TRIGGER, E_USER_ERROR);	
+	function printTree() 
+    {
+		if (!$options = $this->_getOptions('printTree')) {
+            return PEAR::raiseError("TigraMenu::printTree() needs options. See TigraMenu::setOptions()", NESEO_ERROR_NO_OPTIONS, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 		}
 		
-		echo $this->_openMenu($options['menu_id']).$this->_structTigraMenu.$this->_closeMenu();
+		echo $this->_openMenu($options['menu_id']) . $this->_structTigraMenu  .$this->_closeMenu();
 		echo "\n\n";
 		echo $this->_addStyles($options['menu_id'], $options['rootStyles'], $options['childStyles']);
 		echo "\n\n";
