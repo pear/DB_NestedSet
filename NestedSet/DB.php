@@ -94,6 +94,23 @@ class DB_NestedSet_DB extends DB_NestedSet {
     }
     
     // }}}
+    
+    
+    function _numRows($res) {
+        return $res->numRows();   
+    }
+
+    function _isDBError($err) {
+        if(!DB::isError($err)) {
+            return false;   
+        }
+        return true;
+    }
+       
+    function quote($str) {
+        return $this->db->quote($str);
+    }
+    
     // {{{ _db_Disconnect()
     
     /**

@@ -96,6 +96,22 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
     
     // }}}
+
+    function _isDBError($err) {
+        if(!MDB::isError($err)) {
+            return false;   
+        }
+        return true;
+    }
+        
+    function _numRows($res) {
+        return $this->db->numRows($res);   
+    }
+    
+    function quote($str) {
+        return $this->db->getTextValue($str);
+    }    
+    
     // {{{ _db_Disconnect()
     
     /**
