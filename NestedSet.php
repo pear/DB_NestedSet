@@ -263,7 +263,7 @@ class DB_NestedSet extends PEAR {
 	* Fetch the whole NestedSet
 	*
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	*             a set of NestedSet_Node objects?
+	*             a set of DB_NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	* @param array $addSQL (optional) Array of additional params to pass to the query.
@@ -305,7 +305,7 @@ class DB_NestedSet extends PEAR {
 	* Fetches the first level (the rootnodes) of the NestedSet
 	*
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	*             a set of NestedSet_Node objects?
+	*             a set of DB_NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	* @param array $addSQL (optional) Array of additional params to pass to the query.
@@ -351,7 +351,7 @@ class DB_NestedSet extends PEAR {
 	*
 	* @param int  $id The node ID
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	*             a set of NestedSet_Node objects?
+	*             a set of DB_NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	* @param array $addSQL (optional) Array of additional params to pass to the query.
@@ -402,7 +402,7 @@ class DB_NestedSet extends PEAR {
 	 *
 	 * @param int  $id The node ID
 	 * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	 *             a set of NestedSet_Node objects?
+	 *             a set of DB_NestedSet_Node objects?
 	 * @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	 *             of the parameter keys, or leave them as is?
 	 * @param array $addSQL (optional) Array of additional params to pass to the query.
@@ -462,7 +462,7 @@ class DB_NestedSet extends PEAR {
 	 *
 	 * @param int  $id The node ID
 	 * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	 *             a set of NestedSet_Node objects?
+	 *             a set of DB_NestedSet_Node objects?
 	 * @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	 *             of the parameter keys, or leave them as is?
 	 * @param bool $forceNorder (optional) Force the result to be ordered by the norder
@@ -528,7 +528,7 @@ class DB_NestedSet extends PEAR {
 	*
 	* @param string  $id The node ID
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	*             a set of NestedSet_Node objects?
+	*             a set of DB_NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	* @param array $addSQL (optional) Array of additional params to pass to the query.
@@ -582,7 +582,7 @@ class DB_NestedSet extends PEAR {
 	*
 	* @param int  $id The node id of the node to fetch
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
-	*             a set of NestedSet_Node objects?
+	*             a set of DB_NestedSet_Node objects?
 	* @param bool $aliasFields (optional) Should we alias the fields so they are the names
 	*             of the parameter keys, or leave them as is?
 	* @param string $idfield (optional) Which field has to be compared with $id?
@@ -688,11 +688,11 @@ class DB_NestedSet extends PEAR {
 	
 	/**
 	* Processes a DB result set by checking for a DB error and then transforming the result
-	* into a set of NestedSet_Node objects or leaving it as an array.
+	* into a set of DB_NestedSet_Node objects or leaving it as an array.
 	*
 	* @param string $sql The sql query to be done
 	* @param bool $keepAsArray Keep the result as an array or transform it into a set of
-	*             NestedSet_Node objects?
+	*             DB_NestedSet_Node objects?
 	* @param bool $fieldsAreAliased Are the fields aliased?
 	*
 	* @access    private
@@ -713,7 +713,7 @@ class DB_NestedSet extends PEAR {
 				$nodes[$node_id] = $row;
 			} else {
 				// Create an instance of the node container
-				$nodes[$node_id] =& new NestedSet_Node($row);
+				$nodes[$node_id] =& new DB_NestedSet_Node($row);
 			}
 			
 		}
@@ -2067,7 +2067,7 @@ class DB_NestedSet extends PEAR {
 	
 	// }}}
 }
-// {{{ NestedSet_Node:: class
+// {{{ DB_NestedSet_Node:: class
 
 /**
 * Generic class for node objects
@@ -2080,13 +2080,13 @@ class DB_NestedSet extends PEAR {
 */
 
 // }}}
-class NestedSet_Node {
+class DB_NestedSet_Node {
 	// {{{ constructor
 	
 	/**
 	* Constructor
 	*/
-	function NestedSet_Node($data)
+	function DB_NestedSet_Node($data)
 	{
 		if (!is_array($data) || count($data) == 0) {
 			return new PEAR_ERROR($data, NESE_ERROR_PARAM_MISSING);
