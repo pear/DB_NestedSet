@@ -35,15 +35,6 @@ require_once 'HTML/TreeMenu.php';
  */
 // }}}
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
-    // {{{ properties
-
-	/**
-	* @var array The current menu structure
-	* @access private
-	*/
-	var $_structTreeMenu = false;
-
-    // }}}
 	// {{{ DB_NestedSet_TreeMenu
 
     function &DB_NestedSet_TreeMenu($params) {
@@ -54,7 +45,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // {{{ _createFromStructure()
 
     /**
-     * <pre>Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
+     * Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
      * of the DB_NestedSet class.  The needed parameters are:
      * o 'structure' => the result from $nestedSet->getAllNodes(true) 
      * o 'textField' => the field in the table that has the text for node
@@ -65,7 +56,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
      * o 'ensureVisible' => (optional) whether or not the field should be forced as visible
      *                creating it such as 'icon' or 'expandedIcon'
      * o 'events' => (optional) an array of any events to pass to the node when creating it
-     *               such as 'onclick' or 'onexpand'</pre>
+     *               such as 'onclick' or 'onexpand'
      *
      * @access public
      * @return object A HTML_TreeMenu object
@@ -113,6 +104,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                 $children = array();
                 // harvest all the children
 				$tempStructure = $params['structure'];
+				reset($tempStructure);
                 foreach ($tempStructure as $childKey => $childNode) {
                     if (!isset($childNode['hit']) && 
                         $childNode['l'] > $node['l'] &&

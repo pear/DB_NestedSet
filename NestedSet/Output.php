@@ -74,13 +74,15 @@ class DB_NestedSet_Output {
     // {{{ properties
 
     /**
-     * @var object The tree menu structure
-     * @access private
+     * The tree menu structure
+     * @type object
      */
 	var $_structTreeMenu	= false;
 
 	/**
-	* @var array Array of options to be passed to the ouput methods
+	* Array of options to be passed to the ouput methods
+	*
+	* @type array
 	* @access public
 	*/
 	var $options	= array();
