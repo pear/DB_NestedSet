@@ -107,6 +107,7 @@ Class TestBase extends PhpUnit_Testcase {
             $target = $this->_NeSe->pickNode($available_parents[$randval], true);
             $nindex = $i;
             $values = array();
+            $returnID = false;
             if($choosemethod == 1) {
                 $method = 'createSubNode';
                 $exp_target_lft_after = $target['l'];
@@ -115,6 +116,7 @@ Class TestBase extends PhpUnit_Testcase {
                 $parentid = $target['id'];
             } else {
                 $method = 'createRightNode';
+                $returnID = true;
 
                 if(isset($relationTree[$target['id']]['parent'])) {
                     $parentid = $relationTree[$target['id']]['parent'];
@@ -139,7 +141,8 @@ Class TestBase extends PhpUnit_Testcase {
                 }
             }
             
-            $available_parents[] = $nid = $this->_NeSe->$method($target['id'], $values);
+            
+            $available_parents[] = $nid = $this->_NeSe->$method($target['id'], $values, $returnID);
             
             $target_after = false;             
             if($method == 'createSubNode') {
