@@ -2062,7 +2062,7 @@ class DB_NestedSet {
         'majorversion' => $this->_majorversion,
         'minorversion' => $this->_minorversion,
         'version' => sprintf('%s.%s', $this->_majorversion, $this->_minorversion),
-        'revision' => str_replace('$', '', "$Revision$")
+        'revision' => str_replace('$', '', '$Revision$')
         );
     }
     // }}}
