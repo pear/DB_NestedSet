@@ -26,7 +26,7 @@ class DB_NestedSetTest extends TestBase  {
         $db_driver = 'DB';
         $db_dsn    = 'mysql://user:password@localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
-        $this->_NeSe->setAttr(array
+	$this->_NeSe->setAttr(array
         (
         'node_table' => 'tb_nodes',
         'lock_table' => 'tb_locks',
