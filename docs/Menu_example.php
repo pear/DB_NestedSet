@@ -88,7 +88,7 @@ $nestedSet =& DB_NestedSet::factory('DB', $dsn, $params);
 $nestedSet->setAttr(array(
         'node_table' => 'tb_nodes', 
         'lock_table' => 'tb_locks', 
-        'secondarySort' => 'name',
+        'secondarySort' => 'STRNA',
     )
 );
 
@@ -96,14 +96,21 @@ $nestedSet->setAttr(array(
     $nestedSet->createSubNode($parent, array('STRNA' => 'Pads,Sattelunterlagen'));
     $nestedSet->createSubNode($parent, array('STRNA' =>'Kartentaschen'));
     $nestedSet->createSubNode($parent, array('STRNA' =>'Kartenmesser'));
-    $nestedSet->createSubNode($parent, array('STRNA' => 'Erste Hilfe Sets'));
-    $nestedSet->createSubNode($parent, array('STRNA' => 'OutdoorJacken'));
+    $eh = $nestedSet->createSubNode($parent, array('STRNA' => 'Erste Hilfe Sets1'));
+    $eh1 = $nestedSet->createSubNode($eh, array('STRNA' => 'Erste Hilfe Sets2'));
+    $eh2 = $nestedSet->createSubNode($eh, array('STRNA' => 'Erste Hilfe Sets3'));
+    $eh3 = $nestedSet->createSubNode($eh, array('STRNA' => 'Erste Hilfe Sets4'));
+    $eh4 = $nestedSet->createSubNode($eh, array('STRNA' => 'Erste Hilfe Sets5'));
+    $eh5 = $nestedSet->createSubNode($eh, array('STRNA' => 'Erste Hilfe Sets6'));
+    $nestedSet->createSubNode($eh4, array('STRNA' => 'OutdoorJacken'));
     $nestedSet->createSubNode($parent, array('STRNA' =>'flexible Sattel'));
 
 
 
 // get data (important to fetch it as an array, using the true flag)
-$data = $nestedSet->getAllNodes(true);
+// $data = $nestedSet->getAllNodes(true);
+$data = $nestedSet->getSubBranch($eh, true);
+
 
 // }}}
 // {{{ manipulate data
