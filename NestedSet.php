@@ -41,6 +41,7 @@ define('NESE_ERROR_TBLOCKED',     'E010');
 define('NESE_MESSAGE_UNKNOWN',    'E0');
 define('NESE_ERROR_NOTSUPPORTED', 'E1');
 define('NESE_ERROR_PARAM_MISSING','E400');
+define('NESE_ERROR_NOT_FOUND',    'E500');
 
 // for moving a node before another
 define('NESE_MOVE_BEFORE', 'BE');
@@ -144,7 +145,8 @@ class DB_NestedSet extends PEAR {
         NESE_ERROR_NOTSUPPORTED => 'Method not supported yet',
         NESE_ERROR_NOHANDLER    => 'Event handler not found',
         NESE_ERROR_PARAM_MISSING=> 'Parameter missing',
-        NESE_MESSAGE_UNKNOWN    => 'Unknown error or message'
+        NESE_MESSAGE_UNKNOWN    => 'Unknown error or message',
+        NESE_ERROR_NOT_FOUND    => 'Node not found',
     );
 
     /**
@@ -297,7 +299,10 @@ class DB_NestedSet extends PEAR {
     function getBranch($id, $keepAsArray = false, $aliasFields = true)
     {
         $this->_debugMessage('getBranch($id)');
-        $thisnode = $this->_getNodeObject($id);
+        if (!($thisnode = $this->_getNodeObject($id))) {
+            return false;
+        }
+
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s, %s ASC',
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
@@ -327,7 +332,10 @@ class DB_NestedSet extends PEAR {
     function getParents($id, $keepAsArray = false, $aliasFields = true) 
     {
         $this->_debugMessage('getParents($id)');
-        $child = $this->_getNodeObject($id);
+        if (!($child = $this->_getNodeObject($id))) {
+            return false;
+        }
+
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s<%s AND %s<%s AND %s>%s ORDER BY %s ASC',
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
@@ -363,7 +371,7 @@ class DB_NestedSet extends PEAR {
     {
         $this->_debugMessage('getChildren($id)');
         $parent = $this->_getNodeObject($id);
-        if ($parent->l == ($parent->r - 1)) {
+        if (!$parent || $parent->l == ($parent->r - 1)) {
             return false;
         }
         
@@ -403,7 +411,10 @@ class DB_NestedSet extends PEAR {
     function getSubBranch($id, $keepAsArray = false, $aliasFields = true) 
     {
         $this->_debugMessage('getSubBranch($id)');
-        $parent = $this->_getNodeObject($id);
+        if (!($parent = $this->_getNodeObject($id))) {
+            return false;
+        }
+
         $sql = sprintf('SELECT %s FROM %s WHERE %s BETWEEN %s AND %s AND %s=%s AND %s!=%s',
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
@@ -447,7 +458,7 @@ class DB_NestedSet extends PEAR {
                             $this->db->quote($id)
                );
         $nodeSet = $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
-        return $nodeSet[$id];
+        return isset($nodeSet[$id]) ? $nodeSet[$id] : false;
     }
 
     // }}}
@@ -498,7 +509,7 @@ class DB_NestedSet extends PEAR {
      * @param mixed $id The id which can be an object or integer
      *
      * @access private
-     * @return object The node object for an id
+     * @return mixed The node object for an id or false on error
      */
     function _getNodeObject($id)
     {
@@ -653,13 +664,13 @@ class DB_NestedSet extends PEAR {
      * @param array      $values      Hash with param => value pairs of the node (see $this->params)
      *
      * @access public
-     * @return int The node id
+     * @return mixed The node id or false on error
      */
     function createSubNode($id, $values) 
     {
         $this->_debugMessage('createSubNode($id, $values)');
         // Try to aquire a table lock
-        if(PEAR::isError($lock=$this->_setLock())) {
+        if(PEAR::isError($lock = $this->_setLock())) {
             return $lock;
         }
 
@@ -677,11 +688,16 @@ class DB_NestedSet extends PEAR {
             return $newNode->id;
         }
         
+        // invalid parent id, bail out
+        if (!($thisnode = $this->pickNode($id))) {
+            $this->raiseError("Parent id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            return false;
+        }
+
         $flft = $this->flparams['l'];
         $frgt = $this->flparams['r'];
         $froot = $this->flparams['rootid'];
         $fid = $this->flparams['id'];
-        $thisnode = $this->pickNode($id);
         $lft = $thisnode->l;
         $rgt = $thisnode->r;
         $rootid = $thisnode->rootid;
@@ -760,8 +776,12 @@ class DB_NestedSet extends PEAR {
         $freh = $this->flparams['norder'];
         $fid = $this->flparams['id'];
         $flevel = $this->flparams['level'];
-        // Get the target node
-        $thisnode = $this->pickNode($id);
+        // invalid target node, bail out
+        if (!($thisnode = $this->pickNode($id))) {
+            $this->raiseError("Target id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            return false;
+        }
+
         // If the target node is a rootnode we virtually want to create a new root node
         if ($thisnode->rootid == $thisnode->id) {
             return $this->createRootNode($values, $id);
@@ -835,7 +855,10 @@ class DB_NestedSet extends PEAR {
             return $lock;
         }
         
-        $thisnode = $this->pickNode($id);
+        if (!($thisnode = $this->pickNode($id))) {
+            return false;
+        }
+
         // EVENT (NodeDelete)
         $this->triggerEvent('nodeDelete', $thisnode);
 
@@ -846,10 +869,6 @@ class DB_NestedSet extends PEAR {
         $froot = $this->flparams['rootid'];
         $freh = $this->flparams['norder'];
         $flevel = $this->flparams['level'];
-        if (!$thisnode) {
-            return false;
-        }
-
         $lft = $thisnode->l;
         $rgt = $thisnode->r;
         $order = $thisnode->norder;
@@ -906,7 +925,10 @@ class DB_NestedSet extends PEAR {
             return $lock;
         }
         
-        $thisnode =& $this->pickNode($id);
+        if (!($thisnode =& $this->pickNode($id))) {
+            return false;
+        }
+
         $eparams = array('values' => $values);
         // EVENT (NodeUpdate)
         $this->triggerEvent('nodeUpdate', $thisnode, $eparams);
@@ -935,14 +957,14 @@ class DB_NestedSet extends PEAR {
     *
     * @param int    $id Source ID
     * @param int    $target Target ID
-    * @param array  $pos Position (use one of the MOVE constants)
+    * @param array  $pos Position (use one of the NESE_MOVE_* constants)
     * @param bool   $copy Shall we create a copy
     *
     * @see _moveInsideLevel
     * @see _moveAcross
     * @see moveRoot2Root
     * @access public
-    * @return int ID of the moved node
+    * @return int ID of the moved node or false on error
     */
     function moveTree($id, $target, $pos, $copy = false) 
     {
@@ -955,13 +977,22 @@ class DB_NestedSet extends PEAR {
         // which ignores this setting
         $this->skipCallbacks = true;
         // Get information about source and target
-        $source = $this->pickNode($id);
-        $target = $this->pickNode($target);
+        if (!($source = $this->pickNode($id))) {
+            $this->raiseError("Node id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            return false;
+        }
+
+        if (!($target = $this->pickNode($target))) {
+            $this->raiseError("Target id: $target not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            return false;
+        }
+
         // We have a recursion - let's stop
         if (($target->rootid == $source->rootid) && 
             (($source->l < $target->l) && 
              ($source->r > $target->r))) {
-            return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
+            $this->raiseError($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
+            return false;
         }
         
         // Insert/move before or after
@@ -1750,11 +1781,7 @@ class DB_NestedSet extends PEAR {
     function _getMessage($code) 
     {
         $this->_debugMessage('_getMessage($code)');
-        if ($this->messages[$code]) {
-            return $this->messages[$code];
-        } else {
-            return $this->messages[NESE_MESSAGE_UNKNOWN];
-        }
+        return isset($this->messages[$code]) ? $this->messages[$code] : $this->messages[NESE_MESSAGE_UNKNOWN];
     }
 
     // }}}
