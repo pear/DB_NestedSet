@@ -67,7 +67,7 @@ CREATE TABLE `nested_set_locks` (
 
 require_once('DB/NestedSet.php');
 require_once('DB/NestedSet/Output.php');
-$dsn = 'mysql://root:3ugr4ts@localhost/test';
+$dsn = 'mysql://user:pass@localhost/test';
 $params = array(
     'id'        => 'id',
     'parent_id' => 'rootid',

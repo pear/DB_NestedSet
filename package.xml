@@ -35,16 +35,18 @@
         </maintainer>
       </maintainers>
       <release>
-        <version>1.3</version>
-        <date>2003-05-08</date>
+        <version>1.2.1</version>
+        <date>2003-05-25</date>
         <state>stable</state>
         <notes>
-         - Now $NeSe->setAttr() allows a PEAR function cache object to be passed using
+         - FEATURES
+         o Now $NeSe->setAttr() allows a PEAR function cache object to be passed using
            $NeSe->setAttr(array('cache'=>$cache_object));
            if this object is set, the class will use it to cache database queries.
            It will also flush this cache if the structure changes.
-         - Now a proper PEAR::Error object is returned in case of recursion instead of
-           returning false.
+         o All tree query methods now support an additional array named $addSQL.
+           This can be used to pass additional params to a query.
+           Means: You may now use joins to other tables.
         </notes>
         <filelist>
           <dir name="/" baseinstalldir="DB" role="php">
