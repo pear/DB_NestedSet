@@ -30,7 +30,8 @@ class DB_NestedSetTest extends TestBase  {
         (
         'node_table' => 'tb_nodes',
         'lock_table' => 'tb_locks',
-        'lockTTL'	 => -1)
+        'lockTTL'	 => 5,
+        'debug' => 0) 
         );
     }
     

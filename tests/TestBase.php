@@ -451,5 +451,22 @@ Class TestBase extends PhpUnit_Testcase {
         }
         return $relationNodes;
     }
+    
+    function _indentTree($tree) {
+
+        foreach($tree AS $nid=>$node) {
+
+            printf('%s %02d-%02d [%02d|%02d|%02d] | %s ', 
+            str_repeat(' ', $node['level']),
+            $node['l'], 
+            $node['r'], 
+            $node['level'], 
+            $node['norder'], 
+            $node['rootid'],
+            $node['name']);  
+            echo "\n"; 
+        } 
+        echo "\n";   
+    }
 }
 ?>

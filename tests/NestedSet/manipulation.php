@@ -29,6 +29,7 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_deleteNode() {
+        
         $relationTree = $this->_createRandomNodes(3, 150);
         $rootnodes = $this->_NeSe->getRootNodes(true);
         
