@@ -110,12 +110,12 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
 
     // }}}
-    
+
     // {{{ _query()
     function _query($sql) {
-    	return $this->db->query($sql);
+      return $this->db->query($sql);
     }
-    
+
     // {{{ _nextId()
 
     function _nextId($sequence)
@@ -159,14 +159,14 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _quoteIdentifier()
     function _quoteIdentifier($str) {
-		
-		// will work as soon as MDB supports this
+
+    // will work as soon as MDB supports this
         if (method_exists($this->db, 'quoteIdentifier')) {
             return $this->db->quoteIdentifier($str);
-        } 
+        }
         return $str;
-    } 	
-	// }}}
+    }
+  // }}}
     // {{{ _db_Disconnect()
     /**
     * Disconnects from db

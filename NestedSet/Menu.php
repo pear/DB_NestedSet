@@ -116,7 +116,7 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
 
             // We are at a rootnode - let's add it to the structure
             if ($nodeID == $node['rootid']) {
-            	
+
                 $menuStructure[$node['id']] = array(
                                 'title' => isset($node[$params['titleField']]) ? $node[$params['titleField']] : false,
                     'url' => isset($node[$params['urlField']]) ? $node[$params['urlField']] : false
@@ -191,5 +191,4 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
     }
     // }}}
 }
-
 ?>
