@@ -58,8 +58,8 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         'classField' => 'cssClass',
         'expandedField' => 'expanded',
         'linkTargetField' => 'linkTarget',
-        'isDynamicField' => 'isDynamic',
-        'ensureVisibleField' => 'ensureFisible'
+        'isDynamicField' => 'isDynamic', 
+        'ensureVisibleField' => 'ensureVisible'
         );
     // }}}
     // {{{ DB_NestedSet_TreeMenu
