@@ -39,7 +39,7 @@ define('NESE_MOVE_BEFORE', 'BE');
 // for moving a node after another
 define('NESE_MOVE_AFTER', 'AF');
 // for moving a node below another
-define('NESE_MOVE_BELOW', 'SUB');
+define('NESE_MOVE_BELOW', 'SUB'); 
 // Sortorders
 define('NESE_SORT_LEVEL', 'SLV');
 define('NESE_SORT_PREORDER', 'SPO');
@@ -1027,7 +1027,8 @@ class DB_NestedSet {
         }
         // EVENT (nodeCreate)
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            $this->triggerEvent('nodeCreate', $this->pickNode($node_id));
+            $thisnode = $this->pickNode($node_id);
+        	$this->triggerEvent('nodeCreate', $thisnode);
         }
         $this->_releaseLock();
         return $node_id;
@@ -1123,7 +1124,7 @@ class DB_NestedSet {
         // EVENT (NodeCreate)
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $thisnode = $this->pickNode($node_id);
-            $this->triggerEvent('nodeCreate', $this->pickNode($id));
+            $this->triggerEvent('nodeCreate', $thisnode);
         }
         $this->_releaseLock();
         return $node_id;
@@ -1226,7 +1227,8 @@ class DB_NestedSet {
         }
         // EVENT (NodeCreate)
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            $this->triggerEvent('nodeCreate', $this->pickNode($id));
+        	$thisnode = $this->pickNode($node_id);
+            $this->triggerEvent('nodeCreate', $thisnode);
         }
         $this->_releaseLock();
         return $node_id;
@@ -1331,7 +1333,8 @@ class DB_NestedSet {
         }
         // EVENT (NodeCreate)
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
-            $this->triggerEvent('nodeCreate', $this->pickNode($id));
+            $thisnode = $this->pickNode($node_id);
+        	$this->triggerEvent('nodeCreate', $thisnode);
         }
         $this->_releaseLock();
         return $node_id;
@@ -1884,7 +1887,6 @@ class DB_NestedSet {
             }
             $queryFields[] = $tmp_field;
         }
-
         $fields = implode(', ', $queryFields);
         return $fields;
     }
@@ -1969,8 +1971,14 @@ class DB_NestedSet {
      * Add an event listener
      *
      * Adds an event listener and returns an ID for it
-     *
-     * @param string $event The ivent name
+     * <pre>Known events are
+     * nodeCreate
+     * nodeDelete
+     * nodeUpdate
+     * nodeCopy
+     * nodeLoad
+     * </pre>
+     * @param string $event The event name
      * @param string $listener The listener object
      * @return string
      * @access public
