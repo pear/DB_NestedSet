@@ -35,7 +35,9 @@ class DB_NestedSetTest extends TestBase  {
         'lockTTL'    => 5,
         'debug' => 0)
         );
-
+		
+		// Try to pass a DB Object as DSN
+		
         $this->_NeSe2 = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe2->setAttr(array
         (

@@ -756,16 +756,28 @@ class DB_NestedSet {
                 $this->node_table, $this->secondarySort);
         } elseif ($this->_sortMode == NESE_SORT_PREORDER) {
             $firstsort = $this->flparams['l'];
+
             $sql = sprintf('SELECT %s %s FROM %s %s
-                    WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s 
+                    WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s %s
                     ORDER BY %s.%s ASC',
                 $this->_getSelectFields($aliasFields), $this->_addSQL($addSQL, 'cols'),
-                $this->node_table, $this->_addSQL($addSQL, 'join'),
-                $this->node_table, $this->flparams['l'], $parent['l'], $parent['r'],
-                $this->node_table, $this->flparams['rootid'], $parent['rootid'],
-                $this->node_table, $this->flparams['id'], $id, $this->_addSQL($addSQL, 'where', 'AND'), $this->_addSQL($addSQL, 'append'), 
-                $this->node_table, $firstsort);
-        } 
+                $this->node_table, 
+				$this->_addSQL($addSQL, 'join'),
+                $this->node_table, 
+				$this->flparams['l'], 
+				$parent['l'], 
+				$parent['r'],
+                $this->node_table, 
+				$this->flparams['rootid'], 
+				$parent['rootid'],
+                $this->node_table, 
+				$this->flparams['id'], 
+				$id, 
+				$this->_addSQL($addSQL, 'where', 'AND'), 
+				$this->_addSQL($addSQL, 'append'), 
+                $this->node_table, 
+				$firstsort);
+		} 
 
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
