@@ -1629,8 +1629,8 @@ class DB_NestedSet extends PEAR {
     function triggerEvent($event, &$node, $eparams = false) 
     {
         if($this->skipCallbacks || 
-            !is_array($this->eventListeners) || 
-            count($this->eventListeners) == 0) {
+            !is_array($this->eventListeners[$event]) || 
+            count($this->eventListeners[$event]) == 0) {
             return false;
         }
 
