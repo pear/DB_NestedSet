@@ -2007,7 +2007,7 @@ class DB_NestedSet extends PEAR {
             'majorversion'=>$this->_majorversion,
             'minorversion'=>$this->_minorversion,
             'version'=>sprintf('%s.%s',$this->_majorversion, $this->_minorversion),
-            'revision'=>"$Revision$"
+            'revision'=>str_replace('$', '',"$Revision$")
         );   
     }
     
