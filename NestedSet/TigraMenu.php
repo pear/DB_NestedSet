@@ -39,35 +39,26 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
     // {{{{ properties
 	
 	/**
-	* The depth of the current menu.
-	*
-	* @type integer
+	* @var integer The depth of the current menu.
 	* @access private
 	*/
 	var $_levels	= 1;
 
 	/**
-	* The level we started at
-	*
-	* @type integer
+	* @var integer The level we started at
 	* @access private
 	*/	
 	var $_levelOffset = false;
 	
 	
 	/**
-	* The current menu structure
-	*
-	* @type array
+	* @var array The current menu structure
 	* @access private
 	*/
 	var $_structTigraMenu = false;
 
 	/**
-	* The longest text for each level
-	* Used to expand the menu size to make
-	*
-	* @type array
+	* @var array The longest text for each level
 	* @access private
 	*/	
 	var $_strlenByLevel	= array();

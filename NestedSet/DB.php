@@ -37,8 +37,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
     // {{{ properties
 
     /**
-     * Db object
-     * @type object
+     * @var object Db object
      */
 	var $db;
 

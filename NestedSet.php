@@ -69,6 +69,7 @@ class DB_NestedSet extends PEAR {
 	
 	/**
 	* @var array The field parameters of the table with the nested set. Format: 'realFieldName' => 'fieldId'
+	* @access public
 	*/
 	var $params = array(
 	'STRID' => 'id',
@@ -82,26 +83,31 @@ class DB_NestedSet extends PEAR {
 	
 	/**
 	* @var array The above parameters flipped for easy access
+	* @access private
 	*/
 	var $flparams = array();
 	
 	/**
 	* @var array An array of field ids that must exist in the table
+	* Not used yet
 	*/
 	var $requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level');
 	
 	/**
 	* @var string The table with the actual tree data
+	* @access public
 	*/
 	var $node_table = 'tb_nodes';
 	
 	/**
 	* @var string The table to handle locking
+	* @access public
 	*/
 	var $lock_table = 'tb_locks';
 	
 	/**
 	* @var string The table used for sequences
+	* @access public
 	*/
 	var $sequence_table;
 	
@@ -109,42 +115,50 @@ class DB_NestedSet extends PEAR {
 	* Secondary order field.  Normally this is the order field, but can be changed to
 	* something else (i.e. the name field so that the tree can be shown alphabetically)
 	* @var string
+	* @access public
 	*/
 	var $secondarySort;
 	
 	/**
 	* @var int The time to live of the lock
+	* @access public
 	*/
 	var $lockTTL = 1;
 	
 	/**
 	* @var bool Enable debugging statements?
+	* @access public
 	*/
 	var $debug = false;
 	
 	/**
 	* @var bool Lock the structure of the table?
+	* @access private
 	*/
 	var $structureTableLock = false;
 	
 	/**
 	* @var bool Skip the callback events?
+	* @access private
 	*/
 	var $skipCallbacks = false;
 	
 	/**
 	* @var object cache Optional PEAR::Cache object
+	* @access public
 	*/
 	var $cache = false;
 	
 	/**
 	* @var bool Do we want to use caching
+	* @access private
 	*/
 	var $_caching = false;
 	
 	/**
 	* 
 	* @var bool Temporary switch for cache
+	* @access private
 	*/
 	var $_restcache = false;
 	
@@ -164,6 +178,7 @@ class DB_NestedSet extends PEAR {
 	
 	/**
 	* @var array The array of event listeners
+	* @access public
 	*/
 	var $eventListeners = array();
 	

@@ -38,8 +38,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // {{{ properties
 
     /**
-     * The MDB object
-     * @type object
+     * @var object The MDB object
      */
 	var $db;
 
