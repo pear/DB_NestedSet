@@ -1,11 +1,10 @@
 <?php
-$Id$
 /**
-* This example shows how to use the TigraMenu output driver
-*
-* @author Daniel Khan <dk@webcluster.at>
-*
-*/
+ * $Id$
+ * This example shows how to use the TigraMenu output driver
+ *
+ * @author Daniel Khan <dk@webcluster.at>
+ */
 
 // This example assumes that you have allready set up DB_NestedSet and allready
 // inserted nodes.
