@@ -104,23 +104,25 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
         // have to use a while loop here because foreach works on a copy of the array and
         // the child nodes are passed by reference during the recursion so that the parent
         // will know when they have been hit.
+
         reset($params['structure']);
-        while (list($key, $node) = each($params['structure'])) {
+        while(list($nodeID,$node)=each($params['structure'])) {
             // see if we've already been here before
             if (isset($node['hit']) || $node['level'] < $params['currentLevel']) {
                 continue;
             }
             // mark that we've hit this node
-            $params['structure'][$key]['hit'] = $node['hit'] = true;
+            $params['structure'][$nodeID]['hit'] = $node['hit'] = true;
 
-                        // We are at a rootnode - let's add it to the structure
-            if ($key == $node['rootid']) {
+            // We are at a rootnode - let's add it to the structure
+            if ($nodeID == $node['rootid']) {
+            	
                 $menuStructure[$node['id']] = array(
                                 'title' => isset($node[$params['titleField']]) ? $node[$params['titleField']] : false,
                     'url' => isset($node[$params['urlField']]) ? $node[$params['urlField']] : false
                     );
 
-                                // Use a reference so we can happily modify $menuParts to change $menuStructure
+                // Use a reference so we can happily modify $menuParts to change $menuStructure
                 $menuParts[$node['id']] = & $menuStructure[$node['id']];
             }
 
@@ -143,7 +145,7 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
                     if (!isset($childNode['hit']) && $node['rootid'] == $childNode['rootid'] && $node['l'] < $childNode['l'] && $node['r'] > $childNode['r'] && $childNode['level'] > $params['currentLevel']) {
                         // important that we assign it by reference here, so that when the child
                         // marks itself 'hit' the parent loops will know
-                        $children[] = & $params['structure'][$childKey];
+                        $children[$childKey] = & $params['structure'][$childKey];
                     }
                 }
 

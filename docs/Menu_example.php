@@ -69,23 +69,35 @@ require_once(dirname(__FILE__).'/../NestedSet.php');
 require_once(dirname(__FILE__).'/../NestedSet/Output.php');
 $dsn = 'mysql://user:password@localhost/test';
 $params = array(
-    'id'        => 'id',
-    'parent_id' => 'rootid',
-    'left_id'   => 'l',
-    'right_id'  => 'r',
-    'order_num' => 'norder',
-    'level'     => 'level',
-    'name'      => 'name', 
+    'STRID'        => 'id',
+    'ROOTID' => 'rootid',
+    'l'   => 'l',
+    'r'  => 'r',
+    'STREH' => 'norder',
+    'LEVEL'     => 'level',
+    'STRNA'      => 'name', 
+    'parent'	=> 'parent'
 );
 
 $nestedSet =& DB_NestedSet::factory('DB', $dsn, $params); 
 // we want the nodes to be displayed ordered by name, so we add the secondarySort attribute
 $nestedSet->setAttr(array(
-        'node_table' => 'nested_set', 
-        'lock_table' => 'nested_set_locks', 
+        'node_table' => 'tb_nodes', 
+        'lock_table' => 'tb_locks', 
         'secondarySort' => 'name',
     )
 );
+
+    $parent = $nestedSet->createRootNode(array('STRNA' =>'Testberichte'), false, true);
+    $nestedSet->createSubNode($parent, array('STRNA' => 'Pads,Sattelunterlagen'));
+    $nestedSet->createSubNode($parent, array('STRNA' =>'Kartentaschen'));
+    $nestedSet->createSubNode($parent, array('STRNA' =>'Kartenmesser'));
+    $nestedSet->createSubNode($parent, array('STRNA' => 'Erste Hilfe Sets'));
+    $nestedSet->createSubNode($parent, array('STRNA' => 'OutdoorJacken'));
+    $nestedSet->createSubNode($parent, array('STRNA' =>'flexible Sattel'));
+
+
+
 // get data (important to fetch it as an array, using the true flag)
 $data = $nestedSet->getAllNodes(true);
 
