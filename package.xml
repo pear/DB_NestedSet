@@ -17,6 +17,7 @@
         o output the tree with 
           - PEAR::HTML_TreeMenu
           - TigraMenu (http://www.softcomplex.com/products/tigra_menu/)
+        o It also features caching of SQL queries using PEAR::Cache
       </description>
       <license>PHP License</license>
           <homepage>http://oss.webcluster.at</homepage>
@@ -39,7 +40,7 @@
         <date>2003-05-25</date>
         <state>stable</state>
         <notes>
-         - FEATURES
+         - NEW FEATURES
          o Now $NeSe->setAttr() allows a PEAR function cache object to be passed using
            $NeSe->setAttr(array('cache'=>$cache_object));
            if this object is set, the class will use it to cache database queries.
@@ -47,6 +48,16 @@
          o All tree query methods now support an additional array named $addSQL.
            This can be used to pass additional params to a query.
            Means: You may now use joins to other tables.
+           
+         - FIXES
+         o createRightNode() returned the node object instead of the new node id, which
+           caused problems whith some internal method calls.
+         o TreeMenu and TigraMenu output drivers contained a bug which made them not
+           create the whole tree under certain circumstances
+           Thanks to Alain Petignat for reporting this
+         o Some minor E_ALL fixes (The package shouldn't produce notices/warnings with
+           E_ALL set)
+         o Added TigraMenu.php to the package which was missing in the last release 
         </notes>
         <filelist>
           <dir name="/" baseinstalldir="DB" role="php">

@@ -1348,6 +1348,7 @@ class DB_NestedSet extends PEAR {
 		
 		if ($pos != NESE_MOVE_BELOW) {
 			$c_id = $this->createRightNode($t_id, $values);
+			$clone = $this->pickNode($c_id);
 			if ($pos == NESE_MOVE_BEFORE) {
 				$this->moveTree($c_id, $t_id, $pos);
 			}
