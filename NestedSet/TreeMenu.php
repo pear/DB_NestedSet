@@ -26,33 +26,8 @@ require_once 'HTML/TreeMenu.php';
 /**
  * A helper class to translate the data from a nested set table into a HTML_TreeMenu object
  * so that it can be used to create a dynamic tree menu using the PEAR HTML_TreeMenu class.
- * An example usage:
- * require_once('DB/NestedSet.php');
- * require_once('DB/NestedSet/TreeMenu.php');
- * $nestedSet =& DB_NestedSet::factory('DB', $dsn, $params); 
- * $icon         = 'folder.gif';
- * $expandedIcon = 'folder-expanded.gif';
- * // get data (important to fetch it as an array, using the true flag)
- * $data = $nestedSet->getAllNodes(true);
- * // change the events for one of the elements
- * $data[35]['events'] = array('onexpand' => 'alert("we expanded!");');
- * // add links to each item
- * foreach ($data as $a_data) {
- *      $a_data['link'] = 'http://foo.com/foo.php?' . $a_data['id'];
- * }
- * $params = array(
- *     'structure' => $data,
- *     'options' => array(
- *          'icon' => $icon,
- *          'expandedIcon' => $expandedIcon,
- *     ),
- *     'textField' => 'name',
- *     'linkField' => 'link',
- * );
- * $menu =& DB_NestedSet_TreeMenu::createFromStructure($params);
- * $list =& HTML_TreeMenu_Listbox($menu);
- * $list->toHtml();
  *
+ * @see          docs/TreeMenu_example.php
  * @author       Jason Rust <jrust@rustyparts.com>
  * @package      DB_NestedSet
  * @version      $Revision$
@@ -130,8 +105,9 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                 // harvest all the children
                 foreach ($params['structure'] as $childKey => $childNode) {
                     if (!isset($childNode['hit']) && 
-                        $node['rootid'] == $childNode['rootid'] &&
-                        $childNode['level'] > $params['currentLevel']) {
+                        $childNode['l'] > $node['l'] &&
+                        $childNode['r'] < $node['r'] &&
+                        $childNode['rootid'] == $node['rootid']) {
                         // important that we assign it by reference here, so that when the child
                         // marks itself 'hit' the parent loops will know
                         $children[] =& $params['structure'][$childKey];
