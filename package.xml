@@ -36,12 +36,12 @@
         </maintainer>
       </maintainers>
       <release>
-        <version>1.2.3</version>
+        <version>1.2.4</version>
         <date>2003-07-16</date>
         <state>stable</state>
         <notes>
-			o Fixes a typo in _addSQL()
-			  Thanks to Rense Klinkenberg for sending patch
+			o Fixed a problem in re-sorting after node deletion
+			o Added an example for building a JavaScript tree with TreeMenu
         </notes>
         <filelist>
           <dir name="/" baseinstalldir="DB" role="php">
@@ -64,6 +64,15 @@
         </filelist>
       </release>
      <changelog>
+      <release>
+        <version>1.2.3</version>
+        <date>2003-07-16</date>
+        <state>stable</state>
+        <notes>
+			o Fixes a typo in _addSQL()
+			  Thanks to Rense Klinkenberg for sending patch
+        </notes>
+      </release>
       <release>
         <version>1.2.2</version>
         <date>2003-07-15</date>

@@ -853,7 +853,7 @@ class DB_NestedSet extends PEAR {
 		// Shall we delete the existing tree (reinit)
 		if ($first) {
 			$sql = "DELETE FROM $tb";
-			$this->query($sql);
+			$this->db->query($sql);
 			$this->db->dropSequence($this->sequence_table);
 			// New order of the new node will be 1
 			$addval[$freh] = 1;
@@ -884,13 +884,13 @@ class DB_NestedSet extends PEAR {
 		if (!$first) {
 			// Open the gap
 			$sql = "UPDATE $tb SET $freh=$freh+1 WHERE $fid=$froot AND $freh>$parent->norder";
-			$res = $this->query($sql);
+			$res = $this->db->query($sql);
 			$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		}
 		
 		// Insert the new node
 		$sql = "INSERT INTO $tb SET $qr";
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		// EVENT (nodeCreate)
@@ -964,13 +964,13 @@ class DB_NestedSet extends PEAR {
                 WHERE $froot=" . $this->db->quote($rootid) . " AND 
                 $flft>" . $this->db->quote($rgt) . " AND 
                 $frgt>=" . $this->db->quote($rgt);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		$sql = "UPDATE $tb SET $frgt=$frgt+2
                 WHERE $froot=" . $this->db->quote($rootid) . " AND 
                 $frgt>=" . $this->db->quote($rgt);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		$addval = array();
@@ -985,7 +985,7 @@ class DB_NestedSet extends PEAR {
 		}
 		
 		$sql = "INSERT INTO $tb SET $qr";
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		// EVENT (NodeCreate)
@@ -1060,7 +1060,7 @@ class DB_NestedSet extends PEAR {
                 $flevel=$level AND 
                 $flft BETWEEN $plft AND $prgt";
                
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		// Update all nodes which have dependent left and right values
@@ -1069,7 +1069,7 @@ class DB_NestedSet extends PEAR {
                 $frgt=IF($frgt>$rgt, $frgt+2, $frgt)
                 WHERE $froot=" . $this->db->quote($rootid) . "
                 AND $frgt>" . $this->db->quote($rgt);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		$addval[$freh] = $parent_order + 1;
@@ -1084,7 +1084,7 @@ class DB_NestedSet extends PEAR {
 		
 		// Insert the new node
 		$sql = "INSERT INTO $tb SET $qr";
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
 		// EVENT (NodeCreate)
@@ -1138,7 +1138,7 @@ class DB_NestedSet extends PEAR {
 		$len = $rgt - $lft + 1;
 		// Delete the node
 		$sql = "DELETE from $tb WHERE $flft BETWEEN $lft AND $rgt AND $froot=" . $this->db->quote($rootid);
-		$this->query($sql);
+		$this->db->query($sql);
 		
 		if ($thisnode->id != $thisnode->rootid) {
 			// The node isn't a rootnode so close the gap
@@ -1147,7 +1147,7 @@ class DB_NestedSet extends PEAR {
                     $frgt=IF($frgt>$lft, $frgt-$len, $frgt)
                     WHERE $froot=" . $this->db->quote($rootid) . " AND 
                     ($flft>$lft OR $frgt>$rgt)";
-			$res = $this->query($sql);
+			$res = $this->db->query($sql);
 			$this->_testFatalAbort($res, __FILE__,  __LINE__);
 			
 			// Re-order
@@ -1157,12 +1157,12 @@ class DB_NestedSet extends PEAR {
                     $freh>$order AND
                     $flft BETWEEN $plft AND $prgt";
 
-			$res = $this->query($sql);
+			$res = $this->db->query($sql);
 			$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		} else {
 			// A rootnode was deleted and we only have to close the gap inside the order
 			$sql = "UPDATE $tb SET $freh=$freh-1 WHERE $froot=$fid AND $freh > $order";
-			$res = $this->query($sql);
+			$res = $this->db->query($sql);
 			$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		}
 		
@@ -1202,7 +1202,7 @@ class DB_NestedSet extends PEAR {
 		}
 		
 		$sql = "UPDATE $this->node_table SET $qr WHERE $fid=" . $this->db->quote($id);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		return true;
 	}
@@ -1467,12 +1467,12 @@ class DB_NestedSet extends PEAR {
                             $fid=" . $this->db->quote($key) . ",
                             $froot=" . $this->db->quote($key) . " 
                         WHERE $fid=" . $this->db->quote($val);
-				$this->query($sql);
+				$this->db->query($sql);
 				$orootid = $clone->rootid;
 				$sql = "UPDATE $tb
                         SET $froot=" . $this->db->quote($key) . "
                         WHERE $froot=" . $this->db->quote($orootid);
-				$this->query($sql);
+				$this->db->query($sql);
 			}
 			
 			$this->skipCallbacks = false;
@@ -1566,11 +1566,11 @@ class DB_NestedSet extends PEAR {
                             $froot=" . $this->db->quote($rootid) . " 
                             AND 
                             $flft BETWEEN $plft AND $prgt";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order-1 WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 			elseif ($pos == NESE_MOVE_AFTER) {
@@ -1584,11 +1584,11 @@ class DB_NestedSet extends PEAR {
                             $froot=" . $this->db->quote($rootid) . " 
                             AND 
                             $flft BETWEEN $plft AND $prgt";  
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order WHERE $fid = $s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 		}
@@ -1605,11 +1605,11 @@ class DB_NestedSet extends PEAR {
                             $flevel=" . $this->db->quote($level) . "
                             AND 
                             $flft BETWEEN $plft AND $prgt";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 			elseif ($pos == NESE_MOVE_AFTER) {
@@ -1625,11 +1625,11 @@ class DB_NestedSet extends PEAR {
                             $flevel=" . $this->db->quote($level) . "
                             AND 
                             $flft BETWEEN $plft AND $prgt";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order+1 WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 		}
@@ -1692,10 +1692,10 @@ class DB_NestedSet extends PEAR {
                             $fid!=$t_id AND 
                             $fid!=$s_id AND 
                             $froot=$fid";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				$sql = "UPDATE $tb SET $freh=$t_order -1 WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 			elseif($pos == NESE_MOVE_AFTER) {
@@ -1704,11 +1704,11 @@ class DB_NestedSet extends PEAR {
                         WHERE $freh BETWEEN $s_order AND $t_order AND 
                             $fid!=$s_id AND 
                             $froot=$fid";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 		}
@@ -1719,11 +1719,11 @@ class DB_NestedSet extends PEAR {
                         WHERE $freh BETWEEN $t_order AND $s_order AND 
                             $fid != $s_id AND 
                             $froot=$fid";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order WHERE $fid=$s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 			elseif ($pos == NESE_MOVE_AFTER) {
@@ -1732,11 +1732,11 @@ class DB_NestedSet extends PEAR {
                         $fid!=$t_id AND 
                         $fid!=$s_id AND 
                         $froot=$fid";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 				
 				$sql = "UPDATE $tb SET $freh=$t_order+1 WHERE $fid = $s_id";
-				$res = $this->query($sql);
+				$res = $this->db->query($sql);
 				$this->_testFatalAbort($res, __FILE__, __LINE__);
 			}
 		}
@@ -1929,7 +1929,7 @@ class DB_NestedSet extends PEAR {
 		$stb = $this->node_table;
 		$lockTTL = time() - $this->lockTTL;
 		$sql = "SELECT lockID FROM $tb WHERE lockTable=" . $this->db->quote($stb);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__, __LINE__);
 		
 		if ($res->numRows()) {
@@ -1973,7 +1973,7 @@ class DB_NestedSet extends PEAR {
                         lockTable=" . $this->db->quote($stb);
 		}
 		
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__, __LINE__);
 		return $lockID;
 	}
@@ -1996,7 +1996,7 @@ class DB_NestedSet extends PEAR {
 		$sql = "DELETE FROM $tb
                 WHERE lockTable=" . $this->db->quote($stb) . " AND 
                     lockID=" . $this->db->quote($lockID);
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__, __LINE__);
 		$this->structureTableLock = false;
 		if($this->_restcache) {
@@ -2021,7 +2021,7 @@ class DB_NestedSet extends PEAR {
 		$sql = "DELETE FROM $tb
                 WHERE lockTable=" . $this->db->quote($stb) . " AND 
                     lockStamp < $lockTTL";
-		$res = $this->query($sql);
+		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__, __LINE__);
 	}
 	
