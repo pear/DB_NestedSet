@@ -66,7 +66,19 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
+    function test_rootUnderRoot() {
+        $rootnodes = $this->_createRootNodes(3);
+
+		$ret =  $this->_NeSe->moveTree($rootnodes[1]['id'], $rootnodes[2]['id'], NESE_MOVE_BELOW);
+        
+		$source = $this->_NeSe->pickNode($rootnodes[1]['id'], true);
+		$parent = $this->_NeSe->getParent($rootnodes[1]['id'], true, true, array(), false);
+		$target = $this->_NeSe->pickNode($rootnodes[2]['id'], true);
+		$this->assertEquals($target['id'], $source['parent'], 'Parent id from column is wrong');
+		$this->assertEquals($target['id'], $parent['id'], 'Calculated parent id is wrong');
+		return true;
+    }    
   
     function test_moveTree() {
         
