@@ -371,11 +371,14 @@ class DB_NestedSet extends PEAR {
      *             a set of NestedSet_Node objects? 
      * @param bool $aliasFields (optional) Should we alias the fields so they are the names
      *             of the parameter keys, or leave them as is? 
+     * @param bool $forceNorder (optional) Force the result to be ordered by the norder
+     *             param (as opposed to the value of secondary sort).  Used by the move and
+     *             add methods.
      *
      * @access public
      * @return mixed False on error, or an array of nodes 
      */
-    function getChildren($id, $keepAsArray = false, $aliasFields = true) 
+    function getChildren($id, $keepAsArray = false, $aliasFields = true, $forceNorder = false) 
     {
         $this->_debugMessage('getChildren($id)');
         $parent = $this->_getNodeObject($id);
@@ -383,6 +386,7 @@ class DB_NestedSet extends PEAR {
             return false;
         }
         
+        $orderBy = $forceNorder ? $this->flparams['norder'] : $this->secondarySort;
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s=%s+1 AND %s BETWEEN %s AND %s ORDER BY %s ASC',
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
@@ -393,7 +397,7 @@ class DB_NestedSet extends PEAR {
                             $this->flparams['l'],
                             $parent->l,
                             $parent->r,
-                            $this->flparams['norder']
+                            $orderBy
                );
         return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
@@ -685,7 +689,7 @@ class DB_NestedSet extends PEAR {
         $freh = $this->flparams['norder'];
         $flevel = $this->flparams['level'];
         // Get the children of the target node
-        $children = $this->getChildren($id);
+        $children = $this->getChildren($id, false, true, true);
         // We have children here
         if ($children) {
             // Get the last child
@@ -1091,7 +1095,7 @@ class DB_NestedSet extends PEAR {
         }
 
         $relations[$s_id] = $c_id;
-        $children = $this->getChildren($source);
+        $children = $this->getChildren($source, false, true, true);
         $first = true;
         if ($children) {
             // Recurse trough the child nodes
@@ -1143,7 +1147,7 @@ class DB_NestedSet extends PEAR {
         $t_id = $target->id;
         $c_id = $this->$action($t_id, $values);
         $relations[$s_id] = $c_id;
-        $children = $this->getChildren($source);
+        $children = $this->getChildren($source, false, true, true);
         if (!$children) {
             return $c_id;
         }
