@@ -34,6 +34,7 @@ require_once 'PEAR.php';
 
 // {{{ constants
 
+
 // Error and message codes
 define('NESE_ERROR_RECURSION',    'E100');
 define('NESE_DRIVER_NOT_FOUND',   'E200');
@@ -42,6 +43,7 @@ define('NESE_ERROR_TBLOCKED',     'E010');
 define('NESE_MESSAGE_UNKNOWN',    'E0');
 define('NESE_ERROR_NOTSUPPORTED', 'E1');
 define('NESE_ERROR_PARAM_MISSING','E400');
+define('NESE_ERROR_UNKNOWN_PARAM','E401');
 define('NESE_ERROR_NOT_FOUND',    'E500');
 
 // for moving a node before another
@@ -81,6 +83,10 @@ class DB_NestedSet extends PEAR {
     'STRNA' => 'name'
     );
     
+    /**
+    * @var array An array of fieldnames which shouldn't be updated by external calls
+    * @access private
+    */    
     var $_protected_params = array(
     'id', 'rootid', 'l', 'r', 'norder', 'level'
     );
@@ -187,6 +193,7 @@ class DB_NestedSet extends PEAR {
     NESE_ERROR_NOTSUPPORTED => 'Method not supported yet',
     NESE_ERROR_NOHANDLER    => 'Event handler not found',
     NESE_ERROR_PARAM_MISSING=> 'Parameter missing',
+    NESE_ERROR_UNKNOWN_PARAM  => 'An unknown parameter was passed',
     NESE_MESSAGE_UNKNOWN    => 'Unknown error or message',
     NESE_ERROR_NOT_FOUND    => 'Node not found',
     );
@@ -1255,7 +1262,7 @@ class DB_NestedSet extends PEAR {
         }
         $fid = $this->flparams['id'];
         
-        if (!$qr = $this->_values2Query($values)) {
+        if (!$qr = $this->_values2Query($values, true)) {
             return false;
         }
 
@@ -2102,14 +2109,20 @@ class DB_NestedSet extends PEAR {
     /**
     * @access private
     */
-    function _values2Query($values) {
+    function _values2Query($values, $protected=false) {
         if ($this->debug) {
             $this->_debugMessage('_values2Query($values)');
         }
         $arq = array();
         foreach($values AS $key => $val) {
+
+            if(!in_array($key, $this->flparams)) {
+                $this->raiseError("Unknown param $key passed", NESE_ERROR_UNKNOWN_PARAM, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            } elseif($protected && in_array($this->params[$key], $this->_protected_params)) {
+                continue;   
+            }
             $k = trim($key);
-            $v = trim($val);
+            $v = trim($val); 
             if ($k) {
 
                 $arq[] = "$k=" . $this->db->quote($v);
