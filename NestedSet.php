@@ -36,7 +36,7 @@ require_once 'PEAR.php';
 
 // Error and message codes
 define('NESE_ERROR_RECURSION',    'E100');
-define('NESE_DRIVER_NOT_FOUND',   'E200');
+define('NESE_ERROR_NODRIVER',   'E200');
 define('NESE_ERROR_NOHANDLER',    'E300');
 define('NESE_ERROR_TBLOCKED',     'E010');
 define('NESE_MESSAGE_UNKNOWN',    'E0');
@@ -175,13 +175,20 @@ class DB_NestedSet extends PEAR {
     */
     var $_restcache = false;
     
+    var $_packagename   = 'DB_NestedSet';
+    
+    var $_majorversion   = 1;
+    
+    var $_minorversion   = 3;
+
+    
     /**
     * @var array Map of error messages to their descriptions
     */
     var $messages = array(
     NESE_ERROR_RECURSION    => 'This operation would lead to a recursion',
     NESE_ERROR_TBLOCKED     => 'The structure Table is locked for another database operation, please retry.',
-    NESE_DRIVER_NOT_FOUND   => 'The selected database driver wasn\'t found',
+    NESE_ERROR_NODRIVER   => 'The selected database driver %s wasn\'t found',
     NESE_ERROR_NOTSUPPORTED => 'Method not supported yet',
     NESE_ERROR_NOHANDLER    => 'Event handler not found',
     NESE_ERROR_PARAM_MISSING=> 'Parameter missing',
@@ -226,6 +233,7 @@ class DB_NestedSet extends PEAR {
         $this->flparams = array_flip($this->params);
         $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
         $this->secondarySort = $this->flparams['norder'];
+        register_shutdown_function('_DB_NesetSet');
     }
     
     // }}}
@@ -247,9 +255,8 @@ class DB_NestedSet extends PEAR {
         if (!class_exists($classname)) {
             $driverpath = dirname(__FILE__).'/NestedSet/'.$driver.'.php';
             if(!file_exists($driverpath) || !$driver) {
-                return new PEAR_Error('E200',"The database driver '$driver' wasn't found");
+                return PEAR::raiseError("factory(): The database driver '$driver' wasn't found", NESE_ERROR_NODRIVER, PEAR_ERROR_TRIGGER, E_USER_ERROR);
             }
-            
             include_once($driverpath);
         }
         return new $classname($dsn, $params);
@@ -992,8 +999,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // Insert the new node
-        $sql[] = sprintf('INSERT INTO %s SET %s',
-        
+        $sql[] = sprintf('INSERT INTO %s SET %s',        
         $this->node_table,
         $qr);
         
@@ -1993,6 +1999,19 @@ class DB_NestedSet extends PEAR {
     }
     
     // }}}
+    
+    
+    function api() {
+        return array(
+            'package:'=>$this->_packagename,
+            'majorversion'=>$this->_majorversion,
+            'minorversion'=>$this->_minorversion,
+            'version'=>sprintf('%s.%s',$this->_majorversion, $this->_minorversion),
+            'revision'=>"$Revision$"
+        );   
+    }
+    
+    
     // {{{ setAttr()
     
     /**
