@@ -20,15 +20,25 @@ class DB_NestedSetTest extends TestBase  {
         "r"             =>      "r",       // "r" must exist
         "STREH"         =>      "norder",  // "order" must exist
         "LEVEL"         =>      "level",   // "level" must exist
-        "STRNA"         =>      "name"     // Custom - specify as many fields you want
+        "STRNA"         =>      "name",     // Custom - specify as many fields you want
+        "parent"        =>      "parent"     // Custom - specify as many fields you want
         );
         
-        $db_driver = 'DB';
+        $db_driver = 'MDB';
         $db_dsn    = 'mysql://user:password@localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe->setAttr(array
         (
         'node_table' => 'tb_nodes',
+        'lock_table' => 'tb_locks',
+        'lockTTL'	 => 5,
+        'debug' => 0) 
+        );
+        
+        $this->_NeSe2 = DB_NestedSet::factory($db_driver, $db_dsn, $params);
+        $this->_NeSe2->setAttr(array
+        (
+        'node_table' => 'tb_nodes2',
         'lock_table' => 'tb_locks',
         'lockTTL'	 => 5,
         'debug' => 0) 

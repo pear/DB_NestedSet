@@ -12,8 +12,7 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
 
         $node_c1 = $this->_NeSe->createLeftNode($node_a1, $values);
         $values['STRNA'] = 'B1';
-        $node_b1 = $this->_NeSe->createRightNode($node_a1, $values, true); 
-    
+        $node_b1 = $this->_NeSe->createRightNode($node_a1, $values); 
         
         // B1-1 Branch
         $values['STRNA'] = 'B1-1';
@@ -26,8 +25,11 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $node_b1111 = $this->_NeSe->createSubNode($node_b111, $values); 
                  
         $values['STRNA'] = 'B1-1-2';
-        $node_b112 = $this->_NeSe->createRightNode($node_b111, $values, true);     
-      
+        $node_b112 = $this->_NeSe->createRightNode($node_b111, $values);     
+
+        $values['STRNA'] = 'A1t';
+        $node_a1t = $this->_NeSe->createRightNode($node_b111, $values);  
+                
         // B1-2 Branch
         $values['STRNA'] = 'B1-2';
         $node_b12 = $this->_NeSe->createSubNode($node_b1, $values); 
@@ -76,6 +78,17 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $this->_indentTree($subbranch_b11_byname_pre);
         $this->_indentTree($parents_b111_byname_pre);
         $this->_indentTree($children_b12_byname_pre);
+    }
+    
+    function test_convertModel() {
+        $rnc = 3;
+        $depth = 1;
+        $npl = 2;
+        $this->_createSubNode($rnc, $depth, $npl);
+        DB_NestedSet::convertTreeModel($this->_NeSe, $this->_NeSe2);
+        $this->_NeSe->sortmode = NESE_SORT_LEVEL;
+        $this->_NeSe2->sortmode = NESE_SORT_LEVEL;      
+        $this->assertEquals($this->_NeSe->getAllNodes(true), $this->_NeSe2->getAllNodes(true), 'Converted tree should match original');
     }
 }
 ?>

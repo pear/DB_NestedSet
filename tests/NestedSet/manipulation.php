@@ -109,6 +109,7 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
             // Just make sure that all the nodes are still there
             $this->assertFalse(count(array_diff(array_keys($allnodes1), array_keys($allnodes2))), 'Nodes got lost during the move');
         } 
+        return true;
     }
 
 

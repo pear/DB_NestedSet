@@ -28,7 +28,6 @@ class tests_NestedSet_query extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_getAllNodes() {
-
         $rnc = 3;
         $depth = 2;
         $npl = 3;
@@ -106,6 +105,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         }
         return true;
     }
+
     
     /**
     * tests_NestedSet_common::test_getParent()
