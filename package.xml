@@ -36,6 +36,42 @@
         </maintainer>
       </maintainers>
       <release>
+        <version>1.2.2</version>
+        <date>2003-07-15</date>
+        <state>stable</state>
+        <notes>
+        This release fixes some bugs which occured since 1.2.1
+        We will now move towards 2.0 which will include big improvements
+        but also some BC breaks.
+        FIXES
+         o Fixed a bug which leads to wrong results when copying nodes
+         o Fixed a node ordering bug in createRightNode (Thanks to Stefan Wimmer)
+         o Fixed bug that had crept in so that $aliasFields was not working
+         o Doc and style fixes
+        </notes>
+        <filelist>
+          <dir name="/" baseinstalldir="DB" role="php">
+            <file>NestedSet.php</file>
+            <dir name="NestedSet" role="php">
+              <file>DB.php</file>
+              <file>MDB.php</file>
+              <file>Event.php</file>
+              <file>Output.php</file>
+              <file>TreeMenu.php</file>
+              <file>TigraMenu.php</file>
+            </dir>
+          </dir>
+          <dir name="docs" role="doc">
+            <file>README</file>
+            <file>mysql.sql</file>
+            <file>TreeMenu_example.php</file>
+            <file>TigraMenu_example.php</file>
+          </dir>
+        </filelist>
+      </release>
+     <changelog>
+
+      <release>
         <version>1.2.1</version>
         <date>2003-05-25</date>
         <state>stable</state>
@@ -59,27 +95,8 @@
            E_ALL set)
          o Added TigraMenu.php to the package which was missing in the last release 
         </notes>
-        <filelist>
-          <dir name="/" baseinstalldir="DB" role="php">
-            <file>NestedSet.php</file>
-            <dir name="NestedSet" role="php">
-              <file>DB.php</file>
-              <file>MDB.php</file>
-              <file>Event.php</file>
-              <file>Output.php</file>
-              <file>TreeMenu.php</file>
-              <file>TigraMenu.php</file>
-            </dir>
-          </dir>
-          <dir name="docs" role="doc">
-            <file>README</file>
-            <file>mysql.sql</file>
-            <file>TreeMenu_example.php</file>
-            <file>TigraMenu_example.php</file>
-          </dir>
-        </filelist>
       </release>
-     <changelog>
+
       <release>
         <version>1.2pl1</version>
         <date>2003-05-08</date>

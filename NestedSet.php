@@ -758,18 +758,18 @@ class DB_NestedSet extends PEAR {
      * @access private
      * @return string The SQL, properly formatted
      */
-	function _addSQL($addSQL, $type) 
+    function _addSQL($addSQL, $type) 
     {
 		if (!isset($addSQL[$type])) {
 			return '';
 		}		
 		
-		switch($param) {
+		switch($type) {
 			case 'cols':
-				return ', ' . $addSQL[$param];
+				return ', ' . $addSQL[$type];
 			break;	
 			default:
-				return $addSQL[$param];
+				return $addSQL[$type];
 			break;
 		}
 	}
