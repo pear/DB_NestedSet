@@ -451,6 +451,7 @@ class DB_NestedSet extends PEAR {
     }
     
     // }}}
+
     // {{{ getBranch()
     
     /**
@@ -530,6 +531,10 @@ class DB_NestedSet extends PEAR {
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
+        }
+        if($this->sortmode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
+            // doesn't work as expected for now
+            uasort($nodeSet, array($this, '_secSort'));
         }
         return $nodeSet;
     }
@@ -1950,13 +1955,36 @@ class DB_NestedSet extends PEAR {
         return $source->id;
     }
     
-    // }}}
+    // }}} 
     // +-----------------------+
     // | Helper methods        |
     // +-----------------------+
 
-    // {{{ _addSQL()
+    function _secSort($node1, $node2) {
+        
+        // Within the same level?
+        if($node1['level'] != $node2['level']) { 
+            return strnatcmp($node1['l'], $node2['l']);  
+        }
+
+        // Are they siblings?
+        $p1 = $this->getParent($node1);
+        $p2 = $this->getParent($node2); 
+        if($p1['id'] != $p2['id']) { 
+            return strnatcmp($node1['l'], $node2['l']);  
+        }         
+        
+        // Same field value? Use the lft value then
+        $field = $this->params[$this->secondarySort]; 
+        if($node1[$field] == $node2[$field]) {
+            return strnatcmp($node1['l'], $node2[l]);
+        }
+        
+        // Compare between siblings with different field value
+        return strnatcmp($node1[$field], $node2[$field]);
+    }
     
+    // {{{ _addSQL()
     /**
     * Adds a specific type of SQL to a query string
     *
