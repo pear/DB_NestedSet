@@ -446,9 +446,10 @@ Class TestBase extends PhpUnit_Testcase {
     }
 
     function _indentTree($tree) {
+        echo "<pre>";
         foreach($tree AS $nid => $node) {
             printf('%s %02d-%02d [%02d|%02d|%02d] | %s ',
-                str_repeat(' ', $node['level']),
+                str_repeat('-', $node['level']),
                 $node['l'],
                 $node['r'],
                 $node['level'],
@@ -457,7 +458,7 @@ Class TestBase extends PhpUnit_Testcase {
                 $node['name']);
             echo "\n";
         }
-        echo "\n";
+        echo "</pre>\n";
     }
 }
 
