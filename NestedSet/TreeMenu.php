@@ -162,6 +162,43 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         $listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
         $listBox->printMenu();
     }
+    // }}}
+    
+    // }}}
+    // {{{ tree_toHTML()
+    
+    /**
+    * Returns the HTML for the DHTML-menu. This method can be
+    * used instead of printMenu() to use the menu system
+    * with a template system.
+    *
+    * @access public
+    * @return string The HTML for the menu
+    * @Author Emanuel Zueger
+    */
+    function tree_toHTML() {
+        $options = $this->_getOptions('toHTML');
+        $tree  =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
+        return $tree->toHTML();
+    }
+    
+    // }}}
+    // {{{ listbox_toHTML()
+    
+    /**
+    * Returns the HTML for the listbox. This method can be
+    * used instead of printListbox() to use the menu system
+    * with a template system.
+    *
+    * @access public
+    * @return string The HTML for the listbox
+    * @author Emanuel Zueger
+    */
+    function listbox_toHTML() {
+        $options = $this->_getOptions('toHTML');
+        $listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
+        return $listBox->toHTML();
+    }
     
     // }}}
 }

@@ -174,5 +174,38 @@ class DB_NestedSet_Output {
     }
     
     // }}}
+    
+	// {{{ toHTML()
+
+    /**
+     * Returns the HTML for the DHTML-menu. This method can be
+     * used instead of printMenu() to use the menu system
+     * with a template system.
+     *
+     * @access public
+     * @return string The HTML for the menu
+     * @author Emanuel Zueger
+     */	
+	function tree_toHTML() {
+		PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+	}
+
+    // }}}
+	// {{{ listbox_toHTML()
+
+    /**
+     * Returns the HTML for the listbox. This method can be
+     * used instead of printListbox() to use the menu system
+     * with a template system.
+     *
+     * @access public
+     * @return string The HTML for the listbox
+     * @author Emanuel Zueger
+     */	
+	function listbox_toHTML() {
+		PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+	}
+
+	// }}}    
 }
 ?>
