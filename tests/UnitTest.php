@@ -22,10 +22,10 @@ class DB_NestedSetTest extends TestBase  {
         "LEVEL"         =>      "level",   // "level" must exist
         "STRNA"         =>      "name",     // Custom - specify as many fields you want
         "parent"        =>      "parent",     // Custom - specify as many fields you want
-		"key"        	=>      "key"     // Custom - specify as many fields you want
+                "key"           =>      "key"     // Custom - specify as many fields you want
         );
 
-        $db_driver = 'MDB';
+        $db_driver = 'DB';
         $db_dsn    = 'mysql://user:password@localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe->setAttr(array
@@ -35,8 +35,8 @@ class DB_NestedSetTest extends TestBase  {
         'lockTTL'    => 5,
         'debug' => 0)
         );
-		
-		// Try to pass a DB Object as DSN
+
+                // Try to pass a DB Object as DSN
 
         $this->_NeSe2 = DB_NestedSet::factory($db_driver, $this->_NeSe->db, $params);
 

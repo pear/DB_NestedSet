@@ -210,7 +210,7 @@ class DB_NestedSet_Output {
     /**
      *
      * @access public
-     * @return mixed 
+     * @return mixed
      */
     function returnStructure() {
         PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);

@@ -101,7 +101,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _isDBError()
 
-    function _isDBError($err) 
+    function _isDBError($err)
     {
         if (!MDB::isError($err)) {
             return false;
@@ -112,7 +112,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _nextId()
 
-    function _nextId($sequence) 
+    function _nextId($sequence)
     {
         return $this->db->nextId($sequence);
     }
@@ -120,7 +120,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _dropSequence()
 
-    function _dropSequence($sequence) 
+    function _dropSequence($sequence)
     {
         $this->db->loadManager();
         return $this->db->dropSequence($sequence);
@@ -129,7 +129,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _getAll()
 
-    function _getAll($sql) 
+    function _getAll($sql)
     {
         return $this->db->queryAll($sql, null, MDB_FETCHMODE_ASSOC);
     }
@@ -137,7 +137,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _numRows()
 
-    function _numRows($res) 
+    function _numRows($res)
     {
         return $this->db->numRows($res);
     }
@@ -145,14 +145,19 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     // }}}
     // {{{ _quote()
 
-    function _quote($str) 
+    function _quote($str)
     {
         return $this->db->getTextValue($str);
     }
 
     // }}}
+    // {{{ _quote()
+	// Not implemented by MDB yet
+    function _quoteIdentifier($str) {
+		return $str;
+    } 	
+	// }}}
     // {{{ _db_Disconnect()
-
     /**
     * Disconnects from db
     *

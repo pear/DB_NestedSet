@@ -37,7 +37,7 @@ class DB_NestedSet_GraphViz extends DB_NestedSet_Output
 {
     /**
      * @var array The current menu structure
-     * 
+     *
      * @access private
      */
     var $_structTreeMenu = false;
