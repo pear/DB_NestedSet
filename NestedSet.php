@@ -1698,12 +1698,7 @@ class DB_NestedSet {
 			$t_parent = $this->getParent($clone_id, true, true, array(), false);
 			$t_parent_id = $t_parent['id'];
 		} elseif(isset($this->flparams['parent'])) {
-			if(isset($source['parent'])) {
 				$t_parent_id = $source['parent'];
-			} else {
-				$t_parent = $this->getParent($source['id'], true, true, array(), false);
-				$t_parent_id = $t_parent['id'];
-			}
 		} else {
 			$t_parent_id = false;
 		}
