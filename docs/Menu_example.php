@@ -19,23 +19,6 @@
 # Table structure for table `nested_set`
 #
 
-CREATE TABLE `nested_set` (
-  `id` int(10) unsigned NOT NULL default '0',
-  `parent_id` int(10) unsigned NOT NULL default '0',
-  `order_num` tinyint(4) unsigned NOT NULL default '0',
-  `level` int(10) unsigned NOT NULL default '0',
-  `left_id` int(10) unsigned NOT NULL default '0',
-  `right_id` int(10) unsigned NOT NULL default '0',
-  `name` varchar(60) NOT NULL default '',
-  PRIMARY KEY  (`id`),
-  KEY `right` (`right_id`),
-  KEY `left` (`left_id`),
-  KEY `order` (`order_num`),
-  KEY `level` (`level`),
-  KEY `parent_id` (`parent_id`),
-  KEY `right_left` (`id`,`parent_id`,`left_id`,`right_id`)
-) TYPE=MyISAM;
-
 
 CREATE TABLE `tb_nodes` (
   `STRID` int(11) NOT NULL auto_increment,
