@@ -1,7 +1,7 @@
 <?php
-/**
+//
 // +----------------------------------------------------------------------+
-// | PEAR :: DB_NestedSet_DB                                                   |
+// | PEAR :: DB_NestedSet_DB                                              |
 // +----------------------------------------------------------------------+
 // | Copyright (c) 1997-2003 The PHP Group                                |
 // +----------------------------------------------------------------------+
@@ -15,74 +15,87 @@
 // +----------------------------------------------------------------------+
 // | Authors: Daniel Khan <dk@webcluster.at>                              |
 // +----------------------------------------------------------------------+
-// + Thanks go to 
 //
 // $Id$
 //
-//
-*/
-
 
 require_once 'DB.php';
 
+// {{{ DB_NestedSet_DB:: class
+
 /**
-* Wrapper class for PEAR::DB
-*
-* @author       Daniel Khan <dk@webcluster.at>
-* @package      DB_NestedSet
-* @version      $Revision$
-* @access       public
-*/
-Class DB_NestedSet_DB extends DB_NestedSet {
-	
+ * Wrapper class for PEAR::DB
+ *
+ * @author       Daniel Khan <dk@webcluster.at>
+ * @package      DB_NestedSet
+ * @version      $Revision$
+ * @access       public
+ */
+
+// }}}
+class DB_NestedSet_DB extends DB_NestedSet {
+    // {{{ properties
+
+    /**
+     * Db object
+     * @type object
+     */
 	var $db;
 
-	/**
-	* Constructor
-	*
-	* @param mixed $dsn DSN as PEAR dsn URI or dsn Array
-	* @param array $params Database column fields which should be returned  
-	* 
-	**/
-	function DB_NestedSet_DB($dsn, $params = array()) {
+    // }}}
+    // {{{ constructor
 
-		$this->_debugMessage("DB_NestedSet_DB($dsn, $params = array())");
-		$this->DB_NestedSet();
-		$this->db = &$this->_db_Connect($dsn);
+	/**
+	 * Constructor
+	 *
+	 * @param mixed $dsn DSN as PEAR dsn URI or dsn Array
+	 * @param array $params Database column fields which should be returned  
+	 * 
+	 */
+	function DB_NestedSet_DB($dsn, $params = array()) 
+    {
+		$this->_debugMessage('DB_NestedSet_DB($dsn, $params = array())');
+		$this->DB_NestedSet($params);
+		$this->db =& $this->_db_Connect($dsn);
 		$this->db->setFetchMode(DB_FETCHMODE_ASSOC);
-		if(is_array($params) && count($params) > 0) {
-			
-			$this->params = $params;
-		}
-		
-		$this->flparams = array_flip($this->params);		
 	}
 
+    // }}}
+    // {{{ destructor
+
 	/**
-	* Destructor
-	**/
-	function _DB_NestedSet_DB() {
-		$this->_debugMessage("_DB_NestedSet_DB()");
-		$this->_db_Disconnect();
+	 * Destructor
+	 */
+	function _DB_NestedSet_DB() 
+    {
+		$this->_debugMessage('_DB_NestedSet_DB()');
 		$this->_DB_NestedSet();
-	}	
-	
+		$this->_db_Disconnect();
+	}
+
+    // }}}
+    // {{{ _db_Connect()
+
 	/**
 	* Connects to the db
 	*
 	* @return object DB The database object
 	* @access private
 	*/
-	function &_db_Connect($dsn) {
-		
-		$this->_debugMessage("_db_Connect($dsn)");
+	function &_db_Connect($dsn) 
+    {
+		$this->_debugMessage('_db_Connect($dsn)');
 		if (is_object($this->db)) {
 			return $this->db;
 		}
-		$db = &DB::connect($dsn);
+
+		$db =& DB::connect($dsn);
 		$this->_testFatalAbort($db, __FILE__, __LINE__);
 		return $db;
-	}	
+	}
+
+    // }}}
+    // {{{ _db_Disconnect()
 
 	/**
 	* Disconnects from db
@@ -90,14 +103,17 @@ Class DB_NestedSet_DB extends DB_NestedSet {
 	* @return void
 	* @access private
 	*/	
-	function _db_Disconnect() {
-		
-		$this->_debugMessage("_db_Disconnect()");
+	function _db_Disconnect() 
+    {
+		$this->_debugMessage('_db_Disconnect()');
 		if (is_object($this->db)) {
 			$this->db->disconnect();
 		}
+
 		return true;
 	}		
+
+    // }}}
 }
 
 ?>
