@@ -2,8 +2,8 @@
 <html>
   <title>DB_NestedSet using TreeMenu Output class</title>
 <body>
-<div style="font-weight: bold; text-align: center;">DB_NestedSet using the TreeMenu Output class</div>
-<div style="text-align: center;">
+<div style="font-weight: bold;">DB_NestedSet using the TreeMenu Output class</div>
+<div>
 <?php
 /**
  * Tests the DB_NestedSet class using the TreeMenu renderer
@@ -107,6 +107,15 @@ $params = array(
 );
 
 $output =& DB_NestedSet_Output::factory($params, 'TreeMenu');
+// Create the javascript menu.
+// You'll need to copy over the images directory and TreeMenu.js file that
+// comes with HTML_TreeMenu into a web-accessible directory.
+// Set the location of the images for the menu here
+echo '<script src="TreeMenu.js" language="JavaScript" type="text/javascript"></script>';
+$output->setOptions('printTree', array('images' => '/imagesAlt2'));
+$output->printTree();
+
+// Create the select list menu.
 $output->printListbox();
 
 // }}}

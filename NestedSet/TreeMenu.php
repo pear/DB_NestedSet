@@ -35,13 +35,15 @@ require_once 'HTML/TreeMenu.php';
  */
 // }}}
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
+    // {{{ properties
 
 	/**
 	* @var array The current menu structure
 	* @access private
 	*/
-	var $_structTigraMenu = false;
+	var $_structTreeMenu = false;
 
+    // }}}
 	// {{{ DB_NestedSet_TreeMenu
 
     function &DB_NestedSet_TreeMenu($params) {
