@@ -17,11 +17,8 @@ require_once 'NestedSet.php';
 ini_set('error_reporting',E_ALL);
 
 require_once 'PHPUnit/GUI/SetupDecorator.php';
+
 $gui = new PHPUnit_GUI_SetupDecorator(new PHPUnit_GUI_HTML());
-// use all php files from in this directory and all subdirs
-// but exclude the files UnitTest.php and index.php
-
-$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php'));
+$gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php'));
 $gui->show();
-
 ?>

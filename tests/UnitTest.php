@@ -4,7 +4,7 @@
 * Unit test interface for DB_NestedSet
 *
 * @author       Daniel Khan <dk@webcluster.at>
-* @package      DB_NestedSet
+* @package      DB_NestedSetTest
 * @version      $Revision$
 * @access       public
 */
@@ -39,7 +39,7 @@ class DB_NestedSetTest extends PhpUnit_Testcase {
         
         $tb = $this->_NeSe->node_table;
         $sql = "DELETE FROM $tb";
-        //$this->_NeSe->db->query($sql);
+        $this->_NeSe->db->query($sql);
         
     }
 }
