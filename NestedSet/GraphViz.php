@@ -24,7 +24,7 @@ require_once 'Image/GraphViz.php';
 
 /**
  * A helper class to translate the data from a nested set table into a
- * graphviz diagram using PEAR::Image_GraphViz developped by Sebastian Bergmann.
+ * GraphViz diagram using PEAR::Image_GraphViz developped by Sebastian Bergmann.
  *
  * Based on DB_NestedSet_TreeMenu to a very large extent.
  *
@@ -36,9 +36,10 @@ require_once 'Image/GraphViz.php';
 class DB_NestedSet_GraphViz extends DB_NestedSet_Output
 {
     /**
-    * @var array The current menu structure
-    * @access private
-    */
+     * @var array The current menu structure
+     * 
+     * @access private
+     */
     var $_structTreeMenu = false;
 
     function DB_NestedSet_GraphViz($params)
@@ -47,21 +48,15 @@ class DB_NestedSet_GraphViz extends DB_NestedSet_Output
     }
 
     /**
-     * <pre>Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
+     * Creates an Image_GraphViz graph based off of the results from getAllNodes() method
      * of the DB_NestedSet class.  The needed parameters are:
-     * o 'structure' => the result from $nestedSet->getAllNodes(true)
-     * o 'textField' => the field in the table that has the text for node
-     * o 'linkField' => the field in the table that has the link for the node
-     * o 'options' => (optional) an array of any additional options to pass to the node when
-     * Additionally these parameters may be added to the individual nodes to control their
-     * behavior:
-     * o 'ensureVisible' => (optional) whether or not the field should be forced as visible
-     *                creating it such as 'icon' or 'expandedIcon'
-     * o 'events' => (optional) an array of any events to pass to the node when creating it
-     *               such as 'onclick' or 'onexpand'</pre>
-     * </pre>
+     * <li>
+     * 'structure' => the result from $nestedSet->getAllNodes(true)
+     * 'nodeLabel' => the text to show in the box reprenting the node
+     * </li>
+     *
      * @access public
-     * @return object A HTML_TreeMenu object
+     * @return object An Image_GraphViz object
      */
     function &_createFromStructure($params)
     {
@@ -138,9 +133,12 @@ class DB_NestedSet_GraphViz extends DB_NestedSet_Output
     }
 
     /**
-     * Print's the current tree using the output driver
+     * Outputs the graph as an image
      *
      * @access public
+     * @param  string absolute path to the dot command
+     * @param  string output image format
+     * @return void
      */
     function printTree($dot_command = null, $output_format = 'png')
     {
