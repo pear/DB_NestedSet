@@ -1127,8 +1127,8 @@ class DB_NestedSet {
         
         $sql = array();
         $sql[] = sprintf('UPDATE %s SET
-                %s=IF(%s>=%s, %s+2, %s),
-                %s=IF(%s>=%s, %s+2, %s)
+                %s=CASE WHEN %s>=%s THEN %s+2 ELSE %s END,
+                %s=CASE WHEN %s>=%s THEN %s+2 ELSE %s END
                 WHERE %s=%s',
         $this->node_table,
         $this->flparams['l'],
@@ -1244,11 +1244,11 @@ class DB_NestedSet {
 
         // Update all nodes which have dependent left and right values
         $sql[] = sprintf('UPDATE %s SET 
-                %s=IF(%s>=%s, %s+2, %s),
-                %s=IF(%s>=%s, %s+2, %s)
+                %s=CASE WHEN %s>=%s THEN %s+2 ELSE %s END,
+                %s=CASE WHEN %s>=%s THEN %s+2 ELSE %s END
                 WHERE %s=%s',
                 $this->node_table,
-                $this->flparams['l'],
+                $this->flparams['l'], 
                 $this->flparams['l'], $thisnode['l'],
                 $this->flparams['l'], $this->flparams['l'],
                 $this->flparams['r'],
@@ -1361,8 +1361,8 @@ class DB_NestedSet {
 
         // Update all nodes which have dependent left and right values
         $sql[] = sprintf('UPDATE %s SET 
-                %s=IF(%s>%s, %s+2, %s),
-                %s=IF(%s>%s, %s+2, %s)
+                %s=CASE WHEN %s>%s THEN %s+2 ELSE %s END,
+                %s=CASE WHEN %s>%s THEN %s+2 ELSE %s END
                 WHERE %s=%s',
             $this->node_table,
             $this->flparams['l'],
@@ -1449,8 +1449,8 @@ class DB_NestedSet {
         if ($thisnode['id'] != $thisnode['rootid']) {
             // The node isn't a rootnode so close the gap
             $sql[] = sprintf('UPDATE %s SET
-                            %s=IF(%s>%s, %s-%s, %s),
-                            %s=IF(%s>%s, %s-%s, %s)
+                            %s=CASE WHEN %s>%s THEN %s-%s ELSE %s END,
+                            %s=CASE WHEN %s>%s THEN %s-%s ELSE %s END
                             WHERE %s=%s AND (%s>%s OR %s>%s)',
                 $this->node_table,
                 $this->flparams['l'],
