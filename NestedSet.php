@@ -2313,7 +2313,7 @@ class DB_NestedSet {
 
         if (!$lockID = $this->_structureTableLock) {
             $lockID = $this->_structureTableLock = uniqid('lck-');
-            $sql = sprintf('INSERT INTO %s SET lockID=%s, lockTable=%s, lockStamp=%s',
+            $sql = sprintf('INSERT INTO %s (lockID, lockTable, lockStamp) VALUES (%s, %s, %s)',
             $this->lock_table,
             $this->_quote($lockID), $this->_quote($this->node_table), time());
         } else {
