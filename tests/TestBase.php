@@ -24,6 +24,7 @@ Class TestBase extends PhpUnit_Testcase {
 
             foreach($branches[1] AS $tnodeid=>$tnode) {
                 $ret =  $this->_NeSe->moveTree($nodeid, $tnodeid, $mvt);
+                $this->assertEquals($ret, $nodeid, 'Nodeid was not returned as expected');
                 $this->assertEquals($nodecount, count($this->_NeSe->getAllNodes(true)), 'Node count changed');
             }
         }
