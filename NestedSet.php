@@ -53,6 +53,10 @@ define('NESE_MOVE_AFTER', 'AF');
 define('NESE_MOVE_BELOW', 'SUB');
 
 
+// Sortorders
+define('NESE_SORT_LEVEL', 'SLV');
+define('NESE_SORT_PREORDER', 'SPO');
+
 // }}}
 // {{{ DB_NestedSet:: class
 
@@ -151,6 +155,9 @@ class DB_NestedSet extends PEAR {
     */
     var $cache = false;
     
+    // Sortmode
+    var $sortmode   = NESE_SORT_LEVEL;
+    
     /**
     * @var bool Do we want to use caching
     * @access private
@@ -163,7 +170,7 @@ class DB_NestedSet extends PEAR {
     * If any event listeners are registered for an event, the event name will
     * have a key set in this array, otherwise, it will not be set.
     * @see triggerEvent()
-    * @var array
+    * @var arrayg
     * @access private
     */
     var $_hasListeners = array();
@@ -180,7 +187,7 @@ class DB_NestedSet extends PEAR {
     var $_majorversion   = 1;
     
     var $_minorversion   = 3;
-
+    
     
     /**
     * @var array Map of error messages to their descriptions
@@ -305,16 +312,27 @@ class DB_NestedSet extends PEAR {
         if ($this->debug) {
             $this->_debugMessage('getAllNodes()');
         }
-        $sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC',
-        $this->_getSelectFields($aliasFields),
-        $this->_addSQL($addSQL, 'cols'),
-        $this->node_table,
-        $this->_addSQL($addSQL, 'join'),
-        $this->_addSQL($addSQL, 'append'),
-        $this->node_table,
-        $this->flparams['level'],
-        $this->node_table,
-        $this->secondarySort);
+        
+        if($this->sortmode == NESE_SORT_LEVEL) {
+            
+            $sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC',
+            $this->_getSelectFields($aliasFields),
+            $this->_addSQL($addSQL, 'cols'),
+            $this->node_table,
+            $this->_addSQL($addSQL, 'join'),
+            $this->_addSQL($addSQL, 'append'),
+            $this->node_table,
+            $this->flparams['level'],
+            $this->node_table,
+            $this->secondarySort);
+        } elseif ($this->sortmode == NESE_SORT_PREORDER) {
+            $nodeSet = array();
+            $rootnodes = $this->getRootNodes(true);
+            foreach($rootnodes AS $rid=>$rootnode) {
+                $nodeSet = $nodeSet+$this->getBranch($rootnode, true);
+            }
+            return $nodeSet;
+        }
         
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -404,21 +422,26 @@ class DB_NestedSet extends PEAR {
             // FIXME Trigger Error
             return false;
         }
-        
-        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
-        $this->_getSelectFields($aliasFields),
-        $this->_addSQL($addSQL, 'cols'),
-        $this->node_table,
-        $this->_addSQL($addSQL, 'join'),
-        $this->node_table,
-        $this->flparams['rootid'],
-        $this->db->quote($thisnode['rootid']),
-        $this->_addSQL($addSQL, 'append'),
-        $this->node_table,
-        $this->flparams['level'],
-        $this->node_table,
-        $this->secondarySort);
-        
+        if($this->sortmode == NESE_SORT_LEVEL) {
+            $firstsort = $this->flparams['level'];
+        } elseif($this->sortmode == NESE_SORT_PREORDER) {
+            $firstsort = $this->flparams['l'];
+        }
+
+            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
+            $this->_getSelectFields($aliasFields),
+            $this->_addSQL($addSQL, 'cols'),
+            $this->node_table,
+            $this->_addSQL($addSQL, 'join'),
+            $this->node_table,
+            $this->flparams['rootid'],
+            $this->db->quote($thisnode['rootid']),
+            $this->_addSQL($addSQL, 'append'),
+            $this->node_table,
+            $firstsort,
+            $this->node_table,
+            $this->secondarySort);
+                    
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
         } else {
@@ -632,6 +655,8 @@ class DB_NestedSet extends PEAR {
     * @return mixed False on error, or an array of nodes
     */
     function getSubBranch($id, $keepAsArray = false, $aliasFields = true, $addSQL = array()) {
+        // FIXME - Interface should be the same as getBranch(),.. (forceNorder) - but this means an API change
+        
         if ($this->debug) {
             $this->_debugMessage('getSubBranch($id)');
         }
@@ -639,7 +664,7 @@ class DB_NestedSet extends PEAR {
             return false;
         }
         
-        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s',
+        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s ORDER BY %s %s',
         $this->_getSelectFields($aliasFields),
         $this->_addSQL($addSQL, 'cols'),
         $this->node_table,
@@ -654,6 +679,7 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->flparams['id'],
         $this->db->quote($id),
+        $this->flparams['l'],
         $this->_addSQL($addSQL, 'append'));
         
         if (!$this->_caching) {
@@ -999,7 +1025,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // Insert the new node
-        $sql[] = sprintf('INSERT INTO %s SET %s',        
+        $sql[] = sprintf('INSERT INTO %s SET %s',
         $this->node_table,
         $qr);
         
@@ -1594,9 +1620,9 @@ class DB_NestedSet extends PEAR {
                 return $this->_moveRoot2Root($source, $target, $pos, $copy);
             }
         } elseif(($target['rootid'] == $source['rootid']) &&
-                (($source['l'] < $target['l']) &&
-                ($source['r'] > $target['r']))) {
-                return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
+        (($source['l'] < $target['l']) &&
+        ($source['r'] > $target['r']))) {
+            return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
         }
         
         // We have to move between different levels and maybe subtrees - let's rock ;)
@@ -1771,7 +1797,7 @@ class DB_NestedSet extends PEAR {
         }
         if(!empty($updates)) {
             for($i=0;$i<count($updates);$i++) {
-               $res = $this->db->query($updates[$i]);
+                $res = $this->db->query($updates[$i]);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
         }
@@ -2001,14 +2027,14 @@ class DB_NestedSet extends PEAR {
     // }}}
     
     
-    function api() {
+    function apiVersion() {
         return array(
-            'package:'=>$this->_packagename,
-            'majorversion'=>$this->_majorversion,
-            'minorversion'=>$this->_minorversion,
-            'version'=>sprintf('%s.%s',$this->_majorversion, $this->_minorversion),
-            'revision'=>str_replace('$', '',"$Revision$")
-        );   
+        'package:'=>$this->_packagename,
+        'majorversion'=>$this->_majorversion,
+        'minorversion'=>$this->_minorversion,
+        'version'=>sprintf('%s.%s',$this->_majorversion, $this->_minorversion),
+        'revision'=>str_replace('$', '',"$Revision$")
+        );
     }
     
     
