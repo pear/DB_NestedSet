@@ -216,7 +216,7 @@ class DB_NestedSet_CoolMenu extends DB_NestedSet_Output {
             }
         }
         //this is required by CoolMenu--don't change!
-        $styles = "<style>\n/* CoolMenus 4 - default styles - do not edit */\n.clCMAbs{position:absolute; visibility:hidden; left:0; top:0}\n/* CoolMenus 4 - default styles - end */\n" . $styles;
+        $styles = "<style type='text/css'>\n/* CoolMenus 4 - default styles - do not edit */\n.clCMAbs{position:absolute; visibility:hidden; left:0; top:0}\n/* CoolMenus 4 - default styles - end */\n" . $styles;
 
         //get background style too
         $styles .= $this->_buildBackgroundStyle($options['menu']['background_style']);
