@@ -161,7 +161,9 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 			if (($node['r'] - 1) != $node['l']) {
 				$children = array();
 				// harvest all the children
-				foreach ($params['structure'] as $childKey => $childNode) {
+				$tempStructure = $params['structure'];
+				reset($tempStructure);
+				foreach ($tempStructure as $childKey => $childNode) {
 					if (!isset($childNode['hit']) &&
 					$node['rootid'] == $childNode['rootid'] &&
 					$node['l'] < $childNode['l'] &&
@@ -175,7 +177,6 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 				
 				$recurseParams = $params;
 				$recurseParams['structure'] = $children;
-				$recurseParams['treeMenu'] =& $parentNode;
 				$recurseParams['currentLevel']++;
 				$tigraMenu = $tigraMenu.$this->_createFromStructure($recurseParams);
 			}
