@@ -60,12 +60,14 @@ require_once 'HTML/TreeMenu.php';
  */
 // }}}
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
-    // {{{ createFromStructure()
-
+    
+	// {{{ DB_NestedSet_TreeMenu
     function &DB_NestedSet_TreeMenu($params) {
     	$this->treeMenu = & $this->_createFromStructure($params);
     }
+    // }}}
     
+    // {{{ createFromStructure()
     /**
      * Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
      * of the DB_NestedSet class.  The needed parameters are:
@@ -147,17 +149,31 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     }
 
     // }}}
-    
+
+    // {{{ printTree()
+    /**
+     * Print's the current tree using the output driver
+     *
+     * @access public
+     */		    
     function printTree() {
 		$options = $this->_getOptions('printTree');
     	$tree = &new HTML_TreeMenu_DHTML($this->treeMenu, $options);
     	$tree->printMenu();
     }
-    
+	// }}}
+	
+	// {{{ printListbox()
+    /**
+     * Print's a listbox representing the current tree
+     *
+     * @access public
+     */			    
     function printListbox() {
     	$options = $this->_getOptions('printListbox');
     	$listBox  = &new HTML_TreeMenu_Listbox($this->treeMenu, $options);
     	$listBox->printMenu();
     }
+    // }}}
 }
 ?>

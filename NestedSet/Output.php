@@ -1,12 +1,83 @@
 <?php
+//
+// +----------------------------------------------------------------------+
+// | PEAR :: DB_NestedSet_Output                                          |
+// +----------------------------------------------------------------------+
+// | Copyright (c) 1997-2003 The PHP Group                                |
+// +----------------------------------------------------------------------+
+// | This source file is subject to version 2.0 of the PHP license,       |
+// | that is bundled with this package in the file LICENSE, and is        |
+// | available at through the world-wide-web at                           |
+// | http://www.php.net/license/2_02.txt.                                 |
+// | If you did not receive a copy of the PHP license and are unable to   |
+// | obtain it through the world-wide-web, please send a note to          |
+// | license@php.net so we can mail you a copy immediately.               |
+// +----------------------------------------------------------------------+
+// | Authors: Daniel Khan <dk@webcluster.at>                              |
+// | 		  Jason Rust  <jason@rustyparts.com>                          |
+// +----------------------------------------------------------------------+
+// $Id$
+//
+
+
 define('NESEO_ERROR_NO_METHOD',    'E1000');
 define('NESEO_DRIVER_NOT_FOUND',   'E1100');
+
+// {{{ DB_NestedSet_Output:: class
+/**
+* DB_NestedSet_Output is a unified API for other output drivers
+* Status is beta
+*
+* At the moment PEAR::HTML_TreeMenu written by Jason Rust is supported
+* A driver for treemenu.org will follow soon.
+*
+* Usage example:
+*
+* require_once('DB_NestedSet/NestedSet/Output.php');
+* $icon         = 'folder.gif';
+* $expandedIcon = 'folder-expanded.gif';
+* // get data (important to fetch it as an array, using the true flag)
+* $data = $NeSe->getAllNodes(true);
+* // change the events for one of the elements
+* $data[35]['events'] = array('onexpand' => 'alert("we expanded!");');
+* // add links to each item
+* foreach ($data as $a_data) {
+*	$a_data['link'] = 'http://foo.com/foo.php?' . $a_data['id'];
+* }
+* $params = array(
+* 'structure' => $data,
+* 'options' => array(
+* 'icon' => $icon,
+* 'expandedIcon' => $expandedIcon,
+* ),
+* 'textField' => 'name',
+* 'linkField' => 'link',
+* );
+* $menu =& DB_NestedSet_Output::factory('TreeMenu', $params);
+* $menu->printListbox();
+*
+* @author       Daniel Khan <dk@webcluster.at>
+* @package      NestedSet
+* @version      $Revision$
+* @access       public
+* 
+*/
+// }}}
 
 Class DB_NestedSet_Output {
 	
 	var $_structTreeMenu	= false;
 	
-		
+	// {{{ factory()
+    /**
+     * Returns a output driver object
+     *
+     * @param string $driver The driver, such as TreeMenu (default)
+     * @param array $params A DB_NestedSet nodeset
+     *
+     * @access public
+     * @return object The DB_NestedSet_Ouput object
+     */		
 	function &factory ($driver='TreeMenu',$params) {
 		
 		$path = dirname(__FILE__).'/'.$driver.'.php';
@@ -19,23 +90,64 @@ Class DB_NestedSet_Output {
 		$driverClass = 'DB_NestedSet_'.$driver;
 		return new $driverClass($params);
 	}
+	// }}}
 	
+	// {{{ setOptions()
+    /**
+     * Set's options for a specific output group (printTree, printListbox)
+     * This enables you to set specific options for each output method
+     *
+     * @param string $group Output group ATM 'printTree' or 'printListbox'
+     * @param array $options Hash with options
+     *
+     * @access public
+     * @return bool
+     */		
 	function setOptions($group, $options) {
 		$this->options[$group] = $options;
+		return true;
 	}
+	// }}}
 	
+	// {{{ _getOptions()
+    /**
+     * Get's all option for a specific output group (printTree, printListbox)
+     *
+     * @param string $group Output group ATM 'printTree' or 'printListbox'
+     *
+     * @access private
+     * @return array Options
+     */			
 	function _getOptions($group) {
 		if(!$this->options[$group]) {
 			return array();	
 		}
+		return $this->options[$group];
 	}
-		
+	// }}}
+	
+	// {{{ printTree()
+    /**
+     * Print's the current tree using the output driver
+     * Overriden by the driver class
+     *
+     * @access public
+     */		
 	function printTree() {
 		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
+	// }}}
 	
+	// {{{ printListbox()
+    /**
+     * Print's a listbox representing the current tree
+     * Overriden by the driver class
+     *
+     * @access public
+     */			
 	function printListbox() {
 		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
+	// }}}
 }
 ?>
