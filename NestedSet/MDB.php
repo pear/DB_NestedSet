@@ -133,6 +133,19 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
 
     // }}}
+    // {{{ _getOne()
+
+    /**
+     * @param string $sql SQL query
+     * @return mixed
+     * @access private
+     */
+    function _getOne($sql)
+    {
+        return $this->db->queryOne($sql);
+    }
+
+    // }}}
     // {{{ _getAll()
 
     function _getAll($sql)

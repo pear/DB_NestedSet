@@ -125,6 +125,21 @@ class DB_NestedSet_DB extends DB_NestedSet {
         return $this->db->nextId($sequence);
     }
     // }}}
+    
+    // {{{ _getOne()
+
+    /**
+     * @param string $sql SQL query
+     * @return mixed
+     * @access private
+     */
+    function _getOne($sql)
+    {
+        return $this->db->getOne($sql);
+    }
+
+    // }}}
+    
     // {{{ _getAll()
     function _getAll($sql) {
         return $this->db->getAll($sql, null, DB_FETCHMODE_ASSOC);
