@@ -100,7 +100,6 @@ class DB_NestedSet_Output {
     function &factory ($params, $driver = 'TreeMenu') {
 
         $path = dirname(__FILE__).'/'.$driver.'.php';
-
         if(is_dir($path) || !file_exists($path)) {
             PEAR::raiseError("The output driver '$driver' wasn't found", NESEO_DRIVER_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
         }
@@ -205,7 +204,17 @@ class DB_NestedSet_Output {
     function listbox_toHTML() {
         PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
     }
+    // }}}
+    // {{{ getStructure()
 
+    /**
+     *
+     * @access public
+     * @return mixed 
+     */
+    function returnStructure() {
+        PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+    }
     // }}}
 }
 ?>
