@@ -70,6 +70,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 	}
 	
 	function test_getChildren() {
+		
 		$rnc = 2;
 		$depth = 2;
 		$npl = 3;
@@ -81,24 +82,25 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		
 		// Now build a little tree to test
 		
-		$this->_createSubNodes($rnc, $depth, $npl);
-		$rootnodes = $this->_NeSe->getRootNodes(true);
+		$relationTree = $this->_createSubNodes($rnc, $depth, $npl);
 		
+		$rootnodes = $this->_NeSe->getRootNodes(true);
 		$exp_cct = 0;
 		$cct = 0;
 		foreach($rootnodes AS $rid=>$rootnode) {
-			$cct = $cct + $this->_traverseChildren($rootnode);
+			$cct = $cct + $this->_traverseChildren($rootnode, $relationTree, true);
 			
 			// Calc the expected number of children from lft-rgt
 			$exp_cct = $exp_cct + floor(($rootnode['r'] - $rootnode['l'])/2);
 		}
-		
+
 		// Test if all created nodes got returned
 		$this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
 	}
 	
 	
 	function test_getAllNodes() {
+		
 		$rnc = 3;
 		$depth = 2;
 		$npl = 3;
@@ -107,20 +109,86 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		
 		$allnodes = $this->_NeSe->getAllNodes(true);
 		$rootnodes = $this->_NeSe->getRootNodes(true);
+		$exp_cct = 0;
 		foreach($rootnodes AS $rid=>$rootnode) {
-			
-			//print_r($this->_NeSe->getBranch($rid, true));
-			//$cct = $cct + $this->_traverseChildren($rootnode);
-			
-			// Calc the expected number of children from lft-rgt
-			//$exp_cct = $exp_cct + floor(($rootnode['r'] - $rootnode['l'])/2);
+			$exp_cct = $exp_cct + floor(($rootnode['r'] - $rootnode['l'])/2);
+		}
+		
+		// Does it really return all nodes?
+		$cct = count($allnodes);
+		$exp_cct = $exp_cct + + count($rootnodes);
+		$this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
+	
+		// Verify the result agains pickNode()
+		
+		foreach($allnodes AS $nid=>$node) {
+			$this->assertEquals($this->_NeSe->pickNode($nid, true), $node, 'Result differs from pickNode()');
 		}
 	}
 	
+	function test_getBranch() {
+		$rnc = 1;
+		$depth = 2;
+		$npl = 3;
+		
+		$this->_createSubNodes($rnc, $depth, $npl);
+		$allnodes = $this->_NeSe->getAllNodes(true);	
+		$branch = 	$this->_NeSe->getBranch($npl,true);
+		$this->assertEquals($allnodes, $branch, 'Result differs from getAllNodes()');	
+	}
 	
+	function test_getSubBranch() {
+		$rnc = 3;
+		$depth = 2;
+		$npl = 3;		
+		$relationTree = $this->_createSubNodes($rnc, $depth, $npl);	
+		$allnodes = $this->_NeSe->getAllNodes(true);			
+		foreach($relationTree AS $nid=>$relations) {			
+			$subbranch = $this->_NeSe->getSubBranch($nid,true);
+			$exp_subbranch = $this->_traverseChildRelations($relationTree, $nid, true, true);
+			$this->assertEquals($subbranch, $exp_subbranch, 'Differs from relation traversal result.');	
+		}		
+	}
+	
+	function test_getParents() {
+		$rnc = 3;
+		$depth = 2;
+		$npl = 3;		
+		$relationTree = $this->_createSubNodes($rnc, $depth, $npl);
+		$allnodes = $this->_NeSe->getAllNodes(true);
+		foreach($allnodes AS $nid=>$node) {			
+			$parents = $this->_NeSe->getParents($nid,true);
+			$exp_parents = array_reverse($this->_traverseParentRelations($relationTree, $nid, true), true);
+			$this->assertEquals($exp_parents, $parents, 'Differs from relation traversal result.');	
+		}
+		return true;
+
+	}
+	
+	function test_isParent() {
+		$rnc = 3;
+		$depth = 2;
+		$npl = 3;		
+		$relationTree = $this->_createSubNodes($rnc, $depth, $npl);
+		$allnodes = $this->_NeSe->getAllNodes(true);
+		foreach($allnodes AS $nid=>$node) {	
+			
+			$children = $this->_NeSe->getChildren($nid, true);
+			
+			if(empty($children)) {
+				continue;	
+			}
+			foreach($children AS $cid=>$child) {
+				$isParent = $this->_NeSe->isParent($node, $child);
+				$this->assertEquals($relationTree[$cid]['parent'] , $nid, 'Parent from relation tree differs.');
+				$this->assertTrue($isParent, 'isParent was false.');	
+			}
+		}
+		return true;
+	}
 	
 	function test_createSubNode__random() {
-		
+
 		$rootnodes = $this->_createRootNodes(2);
 		// Number of nodes to create
 		$nbr = 500;
@@ -143,6 +211,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 			$exp_rootid = $parent['rootid'];
 			
 			// Test rootid
+
 			$this->assertEquals($exp_rootid,  $cnode['rootid'], "Node {$cnode['name']}: Wrong root id.");
 			
 		}
@@ -163,8 +232,9 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		$this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
 	}
 	
-	
+	//-------------------------------------------------------
 	// Helpers
+	//-------------------------------------------------------
 	function _setupRootnodes($nbr) {
 		$nodes = array();
 		$lnid = false;
@@ -250,16 +320,22 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		
 		$rootnodes = $this->_createRootNodes($rnc);
 		
+		$init = true;
 		foreach ($rootnodes as $id=>$parent) {
-			$this->_recursCreateSubNode($id, $npl, $parent['name'],  1, $depth);
+			$relationTree = $this->_recursCreateSubNode($id, $npl, $parent['name'],  1, $depth, $init);
+			$init = false;
 		}
-		return true;
+		return $relationTree;
 	}
 	
-	function _recursCreateSubNode($pid, $npl, $pname, $currdepth, $maxdepth) {
+	function _recursCreateSubNode($pid, $npl, $pname, $currdepth, $maxdepth, $init=false) {
 		
+		static $relationTree;
+		if($init) {
+			$relationTree = array();	
+		}
 		if($currdepth > $maxdepth) {
-			return true;
+			return $relationTree;
 		}
 		
 		$newdepth = $currdepth + 1;
@@ -270,7 +346,8 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 			$values['STRNA'] = $pname.'.'.$nindex;
 			
 			$npid = $this->_NeSe->createSubNode($pid, $values);
-			
+			$relationTree[$npid]['parent'] = $pid;
+			$relationTree[$pid]['children'][] = $npid;
 			// fetch just created node for validation
 			$nnode = $this->_NeSe->pickNode($npid, true);
 			
@@ -310,9 +387,10 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 			// Create new subnode
 			$this->_recursCreateSubNode($npid, $npl, $values['STRNA'], $newdepth, $maxdepth);
 		}
+		return $relationTree;
 	}
 	
-	function _traverseChildren($current_node, $reset=true) {
+	function _traverseChildren($current_node, $relationTree = array(), $reset=true) {
 		
 		static $occvals;
 		
@@ -323,6 +401,17 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		$level = $current_node['level'];
 		
 		$children = $this->_NeSe->getChildren($current_node['id'], true);
+		
+		if(!empty($relationTree)) {
+			if(is_array($exp_children = $this->_traverseChildRelations($relationTree,$current_node['id'],false, true))) {
+				if(count($exp_children) == 0) {
+					$exp_children = false;	
+				} else {
+					$exp_children = array_reverse($exp_children, true);
+				}
+			}
+			$this->assertEquals($exp_children, $children, "Node {$current_node['name']}: Children don't match children from relation tree.");
+		}
 		
 		$x = 0;
 		$lcct = 0;
@@ -342,7 +431,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 				
 				// Test level
 				$this->assertEquals($exp_level,  $child['level'], "Node {$current_node['name']}: Wrong level value.");
-				$lcct = $lcct + $this->_traverseChildren($child, false);
+				$lcct = $lcct + $this->_traverseChildren($child, $relationTree, false);
 				$x++;
 			}
 		}
@@ -351,6 +440,8 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		// This is a nice general check if everything's worked as it should
 		$exp_cct = floor(($current_node['r'] - $current_node['l']) / 2);
 		$cct = $x + $lcct;
+					
+
 		$this->assertEquals($exp_cct, $cct, "Node {$current_node['name']}: Wrong childcount.");
 		
 		// Test rgt
@@ -370,11 +461,46 @@ class tests_NestedSet_common extends DB_NestedSetTest {
 		$this->assertFalse(isset($occvals[$rgt]),
 		"Node {$current_node['name']}: Uses allready used RGT value."
 		);
-		
-		
+			
 		$occvals[$lft] = $lft;
 		$occvals[$rgt] = $rgt;
 		return $cct;
 	}
+
+	function _traverseParentRelations($relationTree, $nid, $init=false) {
+		static $relationNodes;
+		if($init) {
+			$relationNodes = array();
+		}
+		
+		if(empty($relationTree[$nid]['parent'])) {
+			return $relationNodes;
+		}
+		$parentID = $relationTree[$nid]['parent'];
+		$relationNodes[$parentID] = $this->_NeSe->pickNode($parentID, true);
+		$this->_traverseParentRelations($relationTree, $parentID);
+		return $relationNodes;
+	}
+	
+	function _traverseChildRelations($relationTree, $nid, $deep = false, $init=false) {
+		static $relationNodes;
+		if($init) {
+			$relationNodes = array();
+		}
+		
+		if(empty($relationTree[$nid]['children'])) {
+			return $relationNodes;
+		}
+		$children = $relationTree[$nid]['children'];
+		
+		for($i=0;$i<count($children);$i++) {
+			$cid = $children[$i];
+			$relationNodes[$cid] = $this->_NeSe->pickNode($cid, true);
+			if($deep) {
+				$this->_traverseChildRelations($relationTree, $cid, $deep);
+			}
+		}
+		return $relationNodes;
+	}	
 }
 ?>

@@ -274,6 +274,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
+	// UNIT TEST OK
 	function getAllNodes($keepAsArray = false, $aliasFields = true, $addSQL = array()) {
 		$this->_debugMessage('getAllNodes()');
 		$sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC', 
@@ -316,6 +317,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
+	// UNIT TEST OK
 	function getRootNodes($keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getRootNodes()');
@@ -362,6 +364,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
+	// UNIT TEST OK
 	function getBranch($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getBranch($id)');
@@ -413,6 +416,7 @@ class DB_NestedSet extends PEAR {
 	 * @access public
 	 * @return mixed False on error, or an array of nodes
 	 */
+	 // UNIT TEST OK
 	function getParents($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getParents($id)');
@@ -476,6 +480,7 @@ class DB_NestedSet extends PEAR {
 	 * @access public
 	 * @return mixed False on error, or an array of nodes
 	 */
+	 // UNIT TEST OK
 	function getChildren($id, $keepAsArray = false, $aliasFields = true, $forceNorder = false, $addSQL = array())
 	{
 		$this->_debugMessage('getChildren($id)');
@@ -539,6 +544,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
+	// UNIT TEST OK
 	function getSubBranch($id, $keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getSubBranch($id)');
@@ -595,6 +601,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
+	// UNIT TEST OK
 	function pickNode($id, $keepAsArray = false, $aliasFields = true, $idfield = 'id', $addSQL = array())
 	{
 		$this->_debugMessage('pickNode($id)');
@@ -628,7 +635,7 @@ class DB_NestedSet extends PEAR {
 		if (is_array($nodeSet) && $idfield != 'id') {
 			$id = $nsKey;
 		}
-		
+
 		return isset($nodeSet[$id]) ? $nodeSet[$id] : false;
 	}
 	
@@ -649,6 +656,7 @@ class DB_NestedSet extends PEAR {
 	 * @access public
 	 * @return bool True if it's a parent
 	 */
+	 // UNIT TEST OK
 	function isParent($parent, $child) {
 		
 		$this->_debugMessage('isParent($parent, $child)');
@@ -816,7 +824,7 @@ class DB_NestedSet extends PEAR {
 	/**
 	* Creates a new root node
 	* Optionally it deletes the whole tree and creates one initial rootnode
-	*
+	* 
 	* <pre>
 	* +-- root1 [target]
 	* |
@@ -832,6 +840,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return int The node id
 	*/
+	// UNIT TEST OK
 	function createRootNode($values, $id = false, $first = false)
 	{
 		$this->_debugMessage('createRootNode($values, $id = false, $first = false)');
@@ -920,6 +929,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed The node id or false on error
 	*/
+	// UNIT TEST OK
 	function createSubNode($id, $values) {
 		$this->_debugMessage('createSubNode($id, $values)');
 		// Try to aquire a table lock
@@ -1016,6 +1026,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return object The new node object
 	*/
+	// UNIT TEST MISSING
 	function createRightNode($target, $values)
 	{
 		$this->_debugMessage('createRightNode($target, $values)');
@@ -1103,6 +1114,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return bool True if the delete succeeds
 	*/
+	// UNIT TEST MISSING
 	function deleteNode($id)
 	{
 		$this->_debugMessage('deleteNode($id)');
@@ -1180,6 +1192,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return bool True if the update is successful
 	*/
+	// UNIT TEST MISSING
 	function updateNode($id, $values)
 	{
 		$this->_debugMessage('updateNode($id, $values)');
@@ -1228,6 +1241,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return int ID of the moved node or false on error
 	*/
+	// UNIT TEST MISSING
 	function moveTree($id, $target, $pos, $copy = false)
 	{
 		$this->_debugMessage('moveTree($id, $target, $pos, $copy = false)');
@@ -1309,6 +1323,7 @@ class DB_NestedSet extends PEAR {
 	* @see        _r_moveAcross
 	* @see        _moveCleanup
 	*/
+	// UNIT TEST MISSING
 	function _moveAcross($source, $target, $pos, $copy = false)
 	{
 		$this->_debugMessage('_moveAcross($source, $target, $pos, $copy = false)');
@@ -1382,6 +1397,7 @@ class DB_NestedSet extends PEAR {
 	* @access    private
 	* @see        _moveAcross
 	*/
+	// UNIT TEST MISSING
 	function _r_moveAcross($source, $target, $action, &$relations) {
 		$this->_debugMessage('_r_moveAcross($source, $target, $action, &$relations)');
 		if (PEAR::isError($lock = $this->_setLock())) {
@@ -1430,6 +1446,7 @@ class DB_NestedSet extends PEAR {
 	* @param     array    $copy                     Are we in copy mode?
 	* @access    private
 	*/
+	// UNIT TEST MISSING
 	function _moveCleanup($relations, $copy = false)
 	{
 		$this->_debugMessage('_moveCleanup($relations, $copy = false)');
@@ -1509,6 +1526,7 @@ class DB_NestedSet extends PEAR {
 	* @access    private
 	* @see        moveTree
 	*/
+	// UNIT TEST MISSING
 	function _moveInsideLevel($source, $target, $pos, $copy = false)
 	{
 		$this->_debugMessage('_moveInsideLevel($source, $target, $pos, $copy = false)');
@@ -1666,6 +1684,7 @@ class DB_NestedSet extends PEAR {
 	* @access    private
 	* @see        moveTree
 	*/
+	// UNIT TEST MISSING
 	function moveRoot2Root($source, $target, $pos, $copy)
 	{
 		$this->_debugMessage('moveRoot2Root($source, $target, $pos, $copy)');
