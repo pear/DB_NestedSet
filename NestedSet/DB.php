@@ -84,10 +84,12 @@ class DB_NestedSet_DB extends DB_NestedSet {
     function &_db_Connect($dsn)
     {
         $this->_debugMessage('_db_Connect($dsn)');
-        if (is_object($this->db)) {
+        if (DB::isConnection($this->db)) {
             return $this->db;
         }
-
+        if (DB::isConnection($this->db)) {
+            return $dsn;
+        }
         $db =& DB::connect($dsn);
         $this->_testFatalAbort($db, __FILE__, __LINE__);
         return $db;
@@ -111,6 +113,19 @@ class DB_NestedSet_DB extends DB_NestedSet {
         return $this->db->quote($str);
     }
 
+    function _dropSequence($sequence) {
+        return $this->db->dropSequence($this->sequence_table);
+    }
+
+    function _nextId($sequence) {
+        return $this->db->nextId($sequence);
+    }
+
+    function _getAll($sql) {
+        return $this->db->getAll($sql, null, DB_FETCHMODE_ASSOC);
+    }
+
+    
     // {{{ _db_Disconnect()
 
     /**

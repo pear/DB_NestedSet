@@ -52,7 +52,7 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     * @param array $params Database column fields which should be returned
     *
     */
-    function DB_NestedSet_MDB($dsn, $params = array())
+    function DB_NestedSet_MDB(&$dsn, $params = array())
     {
         $this->_debugMessage('DB_NestedSet_MDB($dsn, $params = array())');
         $this->DB_NestedSet($params);
@@ -82,11 +82,15 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     * @return object DB The database object
     * @access private
     */
-    function &_db_Connect($dsn)
+    function &_db_Connect(&$dsn)
     {
         $this->_debugMessage('_db_Connect($dsn)');
         if (is_object($this->db)) {
             return $this->db;
+        }
+
+        if (is_object($dsn)) {
+            return $dsn;
         }
 
         $db =& MDB::connect($dsn);
@@ -104,12 +108,25 @@ class DB_NestedSet_MDB extends DB_NestedSet {
         return true;
     }
 
+    function _nextId($sequence) {
+        return $this->db->nextId($sequence);
+    }
+
+    function _dropSequence($sequence) {
+        $this->db->loadManager();
+        return $this->db->dropSequence($sequence);
+    }
+
+    function _getAll($sql) {
+        return $this->db->queryAll($sql, null, MDB_FETCHMODE_ASSOC);
+    }
+
     function _numRows($res) {
         return $this->db->numRows($res);
     }
 
     function _quote($str) {
-        return $this->db->getTextValue($str);
+        return $this->db->getValue('text', $str);
     }
 
     // {{{ _db_Disconnect()
