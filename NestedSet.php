@@ -1478,7 +1478,7 @@ class DB_NestedSet {
                 $this->flparams['l'], $parent['l'], $parent['r']);
         } else {
             // A rootnode was deleted and we only have to close the gap inside the order
-            $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s > %s',
+            $sql[] = sprintf('UPDATE %s SET %s=%s-1 WHERE %s=%s AND %s > %s',
                 $this->node_table,
                 $this->flparams['norder'], $this->flparams['norder'],
                 $this->flparams['rootid'], $this->flparams['id'],
