@@ -126,15 +126,15 @@ Normally the order of nested set is given by it's L values.
 
 +-root1 [L=1][R=2]
 |
-+-root2-+ [L=2][R=9]
++-root2-+ [L=3][R=10]
 |       |
-|       +-sub2.1 [L=3][R=4]
+|       +-sub2.1 [L=4][R=5]
 |       |
-|       +-sub2.2 [L=5][R=6]
+|       +-sub2.2 [L=6][R=7]
 |       |
-|       +-sub2.3 [L=7][R=8]
+|       +-sub2.3 [L=8][R=9]
 |
-+-root3 [L=10][R=11]
++-root3 [L=11][R=12]
 
 So if we want to order root3 bevore root2 we would have to change the L/R values
 of root3 AND also of root3 with all it's childrens.
