@@ -111,6 +111,13 @@ class DB_NestedSet extends PEAR {
     var $sequence_table;
 
     /**
+     * Secondary order field.  Normally this is the order field, but can be changed to
+     * something else (i.e. the name field so that the tree can be shown alphabetically)
+     * @type string
+     */
+    var $secondarySort;
+
+    /**
      * The time to live of the lock
      * @type int
      */
@@ -179,6 +186,7 @@ class DB_NestedSet extends PEAR {
 
 		$this->flparams = array_flip($this->params);		
         $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
+        $this->secondarySort = $this->flparams['norder'];
     }
 
     // }}}
@@ -249,7 +257,7 @@ class DB_NestedSet extends PEAR {
                             $this->_getSelectFields($aliasFields),
                             $this->node_table,
                             $this->flparams['level'],
-                            $this->flparams['norder']
+                            $this->secondarySort
                );
         return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
@@ -276,7 +284,7 @@ class DB_NestedSet extends PEAR {
                             $this->node_table,
                             $this->flparams['id'],
                             $this->flparams['rootid'],
-                            $this->flparams['norder']
+                            $this->secondarySort
                );
         return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
@@ -309,7 +317,7 @@ class DB_NestedSet extends PEAR {
                             $this->flparams['rootid'],
                             $this->db->quote($thisnode->rootid),
                             $this->flparams['level'],
-                            $this->flparams['norder']
+                            $this->secondarySort
                );
         return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
@@ -1670,7 +1678,7 @@ class DB_NestedSet extends PEAR {
         $stb = $this->node_table;
         $stamp = time();
         if (!$lockID = $this->structureTableLock) {
-            $lockID = $this->structureTableLock = uniqid("lck-");
+            $lockID = $this->structureTableLock = uniqid('lck-');
             $sql = "INSERT INTO $tb SET 
                         lockID=" . $this->db->quote($lockID) . ", 
                         lockTable=" . $this->db->quote($stb) . ", 
