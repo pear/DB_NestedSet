@@ -103,7 +103,9 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
             if (($node['r'] - 1) != $node['l']) {
                 $children = array();
                 // harvest all the children
-                foreach ($params['structure'] as $childKey => $childNode) {
+				$tempStructure = $params['structure'];
+				reset($tempStructure);
+                foreach ($tempStructure as $childKey => $childNode) {
                     if (!isset($childNode['hit']) && 
                         $childNode['l'] > $node['l'] &&
                         $childNode['r'] < $node['r'] &&
