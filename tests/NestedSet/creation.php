@@ -87,7 +87,7 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
             $values['STRNA'] = 'RSR'.$x;
             
             // Try to overwrite the ROOTID which should be set inside the method
-            //$values['ROOTID'] = -100;
+            // $values['ROOTID'] = -100;
             $rn2 = $this->_NeSe->createRightNode($sid, $values);
             $x++;
             
@@ -127,6 +127,67 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
         $this->assertEquals($rnc*4, count($allnodes), "Wrong node count after right insertion");
         return true;
     }
+
+    /**
+    * tests_NestedSet_common::test_createLeftNode()
+    *
+    * Create some left nodes and query some meta informations
+    *
+    * @access public
+    * @see _createSubNode()
+    * @return bool True on completion
+    */
+    function test_createLeftNode() {
+        $rnc = 6;
+        $rootnodes = $this->_createRootNodes($rnc);
+        $x = 0;
+        foreach($rootnodes AS $rid=>$rootnode) {
+            $values['STRNA'] = 'R'.$x;
+            $rn1 = $this->_NeSe->createLeftNode($rid, $values);
+            $values['STRNA'] = 'RS'.$x;
+            $sid = $this->_NeSe->createSubNode($rn1, $values);
+            $values['STRNA'] = 'RSR'.$x;
+            
+            // Try to overwrite the ROOTID which should be set inside the method
+            // $values['ROOTID'] = -100;
+            $rn2 = $this->_NeSe->createLeftNode($sid, $values);
+            $x++;
+            
+            $left1 = $this->_NeSe->pickNode($rn1, true);
+            $left2 = $this->_NeSe->pickNode($rn2, true);
+            
+            
+            // Root ID has to equal ID
+            $this->assertEquals($left1['rootid'], $left1['id'], "Left node has wrong root id.");
+            
+            // Order
+            $upd_rootnode = $this->_NeSe->pickNode($rid, true);
+            $this->assertEquals($upd_rootnode['norder'], $left1['norder'], "Left node has wrong order.");
+            
+            // Level
+            $this->assertEquals(1, $left1['level'], "Left  node has wrong level.");
+            
+            // Children
+            $exp_cct = floor(($left1['r'] - $left1['l'])/2);
+            $allchildren = $this->_NeSe->getSubBranch($rn1, true);
+            
+            // This is also a good test if l/r values are ok
+            $this->assertEquals($exp_cct, count($allchildren), "Left  node has wrong child count.");
+            
+            // Order
+            $upd_subnode = $this->_NeSe->pickNode($sid, true);
+            $this->assertEquals($upd_subnode['norder']-1, $left2['norder'], "Left  node has wrong order.");
+            
+            // Level
+            $this->assertEquals(2, $left2['level'], "Left  node has wrong level.");
+            
+            // Test root id
+            $this->assertEquals($left1['rootid'], $left2['rootid'], "Left  node has wrong root id.");
+        }
+        $allnodes = $this->_NeSe->getAllNodes(true);
+        $this->assertEquals($rnc*4, count($allnodes), "Wrong node count after right insertion");
+        return true;
+    }    
     
     /**
     * tests_NestedSet_common::createSubNode__random()
