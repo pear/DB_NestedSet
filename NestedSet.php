@@ -443,7 +443,7 @@ class DB_NestedSet {
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
         $this->secondarySort);
-        
+
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
         } else {
@@ -846,12 +846,12 @@ class DB_NestedSet {
             return false;
         }
         
-        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s',
+        $sql = sprintf("SELECT %s %s FROM %s %s WHERE %s.%s=%s %s",
         $this->_getSelectFields($aliasFields), $this->_addSQL($addSQL, 'cols'),
         $this->node_table, $this->_addSQL($addSQL, 'join'),
-        $this->node_table, $this->flparams[$idfield], $id,
+        $this->node_table, $this->flparams[$idfield], $this->_quote($id),
         $this->_addSQL($addSQL, 'append'));
-        
+
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
         } else {
@@ -2008,9 +2008,9 @@ class DB_NestedSet {
     function _getSelectFields($aliasFields) {
         $queryFields = array();
         foreach ($this->params as $key => $val) {
-            $tmp_field = $this->node_table . '.' . $key;
+            $tmp_field = $this->node_table.'.'.$key;
             if ($aliasFields) {
-                $tmp_field .= ' AS ' . $val;
+                $tmp_field .= ' AS '.$this->_quote($val);
             }
             $queryFields[] = $tmp_field;
         }
@@ -2407,6 +2407,7 @@ class DB_NestedSet {
         foreach($values AS $key => $val) {
 
                 $k = trim($key);
+				$k = "`$k`";
                 // To be used with the next major version
                 // $iv = in_array($this->params[$k], $this->_quotedParams) ? $this->_quote($v) : $v;
                 $iv = $this->_quote(trim($val));
@@ -2442,7 +2443,8 @@ class DB_NestedSet {
         $arq = array();
         foreach($values AS $key => $val) {
 
-                $k = $key;
+                $k = trim($key);
+				$k = "`$k`";
                 // To be used with the next major version
                 // $iv = in_array($this->params[$k], $this->_quotedParams) ? $this->_quote($v) : $v;
                 $iv = $this->_quote(trim($val));

@@ -21,7 +21,8 @@ class DB_NestedSetTest extends TestBase  {
         "STREH"         =>      "norder",  // "order" must exist
         "LEVEL"         =>      "level",   // "level" must exist
         "STRNA"         =>      "name",     // Custom - specify as many fields you want
-        "parent"        =>      "parent"     // Custom - specify as many fields you want
+        "parent"        =>      "parent",     // Custom - specify as many fields you want
+		"key"        	=>      "key"     // Custom - specify as many fields you want
         );
 
         $db_driver = 'DB';
@@ -49,7 +50,7 @@ class DB_NestedSetTest extends TestBase  {
 
         $tb = $this->_NeSe->node_table;
         $sql = "DELETE FROM $tb";
-        $this->_NeSe->db->query($sql);
+        // $this->_NeSe->db->query($sql);
     }
 }
 ?>
