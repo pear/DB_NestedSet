@@ -75,6 +75,9 @@
         <date>2003-04-29</date>
         <state>beta</state>
         <notes> 
+        	- Added a unified API to access other output drivers
+        	- Added a output driver for HTML_TreeMenu (Jason Rust)
+        	- Added a variable '$idfield' to pickNode() which can be used to get a node by another value than id (Daniel Khan)
         	- Made getChildren() consistent with how the other methods work in terms of the secondarySort property (Jason Rust)
         	- Added new attribute: secondarySort. Normally it is the order field, but can be set to another field 
         	  in the table such as name so that the tree can be displayed alphabetically. (Jason Rust)

@@ -481,7 +481,63 @@ class DB_NestedSet extends PEAR {
         
         return isset($nodeSet[$id]) ? $nodeSet[$id] : false;
     }
+    
+	// }}}
+    // {{{ isParent()    
+    
+    /**
+     * See if a given node is a parent of another given node
+     * 
+     * A node is considered to be a parent if it resides above the child
+     * So it doesn't mean that the node has to be an immediate parent.
+     * To get this information simply compare the levels of the two nodes
+     * after you know that you have a parent relation.
+     *
+     * @param mixed  $parent The parent node as array or object
+	 * @param mixed  $child  The child node as array or object
+     *           
+     *
+     * @access public
+     * @return bool True if it's a parent
+     */
+    function isParent($parent, $child) {
 
+    	$this->_debugMessage('isParent($parent, $child)');
+    	if(is_array($parent)) {
+    		
+    		$p_rootid 	= $parent['rootid'];
+    		$p_l		= $parent['l'];
+    		$p_r		= $parent['r'];
+    		
+    	} elseif(is_object($parent)) {
+    		
+    		$p_rootid 	= $parent->rootid;
+    		$p_l		= $parent->l;
+    		$p_r		= $parent->r;
+    		
+    	}
+
+    	if(is_array($child)) {
+    		
+    		$c_rootid 	= $child['rootid'];
+    		$c_l		= $child['l'];
+    		$c_r		= $child['r'];
+    		
+    	} elseif(is_object($child)) {
+    		
+    		$c_rootid 	= $child->rootid;
+    		$c_l		= $child->l;
+    		$c_r		= $child->r;
+    		
+    	}    
+    	
+    	if(($p_rootid == $c_rootid) && ($p_l < $c_l && $p_r > $c_r)) {	
+    		return true;
+    	}
+
+    	return false;
+    }
+    
     // }}}
     // {{{ _processResultSet()
 
