@@ -32,7 +32,7 @@
 * @version      $Revision$
 * @access       public
 */
-Class DB_NestedSetEvent extends PEAR {
+Class DB_NestedSetEvent {
 
     /**
     * Constructor
@@ -41,7 +41,6 @@ Class DB_NestedSetEvent extends PEAR {
     */
     function DB_NestedSetEvent() {
 
-        $this->PEAR();
     }
 
     /**
@@ -51,7 +50,6 @@ Class DB_NestedSetEvent extends PEAR {
     */
     function _DB_NestedSetEvent() {
 
-        $this->_PEAR();
     }
 
 
