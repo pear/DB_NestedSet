@@ -154,7 +154,7 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 				$this->_strlenByLevel[$params['currentLevel']-$this->_levelOffset] = strlen($node[$params['textField']]);
 			};
 			
-			$tigraMenu = $tigraMenu.$this->_openSubMenu($tag, $params['currentLevel']);
+			$tigraMenu = $tigraMenu.$this->_openSubMenu($tag);
 			
 			
 			// see if it has children
@@ -180,7 +180,7 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 				$tigraMenu = $tigraMenu.$this->_createFromStructure($recurseParams);
 			}
 			
-			$tigraMenu = $tigraMenu.$this->_closeSubMenu($params['currentLevel']);
+			$tigraMenu = $tigraMenu.$this->_closeSubMenu();
 		}
 		return $tigraMenu;
 	}
@@ -211,22 +211,12 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* 
 	* @access private
 	* @param array $tag Contains the content of the current item (name, link)
-	* @param int $level Only used to do some indention within the returned string
 	* @return string The JavaScript piece
 	*/
-	function _openSubMenu($tag, $level=1) {
+	function _openSubMenu($tag) {
 		
-		static $offset;
-		
-		if(!$offset) {
-			$offset = $level;
-		}
-		
-		$level = $level - $offset;
-		
-		$indent = str_repeat(' ', $level*4);
 		$rtag = implode(', ', $tag);
-		return "\n".$indent."[".$rtag.',';
+		return "\n[".$rtag.',';
 	}
 
 	// }}}
@@ -250,19 +240,10 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 	* Closes the JavaScript array of a submenu
 	* 
 	* @access private
-	* @param int $level Only used to do some indention within the returned string
 	* @return string The JavaScript piece
 	*/		
-	function _closeSubMenu($level=1) {
-		static $offset;
-		
-		if(!$offset) {
-			$offset = $level;
-		}
-		
-		$level = $level - $offset;
-		$indent = str_repeat(' ', $level*4);
-		return "\n".$indent."],";
+	function _closeSubMenu() {		
+		return "\n],";
 	}
 	
 	// }}}
