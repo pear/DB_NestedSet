@@ -58,7 +58,7 @@ define('NESE_MOVE_BELOW', 'SUB');
 * DB_NestedSet is a class for handling nested sets
 *
 * @author       Daniel Khan <dk@webcluster.at>
-* @package      NestedSet
+* @package      DB_NestedSet
 * @version      $Revision$
 * @access       public
 */
@@ -68,8 +68,7 @@ class DB_NestedSet extends PEAR {
 	// {{{ properties
 	
 	/**
-	* The field parameters of the table with the nested set. Format: 'realFieldName' => 'fieldId'
-	* @type array
+	* @var array The field parameters of the table with the nested set. Format: 'realFieldName' => 'fieldId'
 	*/
 	var $params = array(
 	'STRID' => 'id',
@@ -82,88 +81,75 @@ class DB_NestedSet extends PEAR {
 	);
 	
 	/**
-	* The above parameters flipped for easy access
-	* @type array
+	* @var array The above parameters flipped for easy access
 	*/
 	var $flparams = array();
 	
 	/**
-	* An array of field ids that must exist in the table
-	* @type array
+	* @var array An array of field ids that must exist in the table
 	*/
 	var $requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level');
 	
 	/**
-	* The table with the actual tree data
-	* @type string
+	* @var string The table with the actual tree data
 	*/
 	var $node_table = 'tb_nodes';
 	
 	/**
-	* The table to handle locking
-	* @type string
+	* @var string The table to handle locking
 	*/
 	var $lock_table = 'tb_locks';
 	
 	/**
-	* The table used for sequences
-	* @type string
+	* @var string The table used for sequences
 	*/
 	var $sequence_table;
 	
 	/**
 	* Secondary order field.  Normally this is the order field, but can be changed to
 	* something else (i.e. the name field so that the tree can be shown alphabetically)
-	* @type string
+	* @var string
 	*/
 	var $secondarySort;
 	
 	/**
-	* The time to live of the lock
-	* @type int
+	* @var int The time to live of the lock
 	*/
-	var $lockTTL = 2;
+	var $lockTTL = 1;
 	
 	/**
-	* Enable debugging statements?
-	* @type bool
+	* @var bool Enable debugging statements?
 	*/
 	var $debug = false;
 	
 	/**
-	* Lock the structure of the table?
-	* @type bool
+	* @var bool Lock the structure of the table?
 	*/
 	var $structureTableLock = false;
 	
 	/**
-	* Skip the callback events?
-	* @type bool
+	* @var bool Skip the callback events?
 	*/
 	var $skipCallbacks = false;
 	
 	/**
-	* Optional PEAR::Cache object
-	* @type object cache
+	* @var object cache Optional PEAR::Cache object
 	*/
 	var $cache = false;
 	
 	/**
-	* Do we want to use caching
-	* @type bool
+	* @var bool Do we want to use caching
 	*/
 	var $_caching = false;
 	
 	/**
-	* Temporary switch for cache
-	* Used to turn off caching while manipulative methods are called
-	* @type bool
+	* 
+	* @var bool Temporary switch for cache
 	*/
 	var $_restcache = false;
 	
 	/**
-	* Map of error messages to their descriptions
-	* @type array
+	* @var array Map of error messages to their descriptions
 	*/
 	var $messages = array(
 	NESE_ERROR_RECURSION    => 'This operation would lead to a recursion',
@@ -173,12 +159,11 @@ class DB_NestedSet extends PEAR {
 	NESE_ERROR_NOHANDLER    => 'Event handler not found',
 	NESE_ERROR_PARAM_MISSING=> 'Parameter missing',
 	NESE_MESSAGE_UNKNOWN    => 'Unknown error or message',
-	NESE_ERROR_NOT_FOUND    => 'Node not found',
+	NESE_ERROR_NOT_FOUND    => 'Node not found', 
 	);
 	
 	/**
-	* The array of event listeners
-	* @type array
+	* @var array The array of event listeners
 	*/
 	var $eventListeners = array();
 	
@@ -186,7 +171,7 @@ class DB_NestedSet extends PEAR {
 	// +---------------------------------------+
 	// | Base methods                          |
 	// +---------------------------------------+
-	// {{{ constructor
+	// {{{ constructor 
 	
 	/**
 	* Constructor
@@ -222,7 +207,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return object The DB_NestedSet object
 	*/
-	function &factory($driver, $dsn, $params = array())
+	function & factory($driver, $dsn, $params = array())
 	{
 		$driverpath = dirname(__FILE__).'/NestedSet/'. $driver.'.php';
 		if(!file_exists($driverpath) || !$driver) {
@@ -308,17 +293,23 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getRootNodes($keepAsArray = false, $aliasFields = true)
+	function getRootNodes($keepAsArray = false, $aliasFields = true, $addSQL = array())
 	{
 		$this->_debugMessage('getRootNodes()');
-		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s ASC',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s.%s %s ORDER BY %s.%s ASC',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams['id'],
+		$this->node_table,
 		$this->flparams['rootid'],
+		$this->_addSQL($addSQL, 'append'),
+		$this->node_table,
 		$this->secondarySort
 		);
-		
+
 		if(!$this->_caching) {
 			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
@@ -444,7 +435,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getChildren($id, $keepAsArray = false, $aliasFields = true, $forceNorder = false)
+	function getChildren($id, $keepAsArray = false, $aliasFields = true, $forceNorder = false, $addSQL = array())
 	{
 		$this->_debugMessage('getChildren($id)');
 		$parent = $this->_getNodeObject($id);
@@ -453,16 +444,23 @@ class DB_NestedSet extends PEAR {
 		}
 		
 		$orderBy = $forceNorder ? $this->flparams['norder'] : $this->secondarySort;
-		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s=%s+1 AND %s BETWEEN %s AND %s ORDER BY %s ASC',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s AND %s.%s=%s+1 AND %s.%s BETWEEN %s AND %s %s ORDER BY %s.%s ASC',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams['rootid'],
 		$this->db->quote($parent->rootid),
+		$this->node_table,
 		$this->flparams['level'],
 		$parent->level,
+		$this->node_table,
 		$this->flparams['l'],
 		$parent->l,
 		$parent->r,
+		$this->_addSQL($addSQL, 'append'),
+		$this->node_table,
 		$orderBy
 		);
 		if(!$this->_caching) {
@@ -547,18 +545,22 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function pickNode($id, $keepAsArray = false, $aliasFields = true, $idfield = 'id')
+	function pickNode($id, $keepAsArray = false, $aliasFields = true, $idfield = 'id', $addSQL = array())
 	{
 		$this->_debugMessage('pickNode($id)');
 		if (is_object($id) && $id->id) {
 			$id = $id->id;
 		}
 		
-		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s',
+		$sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s',
 		$this->_getSelectFields($aliasFields),
+		$this->_addSQL($addSQL, 'cols'),
+		$this->node_table,
+		$this->_addSQL($addSQL, 'join'),
 		$this->node_table,
 		$this->flparams[$idfield],
-		$this->db->quote($id)
+		$this->db->quote($id),
+		$this->_addSQL($addSQL, 'append')
 		);
 		if(!$this->_caching) {
 			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -702,6 +704,25 @@ class DB_NestedSet extends PEAR {
 	}
 	
 	// }}}
+	
+	function _addSQL($addSQL, $param) {
+		
+		if(!isset($addSQL[$param])) {
+			return false;	
+		}		
+		
+		switch($param) {
+			
+			case 'cols':
+				return ', '.$addSQL[$param];
+			break;	
+			
+			default:
+				return $addSQL[$param];
+			break;
+		}	
+	}
+	
 	// {{{ _getSelectFields()
 	
 	/**
@@ -716,14 +737,17 @@ class DB_NestedSet extends PEAR {
 	function _getSelectFields($aliasFields)
 	{
 		$queryFields = array();
-		if ($aliasFields) {
-			foreach ($this->params as $key => $val) {
-				$queryFields[] = $key . ' AS ' . $val;
-			}
+		
+		if(isset($aliasfields)) {
+			$params = $this->params;
+		} else {
+			$params = $this->flparams;	
 		}
-		else {
-			$queryFields = $this->flparams;
+		
+		foreach ($this->params as $key => $val) {
+			$queryFields[] = $this->node_table.'.'.$key . ' AS ' . $val;
 		}
+
 		
 		$fields = implode(', ', $queryFields);
 		return $fields;
@@ -1795,8 +1819,8 @@ class DB_NestedSet extends PEAR {
 	/**
 	* Sets a db option.  Example, setting the sequence table format
 	*
-	* @type string $option The option to set
-	* @type string $val The value of the option
+	* @var string $option The option to set
+	* @var string $val The value of the option
 	*
 	* @access public
 	* @return void
@@ -1820,7 +1844,7 @@ class DB_NestedSet extends PEAR {
 		if($lockID = $this->structureTableLock) {
 			return $lockID;
 		}
-		
+
 		$this->_lockGC();
 		$tb = $this->lock_table;
 		$stb = $this->node_table;
@@ -1895,7 +1919,7 @@ class DB_NestedSet extends PEAR {
                     lockID=" . $this->db->quote($lockID);
 		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__, __LINE__);
-		
+		$this->structureTableLock = false;
 		if($this->_restcache) {
 			$this->_caching = true;
 			$this->_restcache = false;
@@ -2000,7 +2024,7 @@ class DB_NestedSet extends PEAR {
 *
 * @autor Daniel Khan <dk@webcluster.at>;
 * @version $Revision$
-* @package NestedSet
+* @package DB_NestedSet
 *
 * @access private
 */

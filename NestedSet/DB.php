@@ -107,7 +107,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
     {
 		$this->_debugMessage('_db_Disconnect()');
 		if (is_object($this->db)) {
-			$this->db->disconnect();
+			@$this->db->disconnect(); 
 		}
 
 		return true;

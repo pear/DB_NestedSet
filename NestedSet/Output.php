@@ -63,7 +63,7 @@ define('NESEO_ERROR_NO_OPTIONS',   'E2100');
 * $menu->printListbox();
 *
 * @author       Daniel Khan <dk@webcluster.at>
-* @package      NestedSet
+* @package      DB_NestedSet
 * @version      $Revision$
 * @access       public
 * 
