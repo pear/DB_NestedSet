@@ -20,7 +20,6 @@
 //
 
 require_once 'DB.php';
-
 // {{{ DB_NestedSet_DB:: class
 
 /**
@@ -96,36 +95,57 @@ class DB_NestedSet_DB extends DB_NestedSet {
     }
 
     // }}}
+    // {{{ _numRows()
 
-
-    function _numRows($res) {
+    function _numRows($res) 
+    {
         return $res->numRows();
     }
 
-    function _isDBError($err) {
+    // }}}
+    // {{{ _isDBError()
+
+    function _isDBError($err) 
+    {
         if(!DB::isError($err)) {
             return false;
         }
         return true;
     }
 
-    function _quote($str) {
+    // }}}
+    // {{{ _quote()
+
+    function _quote($str) 
+    {
         return $this->db->quote($str);
     }
 
-    function _dropSequence($sequence) {
+    // }}}
+    // {{{ _dropSequence()
+
+    function _dropSequence($sequence) 
+    {
         return $this->db->dropSequence($this->sequence_table);
     }
 
-    function _nextId($sequence) {
+    // }}}
+    // {{{ _nextId()
+
+    function _nextId($sequence) 
+    {
         return $this->db->nextId($sequence);
     }
 
-    function _getAll($sql) {
+    // }}}
+    // {{{ _getAll()
+
+    function _getAll($sql) 
+    {
         return $this->db->getAll($sql, null, DB_FETCHMODE_ASSOC);
     }
 
-    
+    // }}}
     // {{{ _db_Disconnect()
 
     /**
@@ -146,5 +166,4 @@ class DB_NestedSet_DB extends DB_NestedSet {
 
     // }}}
 }
-
 ?>

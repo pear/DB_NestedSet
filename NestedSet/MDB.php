@@ -22,7 +22,6 @@
 //
 
 require_once 'MDB.php';
-
 // {{{ DB_NestedSet_MDB:: class
 
 /**
@@ -100,35 +99,58 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
 
     // }}}
+    // {{{ _isDBError()
 
-    function _isDBError($err) {
-        if(!MDB::isError($err)) {
+    function _isDBError($err) 
+    {
+        if (!MDB::isError($err)) {
             return false;
         }
         return true;
     }
 
-    function _nextId($sequence) {
+    // }}}
+    // {{{ _nextId()
+
+    function _nextId($sequence) 
+    {
         return $this->db->nextId($sequence);
     }
 
-    function _dropSequence($sequence) {
+    // }}}
+    // {{{ _dropSequence()
+
+    function _dropSequence($sequence) 
+    {
         $this->db->loadManager();
         return $this->db->dropSequence($sequence);
     }
 
-    function _getAll($sql) {
+    // }}}
+    // {{{ _getAll()
+
+    function _getAll($sql) 
+    {
         return $this->db->queryAll($sql, null, MDB_FETCHMODE_ASSOC);
     }
 
-    function _numRows($res) {
+    // }}}
+    // {{{ _numRows()
+
+    function _numRows($res) 
+    {
         return $this->db->numRows($res);
     }
 
-    function _quote($str) {
+    // }}}
+    // {{{ _quote()
+
+    function _quote($str) 
+    {
         return $this->db->getValue('text', $str);
     }
 
+    // }}}
     // {{{ _db_Disconnect()
 
     /**
