@@ -93,8 +93,8 @@ $data = $nestedSet->getAllNodes(true);
 // {{{ manipulate data
 
 // add links to each item
-foreach ($data as $a_data) {
-     $a_data['link'] = 'http://foo.com/foo.php?' . $a_data['id'];
+foreach ($data as $id => $node) {
+     $data[$id]['link'] = 'http://example.com/foo.php?' . $node['id'];
 }
 
 // }}}
