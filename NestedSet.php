@@ -677,7 +677,7 @@ class DB_NestedSet {
         }
         
         $parent = $this->getParent($sibling, true);
-        return $this->getChildren($parent, $keepAsArray, $aliasFields, $addSQL);
+        return $this->getChildren($parent, $keepAsArray, $aliasFields, false, $addSQL);
     }
     
     // }}}
