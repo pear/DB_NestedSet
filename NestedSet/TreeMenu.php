@@ -60,14 +60,15 @@ require_once 'HTML/TreeMenu.php';
  */
 // }}}
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
-    
 	// {{{ DB_NestedSet_TreeMenu
+
     function &DB_NestedSet_TreeMenu($params) {
-    	$this->treeMenu = & $this->_createFromStructure($params);
+    	$this->_structTreeMenu =& $this->_createFromStructure($params);
     }
+
     // }}}
-    
-    // {{{ createFromStructure()
+    // {{{ _createFromStructure()
+
     /**
      * Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
      * of the DB_NestedSet class.  The needed parameters are:
@@ -141,7 +142,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                 $recurseParams['structure'] = $children;
                 $recurseParams['treeMenu'] =& $parentNode;
                 $recurseParams['currentLevel']++;
-                DB_NestedSet_TreeMenu::_createFromStructure($recurseParams);
+                $this->_createFromStructure($recurseParams);
             }
         }
 
@@ -149,8 +150,8 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     }
 
     // }}}
-
     // {{{ printTree()
+
     /**
      * Print's the current tree using the output driver
      *
@@ -158,12 +159,13 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
      */		    
     function printTree() {
 		$options = $this->_getOptions('printTree');
-    	$tree = &new HTML_TreeMenu_DHTML($this->treeMenu, $options);
+    	$tree =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
     	$tree->printMenu();
     }
+
 	// }}}
-	
 	// {{{ printListbox()
+
     /**
      * Print's a listbox representing the current tree
      *
@@ -171,9 +173,10 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
      */			    
     function printListbox() {
     	$options = $this->_getOptions('printListbox');
-    	$listBox  = &new HTML_TreeMenu_Listbox($this->treeMenu, $options);
+    	$listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
     	$listBox->printMenu();
     }
+
     // }}}
 }
 ?>

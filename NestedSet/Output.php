@@ -19,11 +19,14 @@
 // $Id$
 //
 
+// {{{ constants
 
 define('NESEO_ERROR_NO_METHOD',    'E1000');
 define('NESEO_DRIVER_NOT_FOUND',   'E1100');
 
+// }}}
 // {{{ DB_NestedSet_Output:: class
+
 /**
 * DB_NestedSet_Output is a unified API for other output drivers
 * Status is beta
@@ -62,23 +65,30 @@ define('NESEO_DRIVER_NOT_FOUND',   'E1100');
 * @access       public
 * 
 */
-// }}}
 
-Class DB_NestedSet_Output {
-	
+// }}}
+class DB_NestedSet_Output {
+    // {{{ properties
+
+    /**
+     * The tree menu structure
+     * @type object
+     */
 	var $_structTreeMenu	= false;
-	
+
+    // }}}
 	// {{{ factory()
+
     /**
      * Returns a output driver object
      *
-     * @param string $driver The driver, such as TreeMenu (default)
      * @param array $params A DB_NestedSet nodeset
+     * @param string $driver (optional) The driver, such as TreeMenu (default)
      *
      * @access public
      * @return object The DB_NestedSet_Ouput object
      */		
-	function &factory ($driver='TreeMenu',$params) {
+	function &factory ($params, $driver = 'TreeMenu') {
 		
 		$path = dirname(__FILE__).'/'.$driver.'.php';
 		
@@ -90,9 +100,10 @@ Class DB_NestedSet_Output {
 		$driverClass = 'DB_NestedSet_'.$driver;
 		return new $driverClass($params);
 	}
+
 	// }}}
-	
 	// {{{ setOptions()
+
     /**
      * Set's options for a specific output group (printTree, printListbox)
      * This enables you to set specific options for each output method
@@ -107,9 +118,10 @@ Class DB_NestedSet_Output {
 		$this->options[$group] = $options;
 		return true;
 	}
+
 	// }}}
-	
 	// {{{ _getOptions()
+
     /**
      * Get's all option for a specific output group (printTree, printListbox)
      *
@@ -119,14 +131,15 @@ Class DB_NestedSet_Output {
      * @return array Options
      */			
 	function _getOptions($group) {
-		if(!$this->options[$group]) {
+		if (!$this->options[$group]) {
 			return array();	
 		}
 		return $this->options[$group];
 	}
+
 	// }}}
-	
 	// {{{ printTree()
+
     /**
      * Print's the current tree using the output driver
      * Overriden by the driver class
@@ -136,9 +149,10 @@ Class DB_NestedSet_Output {
 	function printTree() {
 		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
+
 	// }}}
-	
 	// {{{ printListbox()
+
     /**
      * Print's a listbox representing the current tree
      * Overriden by the driver class
@@ -148,6 +162,7 @@ Class DB_NestedSet_Output {
 	function printListbox() {
 		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
+
 	// }}}
 }
 ?>
