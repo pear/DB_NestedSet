@@ -144,7 +144,7 @@ $menu->setMenuType('urhere');
 $menu->show();
 echo "<hr>";
 
-$menu->setMenuType('prevnext');
+echo "Menu type 'prevnext'<br>";
 // Set another type
 $menu->setMenuType('prevnext');
 // Output the menu
