@@ -793,6 +793,7 @@ class DB_NestedSet {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
         }
+
         if ($this->_sortMode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
             $nodeSet = $this->_secSort($nodeSet);
         }
@@ -1843,24 +1844,30 @@ class DB_NestedSet {
     * @access private
     */
     function _secSort($nodeSet) {
-
+        
+        // Nothing to do - empty tree
+        if(empty($nodeSet)) {
+            return $nodeSet;
+        }
+        
         $retArray = array();
         foreach($nodeSet AS $nodeID=>$node) {
             $deepArray[$node['parent']][$nodeID] = $node;
         }
-
-
+        
+        $reset = true;
         foreach($deepArray AS $parentID=>$children) {
-            $retArray = $this->_secSortCollect($children, $deepArray);
+            $retArray = $this->_secSortCollect($children, $deepArray, $reset);
+            $reset = false;
         }
         return $retArray;
     }
 
 
-    function _secSortCollect($segment, $deepArray) {
+    function _secSortCollect($segment, $deepArray, $reset = false) {
 
         static $retArray;
-        if(!$retArray) {
+        if(!$retArray || $reset) {
             $retArray = array();
         }
 
