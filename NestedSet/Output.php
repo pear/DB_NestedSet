@@ -77,6 +77,14 @@ class DB_NestedSet_Output {
      */
 	var $_structTreeMenu	= false;
 
+	/**
+	* Array of options to be passed to the ouput methods
+	*
+	* @type array
+	* @access public
+	*/
+	var $options	= array();
+		
     // }}}
 	// {{{ factory()
 
@@ -132,7 +140,8 @@ class DB_NestedSet_Output {
      * @return array Options
      */			
 	function _getOptions($group) {
-		if (!$this->options[$group]) {
+		
+		if (!isset($this->options[$group])) {
 			return array();	
 		}
 		return $this->options[$group];

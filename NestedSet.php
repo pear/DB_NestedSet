@@ -153,7 +153,14 @@ class DB_NestedSet extends PEAR {
 	* @type bool
 	*/
 	var $_caching = false;
-	
+
+	/**
+	* Temporary switch for cache
+	* Used to turn off caching while manipulative methods are called
+	* @type bool
+	*/
+	var $_restcache = false;
+		
 	/**
 	* Map of error messages to their descriptions
 	* @type array
@@ -274,10 +281,17 @@ class DB_NestedSet extends PEAR {
 		);
 		
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}	
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -306,10 +320,17 @@ class DB_NestedSet extends PEAR {
 		);
 		
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}	
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -343,10 +364,17 @@ class DB_NestedSet extends PEAR {
 		$this->secondarySort
 		);
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}	
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -385,10 +413,17 @@ class DB_NestedSet extends PEAR {
 		$this->flparams['level']
 		);
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}	
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -431,10 +466,17 @@ class DB_NestedSet extends PEAR {
 		$orderBy
 		);
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}		
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -443,8 +485,8 @@ class DB_NestedSet extends PEAR {
 	/**
 	* Fetch all the children of a node given by id
 	*
-	* A big difference to getChildren() is that no level information or other meta data is
-	* queried.  You only get a plain array of the node objects below the given id.
+    * getChildren only queries the immediate children
+    * getSubBranch returns all nodes below the given node
 	*
 	* @param string  $id The node ID
 	* @param bool $keepAsArray (optional) Keep the result as an array or transform it into
@@ -474,10 +516,17 @@ class DB_NestedSet extends PEAR {
 		$this->db->quote($id)
 		);
 		if(!$this->_caching) {
-			return $this->_processResultSet($sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
 		} else {
-			return $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
+			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
+			
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);	
+		}		
+		return $nodeSet;
 	}
 	
 	// }}}
@@ -504,7 +553,7 @@ class DB_NestedSet extends PEAR {
 		if (is_object($id) && $id->id) {
 			$id = $id->id;
 		}
-		
+
 		$sql = sprintf('SELECT %s FROM %s WHERE %s=%s',
 		$this->_getSelectFields($aliasFields),
 		$this->node_table,
@@ -516,9 +565,17 @@ class DB_NestedSet extends PEAR {
 		} else {
 			$nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
 		}
-		
+
+		$nsKey = false;
+		// EVENT (nodeLoad)
+		reset($nodeSet);
+		while(list($key, $node) = each($nodeSet)) {		
+			$this->triggerEvent('nodeLoad', $nodeSet[$key]);
+			$nsKey = $key;	
+		}	
+
 		if(is_array($nodeSet) && $idfield != 'id') {
-			$id = key($nodeSet);
+			$id = $nsKey;	
 		}
 		
 		return isset($nodeSet[$id]) ? $nodeSet[$id] : false;
@@ -545,6 +602,11 @@ class DB_NestedSet extends PEAR {
 	function isParent($parent, $child) {
 		
 		$this->_debugMessage('isParent($parent, $child)');
+		
+		if(!isset($parent)|| !isset($child)) {
+			return false;	
+		}
+		
 		if(is_array($parent)) {
 			
 			$p_rootid 	= $parent['rootid'];
@@ -572,7 +634,7 @@ class DB_NestedSet extends PEAR {
 			$c_r		= $child->r;
 			
 		}
-		
+
 		if(($p_rootid == $c_rootid) && ($p_l < $c_l && $p_r > $c_r)) {
 			return true;
 		}
@@ -612,9 +674,7 @@ class DB_NestedSet extends PEAR {
 				// Create an instance of the node container
 				$nodes[$node_id] =& new NestedSet_Node($row);
 			}
-			
-			// EVENT (nodeLoad)
-			$this->triggerEvent('nodeLoad', $nodes[$node_id]);
+
 		}
 		
 		return $nodes;
@@ -1612,8 +1672,7 @@ class DB_NestedSet extends PEAR {
 			$msg = "$message ($code) in file $file at line $line";
 		} else {
 			$msg = $errobj->getMessage();
-			$code = $errobj->getCode();
-		}
+			$code = $errobj->getCode();		}
 		
 		$this->raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
@@ -1671,7 +1730,8 @@ class DB_NestedSet extends PEAR {
 	*/
 	function triggerEvent($event, &$node, $eparams = false)
 	{
-		if($this->skipCallbacks ||
+		if($this->skipCallbacks || 
+		!isset($this->eventListeners[$event]) ||
 		!is_array($this->eventListeners[$event]) ||
 		count($this->eventListeners[$event]) == 0) {
 			return false;
