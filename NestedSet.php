@@ -274,8 +274,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed False on error, or an array of nodes
 	*/
-	function getAllNodes($keepAsArray = false, $aliasFields = true, $addSQL = array())
-	{
+	function getAllNodes($keepAsArray = false, $aliasFields = true, $addSQL = array()) {
 		$this->_debugMessage('getAllNodes()');
 		$sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC', 
                 $this->_getSelectFields($aliasFields),
@@ -921,8 +920,7 @@ class DB_NestedSet extends PEAR {
 	* @access public
 	* @return mixed The node id or false on error
 	*/
-	function createSubNode($id, $values)
-	{
+	function createSubNode($id, $values) {
 		$this->_debugMessage('createSubNode($id, $values)');
 		// Try to aquire a table lock
 		if(PEAR::isError($lock = $this->_setLock())) {
@@ -944,11 +942,12 @@ class DB_NestedSet extends PEAR {
 		}
 		
 		// invalid parent id, bail out
+		
 		if (!($thisnode = $this->pickNode($id))) {
 			$this->raiseError("Parent id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 			return false;
 		}
-		
+
 		$flft = $this->flparams['l'];
 		$frgt = $this->flparams['r'];
 		$froot = $this->flparams['rootid'];
