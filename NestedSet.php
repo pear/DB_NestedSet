@@ -1135,7 +1135,7 @@ class DB_NestedSet extends PEAR {
             $last = array_pop($children);
             // What we have to do is virtually an insert of a node after the last child
             // So we don't have to proceed creating a subnode
-            $newNode = $this->createRightNode($last['id'], $values, true);
+            $newNode = $this->createRightNode($last['id'], $values);
             $this->_releaseLock();
             return $newNode;
         }
@@ -1335,7 +1335,7 @@ class DB_NestedSet extends PEAR {
     * @access public
     * @return object The new node object
     */
-    function createRightNode($id, $values, $returnID=false) {
+    function createRightNode($id, $values) {
         
         if ($this->debug) {
             $this->_debugMessage('createRightNode($target, $values)');
@@ -1442,11 +1442,7 @@ class DB_NestedSet extends PEAR {
         
         // Dirty ugly hack to keep BC
         $this->_releaseLock();
-        if($returnID) {
-            return $node_id;
-        } else {
-            return $this->pickNode($node_id);
-        }
+        return $node_id;
     }
     
     // }}}
@@ -1776,7 +1772,7 @@ class DB_NestedSet extends PEAR {
             break;
             
             case NESE_MOVE_AFTER:
-            $clone_id = $this->createRightNode($target['id'], $values, true);
+            $clone_id = $this->createRightNode($target['id'], $values);
             break;
             
             case NESE_MOVE_BELOW:
@@ -2598,7 +2594,7 @@ class DB_NestedSet extends PEAR {
                 $psid = $copy->createRootNode($values, false, true);
                 $firstSet = true;
             } elseif($isRoot) {
-                $psid = $copy->createRightNode($psid, $values, true);
+                $psid = $copy->createRightNode($psid, $values);
             } else {
                 $copy->createSubNode($parent, $values);  
             }
