@@ -2096,29 +2096,6 @@ class DB_NestedSet extends PEAR {
 	
 	// }}}
 
-	//// DEBUG
-	//// Simple DB wrapper
-	//// Only itended to catch some queries to see what went wrong if something went wrong
-	function query($sql) {
-		
-		
-		if(DB::isManip($sql)) {
-			$filename = '/home/wwwroot/pyhrn-priel.com/querylog/log.txt';
-    		if (!$handle = fopen($filename, "a")) {
-         		print "Kann die Datei $filename nicht öffnen";
-         		exit;
-   		 	}
-   		 	$string = date("H:i:s").":: $sql\n\n";
-			fwrite($handle, $string."\n");
-
-
-   			 fclose($handle);
-			 
-		}
-		
-		
-		return $this->db->query($sql);
-	}	
 }
 // {{{ DB_NestedSet_Node:: class
 
