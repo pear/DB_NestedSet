@@ -7,7 +7,11 @@
 *
 * @author       Daniel Khan <dk@webcluster.at>
 * @package      DB_NestedSetTest
+<<<<<<< TestBase.php
 * @version      $Revision$
+=======
+* @version      $Revision$
+>>>>>>> 1.7
 * @access       public
 */
 Class TestBase extends PhpUnit_Testcase {
@@ -33,7 +37,7 @@ Class TestBase extends PhpUnit_Testcase {
             	$p = $this->_NeSe->getParent($nodeid, true);
 				
 				if($mvt == NESE_MOVE_BELOW) {
-					$this->assertEquals($tnode['id'], $p['id'], 'Move below failed');
+					$this->assertEquals($tnode['id'], $p['id'], 'Move below failed (parent ID)');
 				}
 				
 				
