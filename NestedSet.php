@@ -617,7 +617,7 @@ class DB_NestedSet {
             return $this->pickNode($child['parent'], $keepAsArray, $aliasFields, 'id', $addSQL);
         } 
 
-        $addSQL['where'] = sprintf('AND %s.%s = %s',
+        $addSQL['where'] = sprintf('%s.%s = %s',
         	$this->node_table,
             $this->flparams['level'],
             $child['level']-1);
