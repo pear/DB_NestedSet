@@ -31,7 +31,8 @@ class DB_NestedSetTest extends PhpUnit_Testcase {
         (
         'node_table' => 'tb_nodes',
         'lock_table' => 'tb_locks',
-        'lockTTL'	 => -1 )
+        'lockTTL'	 => -1,
+        'debug' => 1 )
         );
     }
     
@@ -39,7 +40,7 @@ class DB_NestedSetTest extends PhpUnit_Testcase {
         
         $tb = $this->_NeSe->node_table;
         $sql = "DELETE FROM $tb";
-        $this->_NeSe->db->query($sql);
+        //$this->_NeSe->db->query($sql);
         
     }
 }

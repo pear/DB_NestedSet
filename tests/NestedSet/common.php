@@ -86,7 +86,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $values['STRNA'] = 'RSR'.$x;
             
             // Try to overwrite the ROOTID which should be set inside the method
-            $values['ROOTID'] = -100;
+            //$values['ROOTID'] = -100;
             $rn2 = $this->_NeSe->createRightNode($sid, $values);
             $x++;
             
@@ -191,7 +191,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         $x = 0;
         foreach($rootnodes AS $rid=>$node) {
             $values['STRNA'] = 'U'.$x;
-            $values['ROOTID'] = -100;
+            //$values['ROOTID'] = -100;
             $this->_NeSe->updateNode($rid, $values);
             $rn = $this->_NeSe->pickNode($rid, true);
             $this->assertEquals('U'.$x, $rn['name'], 'Nodename update failed');
@@ -201,23 +201,96 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         return true;
     }
     
-    function test_moveTree() {
+    function test_moveTree__sameSubtree() {
         
-        // Build a nice random tree
-        $relationTree = $this->_createRandomNodes(3, 150);
-        
-        $rootnodes =  $this->_NeSe->getRootNodes(true);
-        
-        // First test if recursions are detected
-        foreach($rootnodes AS $rid=>$rootnode) {
-            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($rid, $rid, NESE_MOVE_BELOW)), 'A recursion wasn not catched');
-            $this->_testRecursionErrors($rootnode);
+        // Perform NESE_MOVE_BEFORE/NESE_MOVE_AFTER and verify the results
+        $movemodes[] = NESE_MOVE_BEFORE;
+        $movemodes[] = NESE_MOVE_AFTER;
+        for($i=0;$i<count($movemodes);$i++) {
             
+            $mvt = $movemodes[$i];
+            
+            // Build a nice random tree
+            $relationTree = $this->_createRandomNodes(3, 50);
+            $rootnodes =  $this->_NeSe->getRootNodes(true);
+            
+            $trootnodes = $rootnodes;
+            // Now traverse the rootnodes and try to move the rootnodes
+            foreach($rootnodes AS $rid=>$rootnode) {
+                
+                reset($trootnodes);
+                foreach($trootnodes AS $trid=>$trootnode) {
+                    
+                    // See if recursions get catched
+                    if($rid == $trid) {
+                        $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($rid, $trid, $mvt)), 'A recursion wasn not catched');
+                        continue;
+                    }
+                    
+                    $move_node_st1      = $this->_NeSe->pickNode($rid, true);
+                    $target_node_st1    = $this->_NeSe->pickNode($trid, true);
+                    
+                    if($move_node_st1['norder'] > $target_node_st1['norder']) {
+                        $tp = '>';
+                        if($mvt == NESE_MOVE_BEFORE) {
+                            $exp_order = $target_node_st1['norder'];
+                        } elseif($mvt == NESE_MOVE_AFTER) {
+                            $exp_order = $target_node_st1['norder'] + 1;
+                        }
+                    } elseif($move_node_st1['norder'] < $target_node_st1['norder']) {
+                        $tp = '<';
+                        if($mvt == NESE_MOVE_BEFORE) {
+                            $exp_order = $target_node_st1['norder'] - 1;
+                        } elseif($mvt == NESE_MOVE_AFTER) {
+                            $exp_order = $target_node_st1['norder'];
+                        }
+                    }
+                    
+                    $res_mvbefore = $this->_NeSe->moveTree($rid, $trid, $mvt);
+                    $this->assertEquals($rid, $res_mvbefore, 'moveRoot2Root [id]/[id] failed');
+                    
+                    $move_node_st2      = $this->_NeSe->pickNode($rid, true);
+                    $target_node_st2    = $this->_NeSe->pickNode($trid, true);
+                    
+                    $this->assertEquals($move_node_st1['rootid'], $move_node_st2['rootid'], "$mvt $tp $rid => $trid moveRoot2Root [rootid] failed");
+                    $this->assertEquals($move_node_st1['id'], $move_node_st2['id'], "$mvt $tp $rid => $trid moveRoot2Root [id] failed");
+                    $this->assertEquals($move_node_st1['level'], $move_node_st2['level'], "$mvt $tp $rid => $trid moveRoot2Root [level] failed");
+                    $this->assertEquals($exp_order, $move_node_st2['norder'], "$mvt $tp $rid => $trid moveRoot2Root [order] failed");
+                }
+                
+                // Now visit the children of the cuerrent rootnode
+                $this->_moveTree__sameSubtree($rootnode, $mvt);
+            }
         }
-        
-        $this->fail('NOT IMPLEMENTED YET');
+        return true;
     }
     
+    function test_moveTree__across() {
+        
+        $movemodes[] = NESE_MOVE_BEFORE;
+        $movemodes[] = NESE_MOVE_AFTER;
+        for($j=0;$j<count($movemodes);$j++) {
+
+            $mvt = $movemodes[$j];
+            
+            // Build a nice random tree
+            $relationTree = $this->_createRandomNodes(3, 50);
+            $rootnodes =  $this->_NeSe->getRootNodes(true);
+            $branches = array();
+            foreach($rootnodes AS $rid=>$rootnode) {
+                 $branch = $this->_NeSe->getSubBranch($rid, true);
+                 
+                 if(!empty($branch)) {
+                    $branches[] = $branch;   
+                 }
+                 
+                 if(count($branches) == 2) {
+                    $this->_moveTree__Across($branches, $mvt);
+                    $branches = array();   
+                 }
+            }
+        }        
+    }
     
     // +----------------------------------------------+
     // | Testing query methods                        |
@@ -475,23 +548,73 @@ class tests_NestedSet_common extends DB_NestedSetTest {
         return true;
     }
     
-    
     // +----------------------------------------------+
     // | Internal helper methods                      |
     // |----------------------------------------------+
     // | [PRIVATE]                                    |
     // +----------------------------------------------+
+
+    function _moveTree__Across($branches, $mvt) {       
+        foreach($branches[0] AS $nodeid=>$node) {
+            foreach($branches[1] AS $tnodeid=>$tnode) {
+                $ret =  $this->_NeSe->moveTree($nodeid, $tnodeid, $mvt);
+            }
+        }
+    }    
     
-    function _testRecursionErrors($parent) {
+    function _moveTree__sameSubtree($parent, $mvt) {
+
         $children = $this->_NeSe->getChildren($parent['id'], true);
         if(empty($children)) {
-            return true;
+            return true;   
         }
-        foreach($children AS $cid=>$child) {
-            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_BELOW)), 'A recursion wasn not catched');
-            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_BEFORE)), 'A recursion wasn not catched');
-            $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($parent['id'], $cid, NESE_MOVE_AFTER)), 'A recursion wasn not catched');
-            $this->_testRecursionErrors($child);
+        
+        $tchildren = $children;
+        
+        // Now traverse the children and try to move them
+        foreach( $children AS $cid=>$child) {
+            
+            reset($tchildren);
+            foreach($tchildren AS $tcid=>$tchild) {
+                
+                // See if recursions get catched
+                if($cid == $tcid) {
+                    $this->assertTrue(PEAR::isError($this->_NeSe->moveTree($cid, $tcid, $mvt)), 'A recursion wasn not catched');
+                    continue;
+                }
+                
+                $move_node_st1      = $this->_NeSe->pickNode($cid, true);
+                $target_node_st1    = $this->_NeSe->pickNode($tcid, true);
+                
+                if($move_node_st1['norder'] > $target_node_st1['norder']) {
+                    $tp = '>';
+                    if($mvt == NESE_MOVE_BEFORE) {
+                        $exp_order = $target_node_st1['norder'];
+                    } elseif($mvt == NESE_MOVE_AFTER) {
+                        $exp_order = $target_node_st1['norder'] + 1;
+                    }
+                } elseif($move_node_st1['norder'] < $target_node_st1['norder']) {
+                    $tp = '<';
+                    if($mvt == NESE_MOVE_BEFORE) {
+                        $exp_order = $target_node_st1['norder'] - 1;
+                    } elseif($mvt == NESE_MOVE_AFTER) {
+                        $exp_order = $target_node_st1['norder'];
+                    }
+                }
+                
+                $res_mvbefore = $this->_NeSe->moveTree($cid, $tcid, $mvt);
+                $this->assertEquals($cid, $res_mvbefore, 'moveRoot2Root [id]/[id] failed');
+                
+                $move_node_st2      = $this->_NeSe->pickNode($cid, true);
+                $target_node_st2    = $this->_NeSe->pickNode($tcid, true);
+                
+                $this->assertEquals($parent['rootid'], $move_node_st2['rootid'], "$mvt $tp $cid => $tcid moveInsideLevel [rootid] failed");
+                $this->assertEquals($move_node_st1['id'], $move_node_st2['id'], "$mvt $tp $cid => $tcid moveInsideLevel [id] failed");
+                $this->assertEquals($move_node_st1['level'], $move_node_st2['level'], "$mvt $tp $cid => $tcid moveInsideLevel [level] failed");
+                $this->assertEquals($exp_order, $move_node_st2['norder'], "$mvt $tp $cid => $tcid moveInsideLevel [order] failed");
+            }
+            
+            $this->_moveTree__sameSubtree($child, $mvt);
         }
         return true;
     }
@@ -590,6 +713,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
                 } else {
                     $cct = 1;
                 }
+                
                 if(!empty($parent)) {
                     $values['STRNA'] = $parent['name'].'.'.$cct;
                 } else {
@@ -655,11 +779,13 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $values = array();
             $values['STRNA'] = 'disturb';
             
+
             // Try to overwrite the rootid which should be set inside the method
-            $values['ROOTID'] = -100;
+            //$values['ROOTID'] = -100;
             $disturbidx = count($nodes);
             $disturb = 6;
             $nodes[$disturbidx] = $this->_NeSe->createRootnode($values, $disturb);
+
         }
         
         for($i=0; $i<count($nodes); $i++) {
@@ -734,7 +860,7 @@ class tests_NestedSet_common extends DB_NestedSetTest {
             $values['STRNA'] = $pname.'.'.$nindex;
             
             // Try to overwrite the rootid which should be set inside the method
-            $values['STRID'] = -100;
+            //$values['STRID'] = -100;
             
             $npid = $this->_NeSe->createSubNode($pid, $values);
             $relationTree[$npid]['parent'] = $pid;
