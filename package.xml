@@ -52,6 +52,7 @@
                     <file>Output.php</file>
                     <file>TreeMenu.php</file>
                     <file>TigraMenu.php</file>
+                    <file>CoolMenu.php</file>
                 </dir>
                 <dir name="docs" role="doc">
                     <file>README</file>
@@ -60,6 +61,7 @@
                     <file>testdb_mysql.sql</file>
                     <file>TreeMenu_example.php</file>
                     <file>TigraMenu_example.php</file>
+                    <file>CoolMenu_example.php</file>
                 </dir>
                 <dir name="tests">
                     <file role="test">index.php</file>
