@@ -86,7 +86,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
         if (DB::isConnection($this->db)) {
             return $this->db;
         }
-        if (DB::isConnection($this->db)) {
+        if (DB::isConnection($dsn)) {
             return $dsn;
         }
         $db =& DB::connect($dsn);
