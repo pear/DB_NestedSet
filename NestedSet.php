@@ -86,18 +86,8 @@ class DB_NestedSet extends PEAR {
     'LEVEL' => 'level',
     'STRNA' => 'name'
     );
-    
-    /**
-    * @var array The above parameters flipped for easy access
-    * @access private
-    */
-    var $flparams = array();
-    
-    /**
-    * @var array An array of field ids that must exist in the table
-    * Not used yet
-    */
-    var $requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level');
+
+
     
     /**
     * @var string The table with the actual tree data
@@ -142,27 +132,52 @@ class DB_NestedSet extends PEAR {
     * @access private
     */
     var $structureTableLock = false;
-    
-    /**
-    * @var bool Skip the callback events?
-    * @access private
-    */
-    var $skipCallbacks = false;
-    
+
     /**
     * @var object cache Optional PEAR::Cache object
     * @access public
     */
     var $cache = false;
     
-    // Sortmode
+    /**
+    * @var constant Specify the sortmode of the query methods
+    * NESE_SORT_LEVEL is the 'old' sorting method and sorts a tree by level
+    * all nodes of level 1, all nodes of level 2,...
+    * NESE_SORT_PREORDER will sort doing a preorder walk.
+    * So all children of node x will come right after it
+    * @access public
+    */
     var $sortmode   = NESE_SORT_LEVEL;
+        
+    /**
+    * @var array An array of field ids that must exist in the table
+    */
+    var $_requiredParams = array('id', 'rootid', 'l', 'r', 'norder', 'level');    
     
+    /**
+    * @var bool Skip the callback events?
+    * @access private
+    */
+    var $_skipCallbacks = false;
+
     /**
     * @var bool Do we want to use caching
     * @access private
     */
     var $_caching = false;
+    
+    /**
+    * @var array The above parameters flipped for easy access
+    * @access private
+    */
+    var $_flparams = array();    
+    
+    /**
+    *
+    * @var bool Temporary switch for cache
+    * @access private
+    */
+    var $_restcache = false;
     
     /**
     * Used to determine the presence of listeners for an event in triggerEvent()
@@ -175,18 +190,24 @@ class DB_NestedSet extends PEAR {
     */
     var $_hasListeners = array();
     
+    
     /**
-    *
-    * @var bool Temporary switch for cache
+    * @var string packagename
     * @access private
     */
-    var $_restcache = false;
-    
     var $_packagename   = 'DB_NestedSet';
     
+    /**
+    * @var int Majorversion
+    * @access private
+    */
     var $_majorversion   = 1;
     
-    var $_minorversion   = 3;
+    /**
+    * @var string Minorversion
+    * @access private
+    */
+    var $_minorversion   = '3';
     
     
     /**
@@ -209,16 +230,16 @@ class DB_NestedSet extends PEAR {
     * @access public
     */
     var $eventListeners = array();
+
+    
+    
     
     // }}}
     // +---------------------------------------+
     // | Base methods                          |
     // +---------------------------------------+
     // {{{ constructor
-    
-    
-    
-    
+
     /**
     * Constructor
     *
@@ -235,12 +256,12 @@ class DB_NestedSet extends PEAR {
         $this->PEAR();
         if (is_array($params) && count($params) > 0) {
             $this->params = $params;
-        }
+        } 
         
-        $this->flparams = array_flip($this->params);
-        $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
-        $this->secondarySort = $this->flparams['norder'];
-        register_shutdown_function('_DB_NesetSet');
+        $this->_flparams = array_flip($this->params);
+        $this->sequence_table = $this->node_table . '_' . $this->_flparams['id'];
+        $this->secondarySort = $this->_flparams['norder'];
+        register_shutdown_function(array(&$this,'_DB_NestedSet'));
     }
     
     // }}}
@@ -314,7 +335,6 @@ class DB_NestedSet extends PEAR {
         }
         
         if($this->sortmode == NESE_SORT_LEVEL) {
-            
             $sql = sprintf('SELECT %s %s FROM %s %s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
@@ -322,7 +342,7 @@ class DB_NestedSet extends PEAR {
             $this->_addSQL($addSQL, 'join'),
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
-            $this->flparams['level'],
+            $this->_flparams['level'],
             $this->node_table,
             $this->secondarySort);
         } elseif ($this->sortmode == NESE_SORT_PREORDER) {
@@ -340,7 +360,7 @@ class DB_NestedSet extends PEAR {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -375,9 +395,9 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->flparams['id'],
+        $this->_flparams['id'],
         $this->node_table,
-        $this->flparams['rootid'],
+        $this->_flparams['rootid'],
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
         $this->secondarySort);
@@ -388,7 +408,7 @@ class DB_NestedSet extends PEAR {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -419,36 +439,36 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('getBranch($id)');
         }
         if (!($thisnode = $this->pickNode($id, true))) {
-            // FIXME Trigger Error
-            return false;
+            $epr = array('getBranch()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         if($this->sortmode == NESE_SORT_LEVEL) {
-            $firstsort = $this->flparams['level'];
+            $firstsort = $this->_flparams['level'];
         } elseif($this->sortmode == NESE_SORT_PREORDER) {
-            $firstsort = $this->flparams['l'];
+            $firstsort = $this->_flparams['l'];
         }
-
-            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
-            $this->_getSelectFields($aliasFields),
-            $this->_addSQL($addSQL, 'cols'),
-            $this->node_table,
-            $this->_addSQL($addSQL, 'join'),
-            $this->node_table,
-            $this->flparams['rootid'],
-            $this->db->quote($thisnode['rootid']),
-            $this->_addSQL($addSQL, 'append'),
-            $this->node_table,
-            $firstsort,
-            $this->node_table,
-            $this->secondarySort);
-                    
+        
+        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
+        $this->_getSelectFields($aliasFields),
+        $this->_addSQL($addSQL, 'cols'),
+        $this->node_table,
+        $this->_addSQL($addSQL, 'join'),
+        $this->node_table,
+        $this->_flparams['rootid'],
+        $this->db->quote($thisnode['rootid']),
+        $this->_addSQL($addSQL, 'append'),
+        $this->node_table,
+        $firstsort,
+        $this->node_table,
+        $this->secondarySort);
+        
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
         } else {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -479,7 +499,8 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('getParents($id)');
         }
         if (!($child = $this->pickNode($id, true))) {
-            return false;
+            $epr = array('getParents()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         
         $sql = sprintf('SELECT %s %s FROM %s %s
@@ -490,20 +511,20 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->flparams['rootid'],
+        $this->_flparams['rootid'],
         $child['rootid'],
         $this->node_table,
-        $this->flparams['level'],
+        $this->_flparams['level'],
         $child['level'],
         $this->node_table,
-        $this->flparams['l'],
+        $this->_flparams['l'],
         $child['l'],
         $this->node_table,
-        $this->flparams['r'],
+        $this->_flparams['r'],
         $child['r'],
         $this->_addSQL($addSQL, 'append'),
         $this->node_table,
-        $this->flparams['level']);
+        $this->_flparams['level']);
         
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
@@ -511,7 +532,7 @@ class DB_NestedSet extends PEAR {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -520,12 +541,30 @@ class DB_NestedSet extends PEAR {
         return $nodeSet;
     }
     
+    // }}}
+    // {{{ getParent()    
+    
+    /**
+    * Fetch the immediate parent of a node given by id
+    *
+    * @param int  $id The node ID
+    * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+    *             a set of DB_NestedSet_Node objects?
+    * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+    *             of the parameter keys, or leave them as is?
+    * @param array $addSQL (optional) Array of additional params to pass to the query.
+    *
+    * @see _addSQL()
+    * @access public
+    * @return mixed False on error, or the parent node
+    */    
     function getParent($id, $keepAsArray = false, $aliasFields = true, $addSQL = array()) {
         if ($this->debug) {
             $this->_debugMessage('getParents($id)');
         }
         if (!($child = $this->pickNode($id, true))) {
-            return false;
+            $epr = array('getParent()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         
         if($child['id'] == $child['rootid']) {
@@ -534,7 +573,7 @@ class DB_NestedSet extends PEAR {
         
         $addSQL['append'] = sprintf('AND %s.%s = %s',
         $this->node_table,
-        $this->flparams['level'],
+        $this->_flparams['level'],
         $child['level']-1);
         
         $nodeSet =  $this->getParents($id, $keepAsArray, $aliasFields, $addSQL);
@@ -546,17 +585,37 @@ class DB_NestedSet extends PEAR {
             return false;
         }
     }
+
+    // }}}
+    // {{{ getSiblings)    
     
+    /**
+    * Fetch all siblings of the node given by id
+    * Important: The node given by ID will also be returned
+    * Do a unset($array[$id]) on the result if you don't want that
+    *
+    * @param int  $id The node ID
+    * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+    *             a set of DB_NestedSet_Node objects?
+    * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+    *             of the parameter keys, or leave them as is?
+    * @param array $addSQL (optional) Array of additional params to pass to the query.
+    *
+    * @see _addSQL()
+    * @access public
+    * @return mixed False on error, or the parent node
+    */       
     function getSiblings($id, $keepAsArray = false, $aliasFields = true, $addSQL = array()) {
         if ($this->debug) {
             $this->_debugMessage('getParents($id)');
         }
         
-        if (!($sibling1 = $this->pickNode($id, true))) {
-            return false;
+        if (!($sibling = $this->pickNode($id, true))) {
+            $epr = array('getSibling()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         
-        $parent = $this->getParent($sibling1['id'], true);
+        $parent = $this->getParent($sibling, true);
         
         return $this->getChildren($parent, $keepAsArray, $aliasFields, $addSQL);
     }
@@ -586,18 +645,15 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('getChildren($id)');
         }
         
-        if(is_array($id) && count($id) == 1) {
-            // Intended for internal use
-            // to be able to pass a parent array from getSiblings()
-            $parent = $id;
-        } else {
-            $parent = $this->pickNode($id, true);
+        if (!($parent = $this->pickNode($id, true))) {
+            $epr = array('getParent()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         if (!$parent || $parent['l'] == ($parent['r'] - 1)) {
             return false;
         }
         
-        $orderBy = $forceNorder ? $this->flparams['norder'] : $this->secondarySort;
+        $orderBy = $forceNorder ? $this->_flparams['norder'] : $this->secondarySort;
         $sql = sprintf('SELECT %s %s FROM %s %s
                         WHERE %s.%s=%s AND %s.%s=%s+1 AND %s.%s BETWEEN %s AND %s %s
                         ORDER BY %s.%s ASC',
@@ -606,13 +662,13 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->flparams['rootid'],
+        $this->_flparams['rootid'],
         $this->db->quote($parent['rootid']),
         $this->node_table,
-        $this->flparams['level'],
+        $this->_flparams['level'],
         $parent['level'],
         $this->node_table,
-        $this->flparams['l'],
+        $this->_flparams['l'],
         $parent['l'],
         $parent['r'],
         $this->_addSQL($addSQL, 'append'),
@@ -625,7 +681,7 @@ class DB_NestedSet extends PEAR {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -661,7 +717,8 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('getSubBranch($id)');
         }
         if (!($parent = $this->pickNode($id, true))) {
-            return false;
+            $epr = array('getSubBranch()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
         
         $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s ORDER BY %s %s',
@@ -670,16 +727,16 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->flparams['l'],
+        $this->_flparams['l'],
         $parent['l'],
         $parent['r'],
         $this->node_table,
-        $this->flparams['rootid'],
+        $this->_flparams['rootid'],
         $this->db->quote($parent['rootid']),
         $this->node_table,
-        $this->flparams['id'],
+        $this->_flparams['id'],
         $this->db->quote($id),
-        $this->flparams['l'],
+        $this->_flparams['l'],
         $this->_addSQL($addSQL, 'append'));
         
         if (!$this->_caching) {
@@ -688,7 +745,7 @@ class DB_NestedSet extends PEAR {
             $nodeSet = $this->cache->call('DB_NestedSet->_processResultSet', $sql, $keepAsArray, $aliasFields);
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -733,7 +790,7 @@ class DB_NestedSet extends PEAR {
         $this->node_table,
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
-        $this->flparams[$idfield],
+        $this->_flparams[$idfield],
         $this->db->quote($id),
         $this->_addSQL($addSQL, 'append'));
         
@@ -745,7 +802,7 @@ class DB_NestedSet extends PEAR {
         
         $nsKey = false;
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeLoad'])) {
             // EVENT (nodeLoad)
             foreach (array_keys($nodeSet) as $key) {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
@@ -819,117 +876,6 @@ class DB_NestedSet extends PEAR {
         return false;
     }
     
-    // }}}
-    // {{{ _processResultSet()
-    
-    /**
-    * Processes a DB result set by checking for a DB error and then transforming the result
-    * into a set of DB_NestedSet_Node objects or leaving it as an array.
-    *
-    * @param string $sql The sql query to be done
-    * @param bool $keepAsArray Keep the result as an array or transform it into a set of
-    *             DB_NestedSet_Node objects?
-    * @param bool $fieldsAreAliased Are the fields aliased?
-    *
-    * @access    private
-    * @return mixed False on error or the transformed node set.
-    */
-    function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
-        $result = $this->db->getAll($sql);
-        if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
-            return false;
-        }
-        
-        $nodes = array();
-        $idKey = $fieldsAreAliased ? 'id' : $this->flparams['id'];
-        foreach ($result as $row) {
-            $node_id = $row[$idKey];
-            if ($keepAsArray) {
-                $nodes[$node_id] = $row;
-            } else {
-                // Create an instance of the node container
-                $nodes[$node_id] =& new DB_NestedSet_Node($row);
-            }
-            
-        }
-        
-        return $nodes;
-    }
-    
-    // }}}
-    // {{{ _getNodeObject()
-    
-    /**
-    * Gets the node to work on based upon an id
-    *
-    * @param mixed $id The id which can be an object or integer
-    *
-    * @access private
-    * @return mixed The node object for an id or false on error
-    */
-    function _getNodeObject($id) {
-        if (!is_object($id) || !$id->id) {
-            return $this->pickNode($id);
-        }
-        else {
-            return $id;
-        }
-    }
-    
-    // }}}
-    // {{{ _addSQL()
-    
-    /**
-    * Adds a specific type of SQL to a query string
-    *
-    * @param array $addSQL The array of SQL strings to add.  Example value:
-    *               $addSQL = array(
-    *               'cols' => 'tb2.col2, tb2.col3',         // Additional tables/columns
-    *               'join' => 'LEFT JOIN tb1 USING(STRID)', // Join statement
-    *               'append' => 'GROUP by tb1.STRID');      // Group condition
-    * @param string $type The type of SQL.  Can be 'cols', 'join', or 'append'.
-    *
-    * @access private
-    * @return string The SQL, properly formatted
-    */
-    function _addSQL($addSQL, $type) {
-        if (!isset($addSQL[$type])) {
-            return '';
-        }
-        
-        switch($type) {
-            case 'cols':
-            return ', ' . $addSQL[$type];
-            default:
-            return $addSQL[$type];
-        }
-    }
-    
-    // }}}
-    // {{{ _getSelectFields()
-    
-    /**
-    * Gets the select fields based on the params
-    *
-    * @param bool $aliasFields Should we alias the fields so they are the names of the
-    *             parameter keys, or leave them as is?
-    *
-    * @access private
-    * @return string A string of query fields to select
-    */
-    function _getSelectFields($aliasFields) {
-        $queryFields = array();
-        foreach ($this->params as $key => $val) {
-            $tmp_field = $this->node_table . '.' . $key;
-            if ($aliasFields) {
-                $tmp_field .= ' AS ' . $val;
-            }
-            $queryFields[] = $tmp_field;
-        }
-        
-        $fields = implode(', ', $queryFields);
-        return $fields;
-    }
     
     // }}}
     // +----------------------------------------------+
@@ -961,10 +907,12 @@ class DB_NestedSet extends PEAR {
     * @return int The node id
     */
     function createRootNode($values, $id = false, $first = false) {
-        
+
         if ($this->debug) {
-            //$this->_debugMessage('createRootNode()', func_get_args());
+            $this->_debugMessage('createRootNode()', func_get_args());
         }
+        
+        $this->_verifyUserValues('createRootNode()', $values);
         
         if(!$first && (!$id || !$parent = $this->pickNode($id, true))) {
             $epr = array('createRootNode()', $id);
@@ -981,10 +929,10 @@ class DB_NestedSet extends PEAR {
             return $lock;
         }
         
-        $_flp = $this->flparams;
+        
         
         $addval = array();
-        $addval[$_flp['level']] = 1;
+        $addval[$this->_flparams['level']] = 1;
         
         // Shall we delete the existing tree (reinit)
         if ($first) {
@@ -993,17 +941,17 @@ class DB_NestedSet extends PEAR {
             $this->db->query($sql);
             $this->db->dropSequence($this->sequence_table);
             // New order of the new node will be 1
-            $addval[$_flp['norder']] = 1;
+            $addval[$this->_flparams['norder']] = 1;
         } else {
             // Let's open a gap for the new node
-            $addval[$_flp['norder']] = $parent['norder'] + 1;
+            $addval[$this->_flparams['norder']] = $parent['norder'] + 1;
         }
         
         // Sequence of node id (equals to root id in this case
-        $addval[$_flp['rootid']] = $node_id = $addval[$_flp['id']] = $this->db->nextId($this->sequence_table);
+        $addval[$this->_flparams['rootid']] = $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
         // Left/Right values for rootnodes
-        $addval[$_flp['l']] = 1;
-        $addval[$_flp['r']] = 2;
+        $addval[$this->_flparams['l']] = 1;
+        $addval[$this->_flparams['r']] = 2;
         // Transform the node data hash to a query
         if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
@@ -1016,11 +964,11 @@ class DB_NestedSet extends PEAR {
             // Open the gap
             $sql[] = sprintf('UPDATE %s SET %s=%s+1 WHERE %s=%s AND %s > %s',
             $this->node_table,
-            $_flp['norder'],
-            $_flp['norder'],
-            $_flp['id'],
-            $_flp['rootid'],
-            $_flp['norder'],
+            $this->_flparams['norder'],
+            $this->_flparams['norder'],
+            $this->_flparams['id'],
+            $this->_flparams['rootid'],
+            $this->_flparams['norder'],
             $parent['norder']);
         }
         
@@ -1038,7 +986,7 @@ class DB_NestedSet extends PEAR {
         
         // EVENT (nodeCreate)
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $thisnode = &$this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $this->pickNode($id));
         }
@@ -1076,14 +1024,14 @@ class DB_NestedSet extends PEAR {
             return $lock;
         }
         
+        $this->_verifyUserValues('createRootNode()', $values);
+        
         // invalid parent id, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createSubNode()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
         }
-        
-        $_flp = $this->flparams;
-        
+
         // Get the children of the target node
         $children = $this->getChildren($id, true);
         
@@ -1104,28 +1052,28 @@ class DB_NestedSet extends PEAR {
                 %s=IF(%s>=%s, %s+2, %s)
                 WHERE %s=%s',
         $this->node_table,
-        $_flp['l'],
-        $_flp['l'],
+        $this->_flparams['l'],
+        $this->_flparams['l'],
         $thisnode['r'],
-        $_flp['l'],
-        $_flp['l'],
-        $_flp['r'],
-        $_flp['r'],
+        $this->_flparams['l'],
+        $this->_flparams['l'],
+        $this->_flparams['r'],
+        $this->_flparams['r'],
         $thisnode['r'],
-        $_flp['r'],
-        $_flp['r'],
-        $_flp['rootid'],
+        $this->_flparams['r'],
+        $this->_flparams['r'],
+        $this->_flparams['rootid'],
         $thisnode['rootid']
         );
         
         $addval = array();
-        $addval[$_flp['l']] = $thisnode['r'];
-        $addval[$_flp['r']] = $thisnode['r'] + 1;
-        $addval[$_flp['rootid']] = $thisnode['rootid'];
-        $addval[$_flp['norder']] = 1;
-        $addval[$_flp['level']] = $thisnode['level'] + 1;
+        $addval[$this->_flparams['l']] = $thisnode['r'];
+        $addval[$this->_flparams['r']] = $thisnode['r'] + 1;
+        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->_flparams['norder']] = 1;
+        $addval[$this->_flparams['level']] = $thisnode['level'] + 1;
         
-        $node_id = $addval[$_flp['id']] = $this->db->nextId($this->sequence_table);
+        $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
         if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
@@ -1139,7 +1087,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // EVENT (NodeCreate)
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $thisnode = $this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $this->pickNode($id));
         }
@@ -1154,6 +1102,8 @@ class DB_NestedSet extends PEAR {
         if ($this->debug) {
             $this->_debugMessage('createLeftNode($target, $values)');
         }
+        
+        $this->_verifyUserValues('createRootNode()', $values);
         
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
@@ -1171,14 +1121,8 @@ class DB_NestedSet extends PEAR {
             return $this->createRootNode($values, $id);
         }
         
-        $flft = $this->flparams['l'];
-        $frgt = $this->flparams['r'];
-        $froot = $this->flparams['rootid'];
-        $freh = $this->flparams['norder'];
-        $fid = $this->flparams['id'];
-        $flevel = $this->flparams['level'];
         
-        $tb = $this->node_table;
+
         $addval = array();
         $parents = $this->getParents($id, true);
         $parent = array_pop($parents);
@@ -1190,16 +1134,16 @@ class DB_NestedSet extends PEAR {
         $sql[] = sprintf('UPDATE %s SET %s=%s+1
                         WHERE 
                         %s=%s AND %s>=%s AND %s=%s AND %s BETWEEN %s AND %s',
-        $tb,
-        $freh,
-        $freh,
-        $froot,
+        $this->node_table,
+        $this->_flparams['norder'],
+        $this->_flparams['norder'],
+        $this->_flparams['rootid'],
         $thisnode['rootid'],
-        $freh,
+        $this->_flparams['norder'],
         $thisnode['norder'],
-        $flevel,
+        $this->_flparams['level'],
         $thisnode['level'],
-        $flft,
+        $this->_flparams['l'],
         $parent['l'],
         $parent['r']);
         
@@ -1210,35 +1154,37 @@ class DB_NestedSet extends PEAR {
                 %s=IF(%s>=%s, %s+2, %s),
                 %s=IF(%s>=%s, %s+2, %s)
                 WHERE %s=%s',
-        $tb,
-        $flft,
-        $flft,
+        $this->node_table,
+        $this->_flparams['l'],
+        $this->_flparams['l'],
         $thisnode['l'],
-        $flft,
-        $flft,
-        $frgt,
-        $frgt,
+        $this->_flparams['l'],
+        $this->_flparams['l'],
+        $this->_flparams['r'],
+        $this->_flparams['r'],
         $thisnode['r'],
-        $frgt,
-        $frgt,
-        $froot,
+        $this->_flparams['r'],
+        $this->_flparams['r'],
+        $this->_flparams['rootid'],
         $thisnode['rootid']
         );
         
         
         
-        $addval[$freh] = $thisnode['norder'];
-        $addval[$flft] = $thisnode['l'];
-        $addval[$frgt] = $thisnode['l']+1;
-        $addval[$froot] = $thisnode['rootid'];
-        $addval[$flevel] = $thisnode['level'];
-        $node_id = $addval[$fid] = $this->db->nextId($this->sequence_table);
+        $addval[$this->_flparams['norder']] = $thisnode['norder'];
+        $addval[$this->_flparams['l']] = $thisnode['l'];
+        $addval[$this->_flparams['r']] = $thisnode['l']+1;
+        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->_flparams['level']] = $thisnode['level'];
+        $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
         if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
         
         // Insert the new node
-        $sql[] = "INSERT INTO $tb SET $qr";
+        $sql[] = sprintf('INSERT INTO %s SET %s',
+        $this->node_table,
+        $qr);
         
         for($i=0;$i<count($sql);$i++) {
             $res = $this->db->query($sql[$i]);
@@ -1246,7 +1192,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // EVENT (NodeCreate)
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $this->triggerEvent('nodeCreate', $this->pickNode($id));
         }
         return $node_id;
@@ -1278,6 +1224,8 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('createRightNode($target, $values)');
         }
         
+        $this->_verifyUserValues('createRootNode()', $values);
+        
         // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
             $epr = array('createRightNode()', $id);
@@ -1294,14 +1242,7 @@ class DB_NestedSet extends PEAR {
             return $this->createRootNode($values, $id);
         }
         
-        $flft = $this->flparams['l'];
-        $frgt = $this->flparams['r'];
-        $froot = $this->flparams['rootid'];
-        $freh = $this->flparams['norder'];
-        $fid = $this->flparams['id'];
-        $flevel = $this->flparams['level'];
-        
-        $tb = $this->node_table;
+
         $addval = array();
         $parents = $this->getParents($id, true);
         $parent = array_pop($parents);
@@ -1312,17 +1253,17 @@ class DB_NestedSet extends PEAR {
         $sql[] = sprintf('UPDATE %s SET %s=%s+1
                         WHERE 
                         %s=%s AND %s>%s AND %s=%s AND %s BETWEEN %s AND %s',
-        $tb,
-        $freh,
-        $freh,
-        $froot,
+        $this->node_table,
+        $this->_flparams['norder'],
+        $this->_flparams['norder'],
+        $this->_flparams['rootid'],
         $thisnode['rootid'],
-        $freh,
+        $this->_flparams['norder'],
         $thisnode['norder'],
-        $flevel,
+        $this->_flparams['level'],
         $thisnode['level'],
-        $flft,
-        $parent['l'],
+        $this->_flparams['l'],
+        $parent['l'], 
         $parent['r']);
         
         
@@ -1334,33 +1275,33 @@ class DB_NestedSet extends PEAR {
                 %s=IF(%s>%s, %s+2, %s),
                 %s=IF(%s>%s, %s+2, %s)
                 WHERE %s=%s',
-        $tb,
-        $flft,
-        $flft,
+        $this->node_table,
+        $this->_flparams['l'],
+        $this->_flparams['l'],
         $thisnode['r'],
-        $flft,
-        $flft,
-        $frgt,
-        $frgt,
+        $this->_flparams['l'],
+        $this->_flparams['l'],
+        $this->_flparams['r'],
+        $this->_flparams['r'],
         $thisnode['r'],
-        $frgt,
-        $frgt,
-        $froot,
+        $this->_flparams['r'],
+        $this->_flparams['r'],
+        $this->_flparams['rootid'],
         $thisnode['rootid']
         );
         
-        $addval[$freh] = $thisnode['norder'] + 1;
-        $addval[$flft] = $thisnode['r'] + 1;
-        $addval[$frgt] = $thisnode['r'] + 2;
-        $addval[$froot] = $thisnode['rootid'];
-        $addval[$flevel] = $thisnode['level'];
-        $node_id = $addval[$fid] = $this->db->nextId($this->sequence_table);
+        $addval[$this->_flparams['norder']] = $thisnode['norder'] + 1;
+        $addval[$this->_flparams['l']] = $thisnode['r'] + 1;
+        $addval[$this->_flparams['r']] = $thisnode['r'] + 2;
+        $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
+        $addval[$this->_flparams['level']] = $thisnode['level'];
+        $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
         if (!$qr = $this->_values2Query($values, $addval)) {
             return false;
         }
         
         // Insert the new node
-        $sql[] = "INSERT INTO $tb SET $qr";
+        $sql[] = sprintf('INSERT INTO %s SET %s', $this->node_table, $qr);
         
         for($i=0;$i<count($sql);$i++) {
             $res = $this->db->query($sql[$i]);
@@ -1368,7 +1309,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // EVENT (NodeCreate)
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $this->triggerEvent('nodeCreate', $this->pickNode($id));
         }
         return $node_id;
@@ -1398,7 +1339,7 @@ class DB_NestedSet extends PEAR {
             return false;
         }
         
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeDelete'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeDelete'])) {
             // EVENT (NodeDelete)
             $this->triggerEvent('nodeDelete', $this->pickNode($id));
         }
@@ -1409,12 +1350,12 @@ class DB_NestedSet extends PEAR {
         $prgt = $parent['r'];
         
         $tb = $this->node_table;
-        $flft = $this->flparams['l'];
-        $frgt = $this->flparams['r'];
-        $fid = $this->flparams['id'];
-        $froot = $this->flparams['rootid'];
-        $freh = $this->flparams['norder'];
-        $flevel = $this->flparams['level'];
+        $flft = $this->_flparams['l'];
+        $frgt = $this->_flparams['r'];
+        $fid = $this->_flparams['id'];
+        $froot = $this->_flparams['rootid'];
+        $freh = $this->_flparams['norder'];
+        $flevel = $this->_flparams['level'];
         
         $len = $thisnode['r'] - $thisnode['l'] + 1;
         
@@ -1514,11 +1455,12 @@ class DB_NestedSet extends PEAR {
     *
     * @param int    $id Node ID
     * @param array  $values Hash with param => value pairs of the node (see $this->params)
+    * @param bool  $_intermal Internal use only. Used to skip value validation. Leave this as it is.
     *
     * @access public
     * @return bool True if the update is successful
     */
-    function updateNode($id, $values) {
+    function updateNode($id, $values, $_internal=false) {
         if ($this->debug) {
             $this->_debugMessage('updateNode($id, $values)');
         }
@@ -1526,16 +1468,20 @@ class DB_NestedSet extends PEAR {
             return $lock;
         }
         
+        if(!$_internal) {        
+            $this->_verifyUserValues('createRootNode()', $values);
+        }
+        
         if (!($thisnode =& $this->pickNode($id))) {
             return false;
         }
         
         $eparams = array('values' => $values);
-        if (!$this->skipCallbacks && isset($this->_hasListeners['nodeUpdate'])) {
+        if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeUpdate'])) {
             // EVENT (NodeUpdate)
             $this->triggerEvent('nodeUpdate', $this->pickNode($id), $eparams);
         }
-        $fid = $this->flparams['id'];
+        $fid = $this->_flparams['id'];
         $addvalues = array();
         if (!$qr = $this->_values2Query($values, $addvalues)) {
             return false;
@@ -1591,7 +1537,7 @@ class DB_NestedSet extends PEAR {
         $this->_relations = array();
         // This operations don't need callbacks except the copy handler
         // which ignores this setting
-        $this->skipCallbacks = true;
+        $this->_skipCallbacks = true;
         // Get information about source and target
         if (!($source = $this->pickNode($id, true))) {
             $this->raiseError("Node id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
@@ -1660,7 +1606,7 @@ class DB_NestedSet extends PEAR {
     * @access    private
     * @see        moveTree
     * @see        _r_moveAcross
-    * @see        _moveCleanup
+    * @see        _moveCleanup 
     */
     function _moveAcross($source, $target, $pos) {
         if ($this->debug) {
@@ -1674,7 +1620,7 @@ class DB_NestedSet extends PEAR {
         // because of the node move
         $values = array();
         foreach($this->params as $key => $val) {
-            if ($source[$val] && !in_array($val, $this->requiredParams)) {
+            if ($source[$val] && !in_array($val, $this->_requiredParams)) {
                 $values[$key] = trim($source[$val]);
             }
         }
@@ -1742,8 +1688,8 @@ class DB_NestedSet extends PEAR {
         $deletes = array();
         $updates = array();
         $tb = $this->node_table;
-        $fid = $this->flparams['id'];
-        $froot = $this->flparams['rootid'];
+        $fid = $this->_flparams['id'];
+        $froot = $this->_flparams['rootid'];
         foreach($relations AS $key => $val) {
             $clone = $this->pickNode($val);
             if ($copy) {
@@ -1751,7 +1697,7 @@ class DB_NestedSet extends PEAR {
                 
                 $eparams = array('clone' => $clone);
                 
-                if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCopy'])) {
+                if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCopy'])) {
                     $thisnode =& $this->pickNode($key);
                     $this->triggerEvent('nodeCopy', $this->pickNode($id), $eparams);
                 }
@@ -1787,7 +1733,7 @@ class DB_NestedSet extends PEAR {
                         WHERE $froot=" . $this->db->quote($orootid);
                 $updates[] = $sql;
             }
-            $this->skipCallbacks = false;
+            $this->_skipCallbacks = false;
         }
         
         if(!empty($deletes)) {
@@ -1795,6 +1741,7 @@ class DB_NestedSet extends PEAR {
                 $this->deleteNode($deletes[$i]);
             }
         }
+        
         if(!empty($updates)) {
             for($i=0;$i<count($updates);$i++) {
                 $res = $this->db->query($updates[$i]);
@@ -1848,9 +1795,9 @@ class DB_NestedSet extends PEAR {
         }
         
         $tb = $this->node_table;
-        $fid = $this->flparams['id'];
-        $froot = $this->flparams['rootid'];
-        $freh = $this->flparams['norder'];
+        $fid = $this->_flparams['id'];
+        $froot = $this->_flparams['rootid'];
+        $freh = $this->_flparams['norder'];
         $s_order = $source['norder'];
         $t_order = $target['norder'];
         $s_id = $source['id'];
@@ -1920,8 +1867,98 @@ class DB_NestedSet extends PEAR {
     // +-----------------------+
     // | Helper methods        |
     // +-----------------------+
-    // {{{ _testFatalAbort()
+
+    // {{{ _addSQL()
     
+    /**
+    * Adds a specific type of SQL to a query string
+    *
+    * @param array $addSQL The array of SQL strings to add.  Example value:
+    *               $addSQL = array(
+    *               'cols' => 'tb2.col2, tb2.col3',         // Additional tables/columns
+    *               'join' => 'LEFT JOIN tb1 USING(STRID)', // Join statement
+    *               'append' => 'GROUP by tb1.STRID');      // Group condition
+    * @param string $type The type of SQL.  Can be 'cols', 'join', or 'append'.
+    *
+    * @access private
+    * @return string The SQL, properly formatted
+    */
+    function _addSQL($addSQL, $type) {
+        if (!isset($addSQL[$type])) {
+            return '';
+        }
+        
+        switch($type) {
+            case 'cols':
+            return ', ' . $addSQL[$type];
+            default:
+            return $addSQL[$type];
+        }
+    }
+    
+    // }}}
+    // {{{ _getSelectFields()
+    
+    /**
+    * Gets the select fields based on the params
+    *
+    * @param bool $aliasFields Should we alias the fields so they are the names of the
+    *             parameter keys, or leave them as is?
+    *
+    * @access private
+    * @return string A string of query fields to select
+    */
+    function _getSelectFields($aliasFields) {
+        $queryFields = array();
+        foreach ($this->params as $key => $val) {
+            $tmp_field = $this->node_table . '.' . $key;
+            if ($aliasFields) {
+                $tmp_field .= ' AS ' . $val;
+            }
+            $queryFields[] = $tmp_field;
+        }
+        
+        $fields = implode(', ', $queryFields);
+        return $fields;
+    }
+    
+    // }}}    
+    // {{{ _processResultSet()    
+    /**
+    * Processes a DB result set by checking for a DB error and then transforming the result
+    * into a set of DB_NestedSet_Node objects or leaving it as an array.
+    *
+    * @param string $sql The sql query to be done
+    * @param bool $keepAsArray Keep the result as an array or transform it into a set of
+    *             DB_NestedSet_Node objects?
+    * @param bool $fieldsAreAliased Are the fields aliased?
+    *
+    * @access    private
+    * @return mixed False on error or the transformed node set.
+    */
+    function _processResultSet($sql, $keepAsArray, $fieldsAreAliased) {
+        $result = $this->db->getAll($sql);
+        if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
+            return false;
+        }
+        
+        $nodes = array();
+        $idKey = $fieldsAreAliased ? 'id' : $this->_flparams['id'];
+        foreach ($result as $row) {
+            $node_id = $row[$idKey];
+            if ($keepAsArray) {
+                $nodes[$node_id] = $row;
+            } else {
+                // Create an instance of the node container
+                $nodes[$node_id] =& new DB_NestedSet_Node($row);
+            }
+            
+        }
+        return $nodes;
+    }
+    
+    // }}}
+    // {{{ _testFatalAbort()    
     /**
     * Error Handler
     *
@@ -2009,7 +2046,7 @@ class DB_NestedSet extends PEAR {
     * @access public
     */
     function triggerEvent($event, &$node, $eparams = false) {
-        if ($this->skipCallbacks || !isset($this->_hasListeners[$event])) {
+        if ($this->_skipCallbacks || !isset($this->_hasListeners[$event])) {
             return false;
         }
         
@@ -2066,7 +2103,7 @@ class DB_NestedSet extends PEAR {
             
             // only update sequence to reflect new table if they haven't set it manually
             if (!$hasSetSequence && $key == 'node_table') {
-                $this->sequence_table = $this->node_table . '_' . $this->flparams['id'];
+                $this->sequence_table = $this->node_table . '_' . $this->_flparams['id'];
             }
             if($key == 'cache' && is_object($val)) {
                 $this->_caching = true;
@@ -2243,6 +2280,40 @@ class DB_NestedSet extends PEAR {
         
         $query = implode(', ', $arq);
         return $query;
+    }
+
+    // }}}
+    // {{{ _verifyUserValues()
+         
+    /**
+    * Clean values from protected or unknown columns
+    *
+    * @var string $caller The calling method
+    * @var string $values The values array
+    *
+    * @access private
+    * @return void
+    */    
+    function _verifyUserValues($caller, &$values) {
+        
+        foreach($values AS $field=>$value) {
+            if(!isset($this->params[$field])) {
+                $epr = array(  
+                $caller,
+                sprintf('Unknown column/param \'%s\'', $field));
+                $this->_raiseError(NESE_ERROR_WRONG_MPARAM, E_USER_NOTICE, $epr);
+                unset($values[$field]);        
+            } else {
+                $flip = $this->params[$field];
+                if(in_array($flip, $this->_requiredParams)) {
+                    $epr = array(  
+                    $caller,
+                    sprintf('\'%s\' is autogenerated and can\'t be passed - it will be ignored', $field));
+                    $this->_raiseError(NESE_ERROR_WRONG_MPARAM, E_USER_NOTICE, $epr);
+                    unset($values[$field]); 
+                }
+            }
+        }
     }
     
     // }}}
