@@ -1,0 +1,69 @@
+# $Id$
+#
+# Short guide on how to migrate a < 1.3 tree to 1.3+
+#
+# @author       Daniel Khan <dk@webcluster.at>
+# @package      DB_NestedSet
+# @version      $Revision$
+
+1. Backup your data!!!
+
+2. Create a copy of your current node table (copy only the structure).
+   Maybe you want to add an integer column to tb_nodes2 which will contain
+   the magic parent field (gains some performance).
+   Let's call it PARENT. Don't forget to set it inside $params afterwards
+   Now you should have something like tb_nodes1 and tb_nodes2.
+   tb_nodes2 is empty for now.
+3. Create a DB_NestedSet instance for each table:
+
+<?php
+$params = array(
+"STRID"         =>      "id",      // "id" must exist
+"ROOTID"        =>      "rootid",  // "rootid" must exist
+"l"             =>      "l",       // "l" must exist
+"r"             =>      "r",       // "r" must exist
+"STREH"         =>      "norder",  // "order" must exist
+"LEVEL"         =>      "level",   // "level" must exist
+"STRNA"         =>      "name"     // Custom - specify as many fields you want
+);
+
+$params2 = array(
+"STRID"         =>      "id",      // "id" must exist
+"ROOTID"        =>      "rootid",  // "rootid" must exist
+"l"             =>      "l",       // "l" must exist
+"r"             =>      "r",       // "r" must exist
+"STREH"         =>      "norder",  // "order" must exist
+"LEVEL"         =>      "level",   // "level" must exist
+"STRNA"         =>      "name",     // Custom - specify as many fields you want
+"PARENT"        =>      "parent"    // Not needed but recommended!!!
+);
+
+$db_driver = 'DB';
+$db_dsn    = 'mysql://user:password@localhost/test';
+$NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
+$NeSe->setAttr(array
+(
+'node_table' => 'tb_nodes',
+'lock_table' => 'tb_locks', 
+'lockTTL'	 => 1,
+'debug' => 0) 
+);
+
+$NeSe2 = DB_NestedSet::factory($db_driver, $db_dsn, $params2);
+$NeSe2->setAttr(array
+(
+'node_table' => 'tb_nodes2', // Note the difference - it's tb_nodes2
+'lock_table' => 'tb_locks',
+'lockTTL'	 => 1,
+'debug' => 0) 
+);
+
+4. Now pass this 2 objects to the static method convertTreeModel();
+   DB_NestedSet::convertTreeModel($NeSe, $NeSe2);
+   
+5. Now tb_nodes2 should be filled with a new representation of tb_nodes.
+
+6. Verify that the row count didn't change and that everything's O.K.
+
+7. Be happy with your new 1.3+ table.
+?>
