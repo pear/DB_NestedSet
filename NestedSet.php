@@ -33,21 +33,6 @@ require_once 'PEAR.php';
 
 // {{{ constants
 
-// Fetch the whole tree(s)
-define('NESE_FETCH_ALLNODES', 1);
-// Fetch all rootnodes
-define('NESE_FETCH_ROOTNODES', 2);
-// Fetch a node by a given ID
-define('NESE_FETCH_NODEBYID', 3);
-// Fetch parents of a node
-define('NESE_FETCH_PARENTS', 4);
-// Fetch immediate children of a node
-define('NESE_FETCH_CHILDREN', 5);
-// Fetch all children of a node including the node itself
-define('NESE_FETCH_SUBBRANCH', 6);
-// Fetch the whole branch where a given node id is in
-define('NESE_FETCH_BRANCH', 7);
-
 // Error and message codes
 define('NESE_ERROR_RECURSION',    'E100');
 define('NESE_DRIVER_NOT_FOUND',   'E200');
@@ -163,12 +148,6 @@ class DB_NestedSet extends PEAR {
     );
 
     /**
-     * The array of node objects we extract from the tree
-     * @type array
-     */
-    var $nodes = array();
-
-    /**
      * The array of event listeners
      * @type array
      */
@@ -248,55 +227,86 @@ class DB_NestedSet extends PEAR {
     // |----------------------------------------------+
     // | Querying the tree                            |
     // +----------------------------------------------+
-    // | [PUBLIC]                                     |
-    // +----------------------------------------------+
     // {{{ getAllNodes()
 
     /**
-    * Fetch the whole NestedSet
-    *
-    * @access public
-    * @return array         An array of the node objects inside the database
-    * @see _getAllNodes()
-    */
-    function getAllNodes() 
+     * Fetch the whole NestedSet
+     *
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function getAllNodes($keepAsArray = false, $aliasFields = true) 
     {
         $this->_debugMessage('getAllNodes()');
-        return $this->_getNodes(NESE_FETCH_ALLNODES);
+        $sql = sprintf('SELECT %s FROM %s ORDER BY %s, %s ASC',
+                            $this->_getSelectFields($aliasFields),
+                            $this->node_table,
+                            $this->flparams['level'],
+                            $this->flparams['norder']
+               );
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
 
     // }}}
     // {{{ getRootNodes()
 
     /**
-    * Fetch all rootnodes
-    * Fetches the first level (the rootnodes) of the NestedSet
-    *
-    * @access public
-    * @return array         An array of the root node objects inside the database
-    * @see _getRootNodes()
-    */
-    function getRootNodes() 
+     * Fetches the first level (the rootnodes) of the NestedSet
+     *
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function getRootNodes($keepAsArray = false, $aliasFields = true)
     {
         $this->_debugMessage('getRootNodes()');
-        return $this->_getNodes(NESE_FETCH_ROOTNODES);
+        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s ASC',
+                            $this->_getSelectFields($aliasFields),
+                            $this->node_table,
+                            $this->flparams['id'],
+                            $this->flparams['rootid'],
+                            $this->flparams['norder']
+               );
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
 
     // }}}
     // {{{ getBranch()
 
     /**
-    * Fetch the whole branch where a given node id is in
-    *
-    * @param        string  $id     The node ID
-    * @access public
-    * @return array         An array of the node objects inside the branch
-    * @see _getBranch()
-    */
-    function getBranch($id) 
+     * Fetch the whole branch where a given node id is in
+     *
+     * @param int  $id The node ID
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function getBranch($id, $keepAsArray = false, $aliasFields = true)
     {
         $this->_debugMessage('getBranch($id)');
-        return $this->_getNodes(NESE_FETCH_BRANCH, $id);
+        $thisnode = $this->_getNodeObject($id);
+        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s, %s ASC',
+                            $this->_getSelectFields($aliasFields),
+                            $this->node_table,
+                            $this->flparams['rootid'],
+                            $this->db->quote($thisnode->rootid),
+                            $this->flparams['level'],
+                            $this->flparams['norder']
+               );
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
 
     // }}}
@@ -305,276 +315,21 @@ class DB_NestedSet extends PEAR {
     /**
      * Fetch the parents of a node given by id
      *
-     * @param int $id The node ID
+     * @param int  $id The node ID
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
      *
-     * @see _getParents()
      * @access public
-     * @return array An array of the parent node objects
+     * @return mixed False on error, or an array of nodes 
      */
-    function getParents($id) 
+    function getParents($id, $keepAsArray = false, $aliasFields = true) 
     {
         $this->_debugMessage('getParents($id)');
-        return $this->_getNodes(NESE_FETCH_PARENTS, $id);
-    }
-
-    // }}}
-    // {{{ getChildren()
-
-    /**
-    * Fetch the children _one level_ after of a node given by id
-    *
-    * @param        string  $id     The node ID
-    * @access public
-    * @return array         An array of the child node objects
-    * @see _getChildren()
-    */
-    function getChildren($id) 
-    {
-        $this->_debugMessage('getChildren($id)');
-        return $this->_getNodes(NESE_FETCH_CHILDREN, $id);
-    }
-
-    // }}}
-    // {{{ getSubBranch()
-
-    /**
-     * Fetch _all_ children (the branch) of a node given by id including the node itself
-     *
-     * Another big difference to getChildren() is that no level information
-     * or other meta data is queried.
-     * You only get a plain array of the node object below the given nodes.
-     *
-     * @param string  $id The node ID
-     * @access public
-     * @return array An array of the child node objects
-     * @see _getSubBranch()
-     */
-    function getSubBranch($id) 
-    {
-        $this->_debugMessage('getSubBranch($id)');
-        return $this->_getNodes(NESE_FETCH_SUBBRANCH, $id);
-    }
-
-    // }}}
-    // {{{ pickNode()
-
-    /**
-     * Fetch the data of a node with the given id
-     *
-     * @param     integer    $id        The node id of the node we want to fetch
-     * @access    public
-     * @see       _getNodes()
-     * @return object  NestedSet_Node   The nodes data as object
-     */
-    function pickNode($id) 
-    {
-        $this->_debugMessage('pickNode($id)');
-        return $this->_getNodes(NESE_FETCH_NODEBYID, $id);
-    }
-
-    // }}}
-    // +----------------------------------------------+
-    // | NestedSet manipulation and query methods     |
-    // |----------------------------------------------+
-    // | Querying the tree                            |
-    // +----------------------------------------------+
-    // | [PRIVATE]                                    |
-    // +----------------------------------------------+
-    // {{{ _getNodes()
-
-    /**
-    * Wrapper to get all information available from a tree
-    *
-    * Depending on $type a query is prepared and  executed by calling other private methods.
-    * The return value is an array with node objects.
-    * Don't call this directly - there are public methods which do this job
-    *
-    * Possible values for type:
-    *
-    * [Fetch the whole tree(s)]
-    * NESE_FETCH_ALLNODES
-    *
-    * [Fetch a node by a given ID]
-    * NESE_FETCH_ROOTNODES
-    *
-    * [Fetch parents of a node]
-    * NESE_FETCH_PARENTS
-    *
-    * [Fetch _immediate_ children of a node]
-    * NESE_FETCH_CHILDREN
-    *
-    * [Fetch _all_ children of a node]
-    * NESE_FETCH_SUBBRANCH
-    *
-    * [Fetch all nodes within the same level and tree]
-    * NESE_FETCH_SISTERS
-    *
-    * [Fetch the whole branch where a given node id is in]
-    * NESE_FETCH_BRANCH
-    *
-    * @param     intefer    $type     Which information do we want
-    * @param     integer    $id        Used to get a node, parents, children, branch belonging to a node id
-    * @see        _dogetAllNodes()
-    * @see        _dogetRootNodes()
-    * @see        _dopickNode()
-    * @see        _dogetBranch()
-    * @see        _dogetParents()
-    * @see        _dogetChildren()
-    * @return    mixed    Array with node objects or a single node object
-    * @access    private
-    */
-    function _getNodes($type = NESE_FETCH_ALLNODES, $id = false) 
-    {
-        $this->nodes = array();
-        switch ($type) {
-            case NESE_FETCH_ALLNODES:
-                $this->_debugMessage('_getNodes($id): NESE_FETCH_ALLNODES');
-                $res = $this->_dogetAllNodes();
-            break;
-            case NESE_FETCH_ROOTNODES:
-                $this->_debugMessage('_getNodes($id): NESE_FETCH_ROOTNODES');
-                $res = $this->_dogetRootNodes();
-            break;
-            case NESE_FETCH_NODEBYID:
-                $this->_debugMessage('_getNodes($id):NESE_FETCH_NODEBYID');
-                $res = $this->_dopickNode($id);
-            break;
-            case NESE_FETCH_BRANCH:
-                $this->_debugMessage('_getNodes($id):NESE_FETCH_BRANCH');
-                $res = $this->_dogetBranch($id);
-            break;
-            case NESE_FETCH_PARENTS:
-                $this->_debugMessage('_getNodes($id):NESE_FETCH_PARENTS');
-                $res = $this->_dogetParents($id);
-            break;
-            case NESE_FETCH_CHILDREN:
-                $this->_debugMessage('_getNodes($id):NESE_FETCH_CHILDREN');
-                $res = $this->_dogetChildren($id);
-            break;
-            case NESE_FETCH_SUBBRANCH:
-                $this->_debugMessage('_getNodes($id):NESE_FETCH_SUBBRANCH');
-                $res = $this->_dogetSubBranch($id);
-            break;
-            
-        }
-        
-        if (!$res) {
-            return false;
-        }
-
-        $this->_testFatalAbort($res, __FILE__, __LINE__);
-        for ($i = 0; $i < count($res); $i++) {
-            $row = $res[$i];
-            $node_id = $row['id'];
-            // Create an instance of the node container
-            $nodes[$node_id] =& new NestedSet_Node($row);
-            // EVENT (nodeLoad)
-            $this->triggerEvent('nodeLoad', $nodes[$node_id]);
-        }
-        
-        if ($type == NESE_FETCH_NODEBYID) {
-            // Das Knoten Objekt mit $id zurückliefern
-            return $nodes[$node_id];
-        } else {
-            // Das Array mit allen gefundenen Knoten zurückliefern
-            return $nodes;
-        }
-    }
-
-    // }}}
-    // The following private methods are provding the queries
-    // for specific tree information
-    // {{{ _dogetBranch()
-
-    /**
-     * @access    private
-     */
-    function _dogetBranch($id) 
-    {
-        $this->_debugMessage('_dogetBranch($id)');
-        $thisnode = $this->_getNodeObject($id);
-        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s, %s ASC',
-                            $this->_getSelectFields(),
-                            $this->node_table,
-                            $this->flparams['rootid'],
-                            $this->db->quote($thisnode->rootid),
-                            $this->flparams['level'],
-                            $this->flparams['norder']
-               );
-        return $this->db->getAll($sql);
-    }
-
-    // }}}
-    // {{{ _dopickNode()
-
-    /**
-     * @access    private
-     */    
-    function _dopickNode($id) 
-    {
-        $this->_debugMessage('_dopickNode($id)');
-        if (is_object($id) && $id->id) {
-            $id = $id->id;
-        }
-        
-        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s',
-                            $this->_getSelectFields(),
-                            $this->node_table,
-                            $this->flparams['id'],
-                            $this->db->quote($id)
-               );
-        return $this->db->getAll($sql);
-    }
-
-    // }}}
-    // {{{ _dogetAllNodes()
-
-    /**
-     * @access    private
-     */    
-    function _dogetAllNodes() 
-    {
-        $this->_debugMessage('_dogetAllNodes()');
-        $sql = sprintf('SELECT %s FROM %s ORDER BY %s, %s ASC',
-                            $this->_getSelectFields(),
-                            $this->node_table,
-                            $this->flparams['level'],
-                            $this->flparams['norder']
-               );
-        return $this->db->getAll($sql);
-    }
-
-    // }}}
-    // {{{ _dogetRootNodes()
-
-    /**
-     * @access    private
-     */    
-    function _dogetRootNodes() {
-        $this->_debugMessage('_dogetRootNodes()');
-        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s ORDER BY %s ASC',
-                            $this->_getSelectFields(),
-                            $this->node_table,
-                            $this->flparams['id'],
-                            $this->flparams['rootid'],
-                            $this->flparams['norder']
-               );
-        return $this->db->getAll($sql);
-    }
-
-    // }}}
-    // {{{ _dogetParents()
-
-    /**
-    * @access    private
-    */    
-    function _dogetParents($id) 
-    {
-        $this->_debugMessage('_dogetParents($id)');
-        $tb = $this->node_table;
         $child = $this->_getNodeObject($id);
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s<%s AND %s<%s AND %s>%s ORDER BY %s ASC',
-                            $this->_getSelectFields(),
+                            $this->_getSelectFields($aliasFields),
                             $this->node_table,
                             $this->flparams['rootid'],
                             $child->rootid,
@@ -586,25 +341,34 @@ class DB_NestedSet extends PEAR {
                             $child->r,
                             $this->flparams['level']
                );
-        return $this->db->getAll($sql);
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
 
     // }}}
-    // {{{ _dogetChildren()
+    // {{{ getChildren()
 
     /**
-    * @access    private  
-    */    
-    function _dogetChildren($id) 
+     * Fetch the children _one level_ after of a node given by id
+     *
+     * @param int  $id The node ID
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function getChildren($id, $keepAsArray = false, $aliasFields = true) 
     {
-        $this->_debugMessage('_dogetChildren($id)');
+        $this->_debugMessage('getChildren($id)');
         $parent = $this->_getNodeObject($id);
         if ($parent->l == ($parent->r - 1)) {
             return false;
         }
         
         $sql = sprintf('SELECT %s FROM %s WHERE %s=%s AND %s=%s+1 AND %s BETWEEN %s AND %s ORDER BY %s ASC',
-                            $this->_getSelectFields(),
+                            $this->_getSelectFields($aliasFields),
                             $this->node_table,
                             $this->flparams['rootid'],
                             $this->db->quote($parent->rootid),
@@ -615,21 +379,33 @@ class DB_NestedSet extends PEAR {
                             $parent->r,
                             $this->flparams['norder']
                );
-        return $this->db->getAll($sql);
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
     }
 
     // }}}
-    // {{{ _dogetSubBranch()
+    // {{{ getSubBranch()
 
     /**
-    * @access    private
-    */    
-    function _dogetSubBranch($id)
+     * Fetch all the children of a node given by id 
+     *
+     * A big difference to getChildren() is that no level information or other meta data is
+     * queried.  You only get a plain array of the node objects below the given id.
+     *
+     * @param string  $id The node ID
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function getSubBranch($id, $keepAsArray = false, $aliasFields = true) 
     {
-        $this->_debugMessage('_dogetSubBranch($id)');
+        $this->_debugMessage('getSubBranch($id)');
         $parent = $this->_getNodeObject($id);
         $sql = sprintf('SELECT %s FROM %s WHERE %s BETWEEN %s AND %s AND %s=%s AND %s!=%s',
-                            $this->_getSelectFields(),
+                            $this->_getSelectFields($aliasFields),
                             $this->node_table,
                             $this->flparams['l'],
                             $parent->l,
@@ -639,7 +415,78 @@ class DB_NestedSet extends PEAR {
                             $this->flparams['id'],
                             $this->db->quote($id)
                );
-        return $this->db->getAll($sql);
+        return $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
+    }
+
+    // }}}
+    // {{{ pickNode()
+
+    /**
+     * Fetch the data of a node with the given id
+     *
+     * @param int  $id The node id of the node to fetch
+     * @param bool $keepAsArray (optional) Keep the result as an array or transform it into
+     *             a set of NestedSet_Node objects? 
+     * @param bool $aliasFields (optional) Should we alias the fields so they are the names
+     *             of the parameter keys, or leave them as is? 
+     *
+     * @access public
+     * @return mixed False on error, or an array of nodes 
+     */
+    function pickNode($id, $keepAsArray = false, $aliasFields = true) 
+    {
+        $this->_debugMessage('pickNode($id)');
+        if (is_object($id) && $id->id) {
+            $id = $id->id;
+        }
+        
+        $sql = sprintf('SELECT %s FROM %s WHERE %s=%s',
+                            $this->_getSelectFields($aliasFields),
+                            $this->node_table,
+                            $this->flparams['id'],
+                            $this->db->quote($id)
+               );
+        $nodeSet = $this->_processResultSet($this->db->getAll($sql), $keepAsArray, $aliasFields);
+        return $nodeSet[$id];
+    }
+
+    // }}}
+    // {{{ _processResultSet()
+
+    /**
+     * Processes a DB result set by checking for a DB error and then transforming the result
+     * into a set of NestedSet_Node objects or leaving it as an array.
+     *
+     * @param array $result The result from the getAll() call 
+     * @param bool $keepAsArray Keep the result as an array or transform it into a set of
+     *             NestedSet_Node objects? 
+     * @param bool $fieldsAreAliased Are the fields aliased?
+     *
+     * @access    private
+     * @return mixed False on error or the transformed node set.
+     */
+    function _processResultSet($result, $keepAsArray, $fieldsAreAliased)
+    {
+        if ($this->_testFatalAbort($result, __FILE__, __LINE__)) {
+            return false;
+        }
+
+        $nodes = array();
+        $idKey = $fieldsAreAliased ? 'id' : $this->flparams['id'];
+        foreach ($result as $row) {
+            $node_id = $row[$idKey];
+            if ($keepAsArray) {
+                $nodes[$node_id] = $row;
+            } else {
+                // Create an instance of the node container
+                $nodes[$node_id] =& new NestedSet_Node($row);
+            }
+
+            // EVENT (nodeLoad)
+            $this->triggerEvent('nodeLoad', $nodes[$node_id]);
+        }
+        
+        return $nodes;
     }
 
     // }}}
@@ -669,18 +516,26 @@ class DB_NestedSet extends PEAR {
     /**
      * Gets the select fields based on the params
      *
+     * @param bool $aliasFields Should we alias the fields so they are the names of the
+     *             parameter keys, or leave them as is? 
+     *
      * @access private
      * @return string A string of query fields to select
      */
-    function _getSelectFields()
+    function _getSelectFields($aliasFields)
     {
         $queryFields = array();
-        foreach($this->params AS $key => $val) {
-            $queryFields[] = $key . ' AS ' . $val;
+        if ($aliasFields) {
+            foreach ($this->params as $key => $val) {
+                $queryFields[] = $key . ' AS ' . $val;
+            }
+        }
+        else {
+            $queryFields = $this->flparams;
         }
 
-        $sel = implode(', ', $queryFields);
-        return $sel;
+        $fields = implode(', ', $queryFields);
+        return $fields;
     }
 
     // }}}
@@ -1930,15 +1785,6 @@ class DB_NestedSet extends PEAR {
 
 // }}}
 class NestedSet_Node {
-    // {{{ properties
-
-    /**
-     * The imported data
-     * @type array
-     */
-    var $data = array();
-
-    // }}}
     // {{{ constructor
 
     /**
@@ -1950,7 +1796,6 @@ class NestedSet_Node {
             return new PEAR_ERROR($data, NESE_ERROR_PARAM_MISSING);
         }
 
-        $this->data = $data;
         $this->setAttr($data);
         return true;
     }
@@ -1967,20 +1812,6 @@ class NestedSet_Node {
         foreach ($data as $key => $val) {
             $this->$key = $val;
         }
-    }
-
-    // }}}
-    // {{{ getData()
-
-    /**
-     * Returns any loaded data
-     *
-     * @access public
-     * @return array The data
-     */
-    function getData()
-    {
-        return $this->data;
     }
 
     // }}}
