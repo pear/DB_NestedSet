@@ -44,9 +44,9 @@ $NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
 $NeSe->setAttr(array
 (
 'node_table' => 'tb_nodes',
-'lock_table' => 'tb_locks', 
-'lockTTL'	 => 1,
-'debug' => 0) 
+'lock_table' => 'tb_locks',
+'lockTTL'    => 1,
+'debug' => 0)
 );
 
 $NeSe2 = DB_NestedSet::factory($db_driver, $db_dsn, $params2);
@@ -54,13 +54,13 @@ $NeSe2->setAttr(array
 (
 'node_table' => 'tb_nodes2', // Note the difference - it's tb_nodes2
 'lock_table' => 'tb_locks',
-'lockTTL'	 => 1,
-'debug' => 0) 
+'lockTTL'    => 1,
+'debug' => 0)
 );
 
 4. Now pass this 2 objects to the static method convertTreeModel();
    DB_NestedSet::convertTreeModel($NeSe, $NeSe2);
-   
+
 5. Now tb_nodes2 should be filled with a new representation of tb_nodes.
 
 6. Verify that the row count didn't change and that everything's O.K.

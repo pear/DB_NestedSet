@@ -36,23 +36,23 @@ require_once 'HTML/TreeMenu.php';
 // }}}
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // {{{ properties
-    
+
     /**
     * @var array The current menu structure
     * @access private
     */
     var $_structTreeMenu = false;
-    
+
     // }}}
     // {{{ DB_NestedSet_TreeMenu
-    
+
     function &DB_NestedSet_TreeMenu($params) {
         $this->_structTreeMenu =& $this->_createFromStructure($params);
     }
-    
+
     // }}}
     // {{{ _createFromStructure()
-    
+
     /**
     * <pre>Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
     * of the DB_NestedSet class.  The needed parameters are:
@@ -66,7 +66,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     *                creating it such as 'icon' or 'expandedIcon'
     * o 'events' => (optional) an array of any events to pass to the node when creating it
     *               such as 'onclick' or 'onexpand'</pre>
-    *
+    * </pre>
     * @access public
     * @return object A HTML_TreeMenu object
     */
@@ -82,12 +82,12 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         } else {
             $treeMenu =& $params['treeMenu'];
         }
-        
+
         // always start at level 1
         if (!isset($params['currentLevel'])) {
             $params['currentLevel'] = 1;
         }
-        
+
         // have to use a while loop here because foreach works on a copy of the array and
         // the child nodes are passed by reference during the recursion so that the parent
         // will know when they have been hit.
@@ -97,7 +97,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
             if (isset($node['hit'])) {
                 continue;
             }
-            
+
             // mark that we've hit this node
             $params['structure'][$key]['hit'] = $node['hit'] = true;
             $tag = array(
@@ -123,7 +123,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                         $children[] =& $params['structure'][$childKey];
                     }
                 }
-                
+
                 $recurseParams = $params;
                 $recurseParams['structure'] = $children;
                 $recurseParams['treeMenu'] =& $parentNode;
@@ -131,13 +131,13 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                 $this->_createFromStructure($recurseParams);
             }
         }
-        
+
         return $treeMenu;
     }
-    
+
     // }}}
     // {{{ printTree()
-    
+
     /**
     * Print's the current tree using the output driver
     *
@@ -148,10 +148,10 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         $tree =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
         $tree->printMenu();
     }
-    
+
     // }}}
     // {{{ printListbox()
-    
+
     /**
     * Print's a listbox representing the current tree
     *
@@ -163,10 +163,10 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         $listBox->printMenu();
     }
     // }}}
-    
+
     // }}}
     // {{{ tree_toHTML()
-    
+
     /**
     * Returns the HTML for the DHTML-menu. This method can be
     * used instead of printMenu() to use the menu system
@@ -181,10 +181,10 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         $tree  =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
         return $tree->toHTML();
     }
-    
+
     // }}}
     // {{{ listbox_toHTML()
-    
+
     /**
     * Returns the HTML for the listbox. This method can be
     * used instead of printListbox() to use the menu system
@@ -199,7 +199,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
         $listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
         return $listBox->toHTML();
     }
-    
+
     // }}}
 }
 ?>

@@ -33,42 +33,42 @@
 * @access       public
 */
 Class DB_NestedSetEvent extends PEAR {
-    
+
     /**
     * Constructor
     *
     * @return void
     */
     function DB_NestedSetEvent() {
-        
+
         $this->PEAR();
     }
-    
+
     /**
     * Destructor
     *
     * @return void
     */
     function _DB_NestedSetEvent() {
-        
+
         $this->_PEAR();
     }
-    
-    
+
+
     /**
     * Calls the event handler
     *
     * You may want to do a switch() here and call you methods
     * depending on the event
     *
-    * @param	string $event	The Event that occured
-    * @param	object node $node A Reference to the node object which was subject to changes
-    * @param	array $eparams	A associative array of params which may be needed by the handler
+    * @param    string $event   The Event that occured
+    * @param    object node $node A Reference to the node object which was subject to changes
+    * @param    array $eparams  A associative array of params which may be needed by the handler
     * @return void
     * @access private
     */
     function callEvent($event, &$node, $eparams = array()) {
-        
+
         echo "<br>Override callEvent() if you want to have custom event handlers<br>\n";
         echo "Event $event was called with the following params:<br><br>\n";
         echo "<PRE>";

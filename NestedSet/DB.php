@@ -35,15 +35,15 @@ require_once 'DB.php';
 // }}}
 class DB_NestedSet_DB extends DB_NestedSet {
     // {{{ properties
-    
+
     /**
     * @var object Db object
     */
     var $db;
-    
+
     // }}}
     // {{{ constructor
-    
+
     /**
     * Constructor
     *
@@ -58,10 +58,10 @@ class DB_NestedSet_DB extends DB_NestedSet {
         $this->db =& $this->_db_Connect($dsn);
         $this->db->setFetchMode(DB_FETCHMODE_ASSOC);
     }
-    
+
     // }}}
     // {{{ destructor
-    
+
     /**
     * Destructor
     */
@@ -71,10 +71,10 @@ class DB_NestedSet_DB extends DB_NestedSet {
         $this->_DB_NestedSet();
         $this->_db_Disconnect();
     }
-    
+
     // }}}
     // {{{ _db_Connect()
-    
+
     /**
     * Connects to the db
     *
@@ -87,32 +87,32 @@ class DB_NestedSet_DB extends DB_NestedSet {
         if (is_object($this->db)) {
             return $this->db;
         }
-        
+
         $db =& DB::connect($dsn);
         $this->_testFatalAbort($db, __FILE__, __LINE__);
         return $db;
     }
-    
+
     // }}}
-    
-    
+
+
     function _numRows($res) {
-        return $res->numRows();   
+        return $res->numRows();
     }
 
     function _isDBError($err) {
         if(!DB::isError($err)) {
-            return false;   
+            return false;
         }
         return true;
     }
-       
-    function quote($str) {
+
+    function _quote($str) {
         return $this->db->quote($str);
     }
-    
+
     // {{{ _db_Disconnect()
-    
+
     /**
     * Disconnects from db
     *
@@ -125,10 +125,10 @@ class DB_NestedSet_DB extends DB_NestedSet {
         if (is_object($this->db)) {
             @$this->db->disconnect();
         }
-        
+
         return true;
     }
-    
+
     // }}}
 }
 

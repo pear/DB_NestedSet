@@ -36,15 +36,15 @@ require_once 'MDB.php';
 // }}}
 class DB_NestedSet_MDB extends DB_NestedSet {
     // {{{ properties
-    
+
     /**
     * @var object The MDB object
     */
     var $db;
-    
+
     // }}}
     // {{{ constructor
-    
+
     /**
     * Constructor
     *
@@ -59,10 +59,10 @@ class DB_NestedSet_MDB extends DB_NestedSet {
         $this->db =& $this->_db_Connect($dsn);
         $this->db->setFetchMode(MDB_FETCHMODE_ASSOC);
     }
-    
+
     // }}}
     // {{{ destructor
-    
+
     /**
     * Destructor
     */
@@ -72,10 +72,10 @@ class DB_NestedSet_MDB extends DB_NestedSet {
         $this->_DB_NestedSet();
         $this->_db_Disconnect();
     }
-    
+
     // }}}
     // {{{ _db_Connect()
-    
+
     /**
     * Connects to the db
     *
@@ -88,32 +88,32 @@ class DB_NestedSet_MDB extends DB_NestedSet {
         if (is_object($this->db)) {
             return $this->db;
         }
-        
+
         $db =& MDB::connect($dsn);
         $this->_testFatalAbort($db, __FILE__, __LINE__);
-        
+
         return $db;
     }
-    
+
     // }}}
 
     function _isDBError($err) {
         if(!MDB::isError($err)) {
-            return false;   
+            return false;
         }
         return true;
     }
-        
+
     function _numRows($res) {
-        return $this->db->numRows($res);   
+        return $this->db->numRows($res);
     }
-    
-    function quote($str) {
+
+    function _quote($str) {
         return $this->db->getTextValue($str);
-    }    
-    
+    }
+
     // {{{ _db_Disconnect()
-    
+
     /**
     * Disconnects from db
     *
@@ -126,10 +126,10 @@ class DB_NestedSet_MDB extends DB_NestedSet {
         if (is_object($this->db)) {
             @$this->db->disconnect();
         }
-        
+
         return true;
     }
-    
+
     // }}}
 }
 

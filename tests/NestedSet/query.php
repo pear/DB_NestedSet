@@ -11,14 +11,14 @@
 
 
 class tests_NestedSet_query extends DB_NestedSetTest {
- 
-    
+
+
     // +----------------------------------------------+
     // | Testing query methods                        |
     // |----------------------------------------------+
     // | [PUBLIC]                                     |
     // +----------------------------------------------+
-    
+
     /**
     * tests_NestedSet_common::test_getAllNodes()
     *
@@ -32,28 +32,28 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         $depth = 2;
         $npl = 3;
         $this->_createSubNode($rnc, $depth, $npl);
-        
+
         $allnodes = $this->_NeSe->getAllNodes(true);
         $rootnodes = $this->_NeSe->getRootNodes(true);
         $exp_cct = 0;
         foreach($rootnodes AS $rid=>$rootnode) {
             $exp_cct = $exp_cct + floor(($rootnode['r'] - $rootnode['l'])/2);
         }
-        
+
         // Does it really return all nodes?
         $cct = count($allnodes);
         $exp_cct = $exp_cct + count($rootnodes);
         $this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
-        
+
         // Verify the result agains pickNode()
         foreach($allnodes AS $nid=>$node) {
             $this->assertEquals($this->_NeSe->pickNode($nid, true), $node, 'Result differs from pickNode()');
         }
-        
+
 
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_getRootNodes()
     *
@@ -65,19 +65,19 @@ class tests_NestedSet_query extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_getRootNodes() {
-        
+
         // Create a simple set of rootnodes
         $rootnodes_exp = $this->_createRootNodes(15);
         $rootnodes = $this->_NeSe->getRootNodes(true);
         $this->assertEquals($rootnodes_exp, $rootnodes, 'getRootNodes() failed');
-        
+
         // Create a mixed order set of rootnodes
         $rootnodes_exp = $this->_createRootNodes(15, true);
         $rootnodes = $this->_NeSe->getRootNodes(true);
         $this->assertEquals($rootnodes_exp, $rootnodes, 'getRootNodes() failed on mixed set');
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_getParents()
     *
@@ -92,7 +92,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         $rnc = 3;
         $depth = 2;
         $npl = 3;
-        
+
         // Create a new tree
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
@@ -106,7 +106,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         return true;
     }
 
-    
+
     /**
     * tests_NestedSet_common::test_getParent()
     *
@@ -119,14 +119,14 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         $rnc = 3;
         $depth = 2;
         $npl = 3;
-        
+
         // Create a new tree
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
         // Walk trough all nodes and compare it's relations whith the one provided
         // by the relation tree
         foreach($allnodes AS $nid=>$node) {
-            
+
             $parent = $this->_NeSe->getParent($nid, true);
             if(!isset($relationTree[$nid]['parent'])) {
                 $this->assertFalse($parent, 'A rootnode returned a parent');
@@ -136,19 +136,19 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
     function test_getSiblings() {
         $rnc = 3;
         $depth = 2;
         $npl = 3;
-        
+
         // Create a new tree
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
         // Walk trough all nodes and compare it's relations whith the one provided
         // by the relation tree
         foreach($allnodes AS $nid=>$node) {
-            
+
             if(!$children = $this->_NeSe->getChildren($nid, true)) {
                 continue;
             }
@@ -159,7 +159,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::isParent()
     *
@@ -176,9 +176,9 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
         foreach($allnodes AS $nid=>$node) {
-            
+
             $children = $this->_NeSe->getChildren($nid, true);
-            
+
             if(empty($children)) {
                 continue;
             }
@@ -190,7 +190,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_getChildren()
     *
@@ -205,7 +205,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_getChildren() {
-        
+
         $rnc = 2;
         $depth = 2;
         $npl = 3;
@@ -214,28 +214,28 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         foreach($nids AS $rix=>$nid) {
             $this->assertFalse($this->_NeSe->getChildren($nid, true), 'getChildren returned value for empty rootnode');
         }
-        
+
         // Now build a little tree to test
-        
+
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
-        
+
         $rootnodes = $this->_NeSe->getRootNodes(true);
         $exp_cct = 0;
         $cct = 0;
         foreach($rootnodes AS $rid=>$rootnode) {
-            
+
             // Traverse the tree and verify it against the relationTree
             $cct = $cct + $this->_traverseChildren($rootnode, $relationTree, true);
-            
+
             // Calc the expected number of children from lft-rgt
             $exp_cct = $exp_cct + floor(($rootnode['r'] - $rootnode['l'])/2);
         }
-        
+
         // Test if all created nodes got returned
         $this->assertEquals($exp_cct, $cct, 'Total node count returned is wrong');
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_getBranch()
     *
@@ -251,10 +251,10 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         // Create a new tree
         $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
-        $branch = 	$this->_NeSe->getBranch($npl,true);
+        $branch =   $this->_NeSe->getBranch($npl,true);
         $this->assertEquals($allnodes, $branch, 'Result differs from getAllNodes()');
     }
-    
+
     /**
     * tests_NestedSet_common::test_getSubBranch()
     *
@@ -269,7 +269,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         $rnc = 3;
         $depth = 2;
         $npl = 3;
-        
+
         // Create a new tree
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
@@ -280,7 +280,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_pickNode()
     *
@@ -290,33 +290,33 @@ class tests_NestedSet_query extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_pickNode() {
-        
+
         // Set some rootnodes
         $nids = $this->_setupRootnodes(5);
-        
+
         // Loop trough the node id's of the newly created rootnodes
         for($i=0; $i<count($nids); $i++) {
             $nid = $nids[$i];
-            
+
             $nname = 'Node '.$nid;
             $norder = $nid;
-            
+
             // Pick the current node and do the tests
             $nnode = $this->_NeSe->pickNode($nid, true);
-            
+
             // Test Array
             $this->assertEquals(is_array($nnode), "Node $nname: No array given.");
-            
+
             // Test lft/rgt
             $this->assertEquals(1, $nnode['l'],  "Node $nname: Wrong LFT");
             $this->assertEquals(2, $nnode['r'],  "Node $nname: Wrong RGT");
-            
+
             // Test order
             $this->assertEquals($norder, $nnode['norder'], "Node $nname: Wrong order.");
-            
+
             // Test Level
             $this->assertEquals(1, $nnode['level'], "Node $nname: Wrong level.");
-            
+
             // Test Name
             $this->assertEquals($nname, $nnode['name'], "Node $nname: Wrong name.");
         }

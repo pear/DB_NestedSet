@@ -18,7 +18,7 @@ require_once 'NestedSet.php';
 require_once 'UnitTest.php';
 ini_set('error_reporting',E_ALL);
 
-require_once 'PHPUnit/GUI/SetupDecorator.php';  
+require_once 'PHPUnit/GUI/SetupDecorator.php';
 
 $gui = new PHPUnit_GUI_SetupDecorator(new PHPUnit_GUI_HTML());
 $gui->getSuitesFromDir(dirname(__FILE__),'.*[^_]\.php$',array('UnitTest.php','index.php','clitest.php','TestBase.php'));

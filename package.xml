@@ -14,13 +14,13 @@
         o move nodes, trees and subtrees
         o call event handlers on specific events like
           on node deletion
-        o output the tree with 
+        o output the tree with
           - PEAR::HTML_TreeMenu
           - TigraMenu (http://www.softcomplex.com/products/tigra_menu/)
         o It also features caching of SQL queries using PEAR::Cache
       </description>
       <license>PHP License</license>
-          <homepage>http://oss.webcluster.at</homepage>
+      <homepage>http://oss.webcluster.at</homepage>
       <maintainers>
         <maintainer>
           <user>datenpunk</user>
@@ -32,45 +32,120 @@
           <user>jrust</user>
           <name>Jason Rust</name>
           <email>jrust@rustyparts.com</email>
-          <role>lead</role>
+          <role>developer</role>
         </maintainer>
       </maintainers>
+      <release>
+        <version>1.3</version>
+        <date>2003-10-07</date>
+        <state>devel</state>
+        <notes>
+            This release includes many internal changes and some (long demanded) feature additions.
+            The API and database structure should be fully backward compatible.
+            Please test this release as much as possible, so that any remaining issues can be
+            uncovered and resolved prior to the final release.
+
+            o Notes:
+            If you want to use new features like preorder sorting you will
+            have to convert the tree to meet the new db model.
+            See docs/migrateDB.txt on how to migrate your existing tree.
+
+            o Fixes:
+            * MDB support is back again.
+            * Fixed a problem with some move operations where the moving tree gets changed during
+              the move operation.
+            * Many small internal fixes.
+
+            o New features:
+            * Added a method setSortMode($mode) where $mode is NESE_SORT_LEVEL or NESE_SORT_PREORDER.
+              This will change the way the query methods return the tree.
+              NESE_SORT_LEVEL is the default.
+              NESE_SORT_PREORDER returns the tree preorder sorted. This sorting method
+              was often demanded as it's the way one would usually expect the tree to be returned.
+              Preorder sorting will also work with the property $secondarySort.
+              So it's possible to get the siblings of one level sorted alphabetically by name.
+              Note that you will have to switch back to NESE_SORT_LEVEL if you want to display
+              a tree with the output drivers.
+            * Added method getParent() to get the immediate parent of a node
+            * Added method getSiblings() to get all siblings of a node + the node itself
+            * Added method createLeftNode() to create a node before a node given by it's node id.
+            * Added method apiVersion() which obviously returns the current API version
+            * Added convertTreeModel() to convert a tree into the new tree model
+            * Added magic parent db field. If a column with the field mapping 'parent' is present
+              the parent id of a node is stored inside this column.
+              This doesn't exactly meet the nested sets theory and will only be used by some
+              methods like getParent(). It's recommended to use this column for new installations
+              or converted trees.
+            * Now values passed to creation methods are verfified so that a script can't set
+              params like the parent id by itself
+            * Added listbox_toHTML() and tree_toHTML() methods to the TreeMenu output driver.
+              Thanks to Emanuel Zueger for this additions.
+            * Added regression tests for all public methods and common options
+              The regression test setup isn't very userfriendly for now.
+              The db schema can be found under docs and you will have to customize tests/UnitTest.php
+              to set your database connection params.
+            * The main class now uses the array representation of the tree for internal operations.
+              This should gain some performance.
+
+            o Notes on next major version (1.3):
+            * The API will change.
+            * The class won't return objects anymore. It will act as if $keepAsArray is set to true
+              when calling the query methods.
+              It's a good idea to switch to set this param to be mostly compatible.
+            * Callback handlers will be removed - I don't even know if someone uses them.
+              Please mail me at dk@webcluster.at if you really see a use.
+              -- To be continued --
+        </notes>
+        <filelist>
+          <dir name="/" baseinstalldir="DB" role="php">
+                <file>NestedSet.php</file>
+                <dir name="NestedSet" role="php">
+                    <file>DB.php</file>
+                    <file>MDB.php</file>
+                    <file>Event.php</file>
+                    <file>Output.php</file>
+                    <file>TreeMenu.php</file>
+                    <file>TigraMenu.php</file>
+                </dir>
+                <dir name="docs" role="doc">
+                    <file>README</file>
+                    <file>mysql.sql</file>
+                    <file>migrateDB.txt</file>
+                    <file>testdb_mysql.sql</file>
+                    <file>TreeMenu_example.php</file>
+                    <file>TigraMenu_example.php</file>
+                </dir>
+                <dir name="tests">
+                    <file role="test">index.php</file>
+                    <file role="test">TestBase.php</file>
+                    <file role="test">UnitTest.php</file>
+                    <dir name="NestedSet">
+                        <file role="test">api.php</file>
+                        <file role="test">creation.php</file>
+                        <file role="test">manipulation.php</file>
+                        <file role="test">query.php</file>
+                    </dir>
+                </dir>
+           </dir>
+        </filelist>
+      </release>
+     <changelog>
       <release>
         <version>1.2.4</version>
         <date>2003-08-13</date>
         <state>stable</state>
         <notes>
-			o Fixed a problem in re-sorting after node deletion
-			o Added an example for building a JavaScript tree with TreeMenu
+            o Fixed a problem in re-sorting after node deletion
+            o Added an example for building a JavaScript tree with TreeMenu
         </notes>
-        <filelist>
-          <dir name="/" baseinstalldir="DB" role="php">
-            <file>NestedSet.php</file>
-            <dir name="NestedSet" role="php">
-              <file>DB.php</file>
-              <file>MDB.php</file>
-              <file>Event.php</file>
-              <file>Output.php</file>
-              <file>TreeMenu.php</file>
-              <file>TigraMenu.php</file>
-            </dir>
-          </dir>
-          <dir name="docs" role="doc">
-            <file>README</file>
-            <file>mysql.sql</file>
-            <file>TreeMenu_example.php</file>
-            <file>TigraMenu_example.php</file>
-          </dir>
-        </filelist>
       </release>
-     <changelog>
       <release>
         <version>1.2.3</version>
         <date>2003-07-16</date>
         <state>stable</state>
         <notes>
-			o Fixes a typo in _addSQL()
-			  Thanks to Rense Klinkenberg for sending patch
+            o Fixes a typo in _addSQL()
+              Thanks to Rense Klinkenberg for sending patch
         </notes>
       </release>
       <release>
@@ -101,7 +176,7 @@
          o All tree query methods now support an additional array named $addSQL.
            This can be used to pass additional params to a query.
            Means: You may now use joins to other tables.
-           
+
          - FIXES
          o createRightNode() returned the node object instead of the new node id, which
            caused problems whith some internal method calls.
@@ -110,7 +185,7 @@
            Thanks to Alain Petignat for reporting this
          o Some minor E_ALL fixes (The package shouldn't produce notices/warnings with
            E_ALL set)
-         o Added TigraMenu.php to the package which was missing in the last release 
+         o Added TigraMenu.php to the package which was missing in the last release
         </notes>
       </release>
 
@@ -120,7 +195,7 @@
         <state>stable</state>
         <notes>
          - Fixed a bug which leads to the deletion of a node or subtree if a node
-           is moved into _itself_. 
+           is moved into _itself_.
            Thanks to Christian Reininger for catching this!
          - Now a proper PEAR::Error object is returned in case of recursion instead of
            returning false.

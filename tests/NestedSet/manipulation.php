@@ -11,13 +11,13 @@
 
 
 class tests_NestedSet_manipulation extends DB_NestedSetTest {
- 
+
     // +----------------------------------------------+
     // | Testing manipulation methods                 |
     // |----------------------------------------------+
     // | [PUBLIC]                                     |
     // +----------------------------------------------+
-    
+
     /**
     * tests_NestedSet_common::test_deleteNode()
     *
@@ -29,12 +29,12 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
     * @return bool True on completion
     */
     function test_deleteNode() {
-        
+
         $relationTree = $this->_createRandomNodes(3, 150);
         $rootnodes = $this->_NeSe->getRootNodes(true);
-        
+
         foreach($rootnodes AS $rid=>$rootnode) {
-            
+
             $this->_deleteNodes($rid, true);
             $rn = $this->_NeSe->pickNode($rid, true);
             $this->assertEquals(1, $rn['l'], 'Wrong LFT value');
@@ -42,7 +42,7 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
         }
         return true;
     }
-    
+
     /**
     * tests_NestedSet_common::test_updateNode()
     *
@@ -66,17 +66,17 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
         }
         return true;
     }
- 
-    
+
+
     function test_moveTree() {
-        
+
         $movemodes[] = NESE_MOVE_BEFORE;
         $movemodes[] = NESE_MOVE_AFTER;
         $movemodes[] = NESE_MOVE_BELOW;
         for($j=0;$j<count($movemodes);$j++) {
-            
+
             $mvt = $movemodes[$j];
-            
+
             // Build a nice random tree
             $rnc = 2;
             $depth = 3;
@@ -88,16 +88,16 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
             $branches = array();
             $allnodes1 = $this->_NeSe->getAllNodes(true);
             foreach($rootnodes AS $rid=>$rootnode) {
-                
+
                 if($lastrid) {
                     $this->_NeSe->moveTree($rid, $lastrid, $mvt);
                 }
-                
+
                 $branch = $this->_NeSe->getBranch($rid, true);
                 if(!empty($branch)) {
                     $branches[] = $branch;
                 }
-                
+
                 if(count($branches) == 2) {
                     $this->_moveTree__Across($branches, $mvt, count($this->_NeSe->getAllNodes(true)));
                     $branches = array();
@@ -108,7 +108,7 @@ class tests_NestedSet_manipulation extends DB_NestedSetTest {
             $allnodes2 = $this->_NeSe->getAllNodes(true);
             // Just make sure that all the nodes are still there
             $this->assertFalse(count(array_diff(array_keys($allnodes1), array_keys($allnodes2))), 'Nodes got lost during the move');
-        } 
+        }
         return true;
     }
 
