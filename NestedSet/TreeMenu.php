@@ -46,7 +46,18 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // }}}
     // {{{ DB_NestedSet_TreeMenu
 
-    function &DB_NestedSet_TreeMenu($params) {
+    /**
+     * The constructor
+     *
+     * @param array $params The config parameters used for building the
+     *                      tree.
+     *
+     * @see _createFromStructure()
+     * @access public
+     * @return void
+     */
+    function &DB_NestedSet_TreeMenu($params) 
+    {
         $this->_structTreeMenu =& $this->_createFromStructure($params);
     }
 
@@ -54,19 +65,27 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // {{{ _createFromStructure()
 
     /**
-    * <pre>Creates a HTML_TreeMenu structure based off of the results from getAllNodes() method
-    * of the DB_NestedSet class.  The needed parameters are:
-    * o 'structure' => the result from $nestedSet->getAllNodes(true)
-    * o 'textField' => the field in the table that has the text for node
-    * o 'linkField' => the field in the table that has the link for the node
-    * o 'options' => (optional) an array of any additional options to pass to the node when
-    * Additionally these parameters may be added to the individual nodes to control their
-    * behavior:
-    * o 'ensureVisible' => (optional) whether or not the field should be forced as visible
-    *                creating it such as 'icon' or 'expandedIcon'
-    * o 'events' => (optional) an array of any events to pass to the node when creating it
-    *               such as 'onclick' or 'onexpand'</pre>
+    * <pre>Creates a HTML_TreeMenu structure based off of the results
+    * from getAllNodes() method of the DB_NestedSet class.
+    * Note that these parameters may be added to the individual nodes
+    * to control their behavior:
+    * o 'ensureVisible' => (optional) Whether or not the field should be
+    *                      forced as visible creating it such as 'icon'
+    *                      or 'expandedIcon'
+    * o 'events' => (optional) An array of any events to pass to the
+    *               node when creating it such as 'onclick' or
+    *               'onexpand'
+    *
+    * @param array $params The configuration parameters.  Available
+    *                      params are:
+    * o 'structure' => The result from $nestedSet->getAllNodes(true)
+    * o 'textField' => The field in the table that has the text for node
+    * o 'linkField' => The field in the table that has the link for the node
+    * o 'options' => (optional) An array of any additional options to
+    *                pass to the node when it is created (i.e. icon,
+    *                class).  See HTML_TreeNode for the options)
     * </pre>
+    *
     * @access public
     * @return object A HTML_TreeMenu object
     */
@@ -100,11 +119,9 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
 
             // mark that we've hit this node
             $params['structure'][$key]['hit'] = $node['hit'] = true;
-            $tag = array(
-            'text' => $node[$params['textField']],
-            'link' => $node[$params['linkField']],
-            'ensureVisible' => isset($node['ensureVisible']) ? $node['ensureVisible'] : false,
-            );
+            $tag = array('text' => $node[$params['textField']],
+                'link' => $node[$params['linkField']],
+                'ensureVisible' => isset($node['ensureVisible']) ? $node['ensureVisible'] : false);
             $options = isset($params['options']) ? array_merge($params['options'], $tag) : $tag;
             $events = isset($node['events']) ? $node['events'] : array();
             $parentNode =& $treeMenu->addItem(new HTML_TreeNode($options, $events));
@@ -143,7 +160,8 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     *
     * @access public
     */
-    function printTree() {
+    function printTree() 
+    {
         $options = $this->_getOptions('printTree');
         $tree =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
         $tree->printMenu();
@@ -157,12 +175,12 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     *
     * @access public
     */
-    function printListbox() {
+    function printListbox() 
+    {
         $options = $this->_getOptions('printListbox');
         $listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
         $listBox->printMenu();
     }
-    // }}}
 
     // }}}
     // {{{ tree_toHTML()
@@ -176,7 +194,8 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     * @return string The HTML for the menu
     * @Author Emanuel Zueger
     */
-    function tree_toHTML() {
+    function tree_toHTML() 
+    {
         $options = $this->_getOptions('toHTML');
         $tree  =& new HTML_TreeMenu_DHTML($this->_structTreeMenu, $options);
         return $tree->toHTML();
@@ -194,7 +213,8 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     * @return string The HTML for the listbox
     * @author Emanuel Zueger
     */
-    function listbox_toHTML() {
+    function listbox_toHTML() 
+    {
         $options = $this->_getOptions('toHTML');
         $listBox  =& new HTML_TreeMenu_Listbox($this->_structTreeMenu, $options);
         return $listBox->toHTML();

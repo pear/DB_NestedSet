@@ -67,7 +67,7 @@ CREATE TABLE `nested_set_locks` (
 
 require_once('DB/NestedSet.php');
 require_once('DB/NestedSet/Output.php');
-$dsn = 'mysql://user:pass@localhost/test';
+$dsn = 'mysql://root:3ugr4ts@localhost/test';
 $params = array(
     'id'        => 'id',
     'parent_id' => 'rootid',
@@ -104,6 +104,7 @@ $params = array(
     'structure' => $data,
     'textField' => 'name',
     'linkField' => 'link',
+    'options' => array('icon' => 'folder.gif', 'expandedIcon' => 'folder-expanded.gif'),
 );
 
 $output =& DB_NestedSet_Output::factory($params, 'TreeMenu');
