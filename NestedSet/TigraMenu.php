@@ -126,8 +126,8 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
 		if(!$this->_levelOffset) {
 			$this->_levelOffset = $params['currentLevel'];
 		}
-		
-		if($this->_levels < $params['currentLevel']) {
+
+		if($this->_levels < ($params['currentLevel']- $this->_levelOffset)) {
 			$this->_levels = $params['currentLevel'] - $this->_levelOffset;
 		}
 		
