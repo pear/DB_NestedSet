@@ -935,9 +935,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
-        // EVENT (nodeCreate)
-        $thisnode = &$this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+            // EVENT (nodeCreate)
+            $thisnode = &$this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1034,9 +1034,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
-        // EVENT (NodeCreate)
-        $thisnode = $this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+            // EVENT (NodeCreate)
+            $thisnode = $this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1136,9 +1136,9 @@ class DB_NestedSet extends PEAR {
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__,  __LINE__);
 
-        // EVENT (NodeCreate)
-        $thisnode =& $this->pickNode($node_id);
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
+            // EVENT (NodeCreate)
+            $thisnode =& $this->pickNode($node_id);
             $this->triggerEvent('nodeCreate', $thisnode);
         }
         return $node_id;
@@ -1247,8 +1247,9 @@ class DB_NestedSet extends PEAR {
             return false;
         }
 
-        $eparams = array('values' => $values);
+       
         if (!$this->skipCallbacks && isset($this->_hasListeners['nodeUpdate'])) {
+             $eparams = array('values' => $values);
             // EVENT (NodeUpdate)
             $this->triggerEvent('nodeUpdate', $thisnode, $eparams);
         }
@@ -1506,10 +1507,11 @@ class DB_NestedSet extends PEAR {
         foreach($relations AS $key => $val) {
             $clone = $this->pickNode($val);
             if ($copy) {
-                // EVENT (NodeCopy)
-                $thisnode =& $this->pickNode($key);
-                $eparams = array('clone' => $clone);
+                
                 if (!$this->skipCallbacks && isset($this->_hasListeners['nodeCopy'])) {
+                    // EVENT (NodeCopy)
+                    $thisnode =& $this->pickNode($key);
+                    $eparams = array('clone' => $clone);
                     $this->triggerEvent('nodeCopy', $thisnode, $eparams);
                 }
                 continue;
