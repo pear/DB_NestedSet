@@ -474,7 +474,7 @@ class DB_NestedSet {
             $epr = array('getBranch()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
-        if ($this->_sortMode == NESE_SORT_LEVEL) {
+        if ($this->_sortMode == NESE_SORT_LEVEL || $this->params[$this->secondarySort] != $this->_defaultSecondarySort) {
             $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s %s ORDER BY %s.%s, %s.%s ASC',
             $this->_getSelectFields($aliasFields),
@@ -503,7 +503,8 @@ class DB_NestedSet {
             $this->_addSQL($addSQL, 'where', 'AND'),
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
-            $firstsort);
+            $firstsort,
+            $this->node_table);
         }
 
         if (!$this->_caching) {
@@ -518,8 +519,9 @@ class DB_NestedSet {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
         }
+
         if ($this->_sortMode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
-            uasort($nodeSet, array($this, '_secSort'));
+            $nodeSet = $this->_secSort($nodeSet);
         }
         return $nodeSet;
     }
@@ -742,7 +744,7 @@ class DB_NestedSet {
             $epr = array('getSubBranch()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_NOTICE, $epr);
         }
-        if ($this->_sortMode == NESE_SORT_LEVEL) {
+        if ($this->_sortMode == NESE_SORT_LEVEL || $this->params[$this->secondarySort] != $this->_defaultSecondarySort) {
             $firstsort = $this->flparams['level'];
             $sql = sprintf('SELECT %s %s FROM %s %s
                     WHERE %s.%s BETWEEN %s AND %s AND %s.%s=%s AND %s.%s!=%s %s %s
@@ -791,8 +793,8 @@ class DB_NestedSet {
                 $this->triggerEvent('nodeLoad', $nodeSet[$key]);
             }
         }
-        if ($this->params[$this->secondarySort] != $this->_defaultSecondarySort) {
-            uasort($nodeSet, array($this, '_secSort'));
+        if ($this->_sortMode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
+            $nodeSet = $this->_secSort($nodeSet);
         }
         return $nodeSet;
     }
@@ -1836,29 +1838,44 @@ class DB_NestedSet {
     // +-----------------------+
     // {{{ _secSort()
     /**
-    * Callback for uasort used to sort siblings
+    * OMG ... This is nasty
     *
     * @access private
     */
-    function _secSort($node1, $node2) {
-        // Within the same level?
-        if ($node1['level'] != $node2['level']) {
-            return strnatcmp($node1['l'], $node2['l']);
+    function _secSort($nodeSet) {
+
+        $retArray = array();
+        foreach($nodeSet AS $nodeID=>$node) {
+            $deepArray[$node['parent']][$nodeID] = $node;
         }
-        // Are they siblings?
-        $p1 = $this->getParent($node1);
-        $p2 = $this->getParent($node2);
-        if ($p1['id'] != $p2['id']) {
-            return strnatcmp($node1['l'], $node2['l']);
+
+
+        foreach($deepArray AS $parentID=>$children) {
+            $retArray = $this->_secSortCollect($children, $deepArray);
         }
-        // Same field value? Use the lft value then
-        $field = $this->params[$this->secondarySort];
-        if ($node1[$field] == $node2[$field]) {
-            return strnatcmp($node1['l'], $node2[l]);
-        }
-        // Compare between siblings with different field value
-        return strnatcmp($node1[$field], $node2[$field]);
+        return $retArray;
     }
+
+
+    function _secSortCollect($segment, $deepArray) {
+
+        static $retArray;
+        if(!$retArray) {
+            $retArray = array();
+        }
+
+        foreach($segment AS $nodeID=>$node) {
+            if(isset($retArray[$nodeID])) {
+                continue;
+            }
+            $retArray[$nodeID] = $node;
+            if(isset($deepArray[$nodeID])) {
+                $this->_secSortCollect($deepArray[$nodeID], $deepArray);
+            }
+        }
+        return $retArray;
+    }
+
     // }}}
     // {{{ _addSQL()
     /**
