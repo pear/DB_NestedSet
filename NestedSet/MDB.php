@@ -151,10 +151,14 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
 
     // }}}
-    // {{{ _quote()
-	// Not implemented by MDB yet
+    // {{{ _quoteIdentifier()
     function _quoteIdentifier($str) {
-		return $str;
+		
+		// will work as soon as MDB supports this
+        if (method_exists($this->db, 'quoteIdentifier')) {
+            return $this->db->quoteIdentifier($str);
+        } 
+        return $str;
     } 	
 	// }}}
     // {{{ _db_Disconnect()
