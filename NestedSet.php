@@ -1080,7 +1080,7 @@ class DB_NestedSet extends PEAR {
     *
     * @param int    $id Source ID
     * @param int    $target Target ID
-    * @param array  $pos Position (BEfore, AFter, SUBnode)
+    * @param array  $pos Position (use one of the MOVE constants)
     * @param bool   $copy Shall we create a copy
     *
     * @see _moveInsideLevel
@@ -1110,7 +1110,7 @@ class DB_NestedSet extends PEAR {
         }
         
         // Insert/move before or after
-        if ($pos == 'BE' || $pos == 'AF') {
+        if ($pos == NESE_MOVE_BEFORE || $pos == NESE_MOVE_AFTER) {
             if (($source->rootid == $source->id) && 
                 ($target->rootid == $target->id) && 
                 !$copy) {
@@ -1185,10 +1185,10 @@ class DB_NestedSet extends PEAR {
             }
         }
 
-        if ($pos != 'SUB') {
+        if ($pos != NESE_MOVE_BELOW) {
             $c_id = $this->createRightNode($t_id, $values);
             $clone = $this->pickNode($c_id);
-            if ($pos == 'BE') {
+            if ($pos == NESE_MOVE_BEFORE) {
                 $this->moveTree($c_id, $t_id, $pos);
             }
         } else {
@@ -1372,7 +1372,7 @@ class DB_NestedSet extends PEAR {
             $parents = $this->getParents($target->id);
             $ntarget = @array_pop($parents);
             if (is_object($ntarget)) {
-                $npos = 'SUB';
+                $npos = NESE_MOVE_BELOW;
             } else {
                 $npos = $pos;
                 $ntarget = $target;
@@ -1403,7 +1403,7 @@ class DB_NestedSet extends PEAR {
         $t_id = $target->id;
         
         if ($s_order < $t_order) {
-            if ($pos == 'BE') {
+            if ($pos == NESE_MOVE_BEFORE) {
                 $sql = "UPDATE $tb SET $freh=$freh-1 
                         WHERE $freh BETWEEN $s_order AND $t_order AND 
                             $fid!=$t_id AND 
@@ -1417,7 +1417,7 @@ class DB_NestedSet extends PEAR {
                 $res = $this->db->query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
-            elseif ($pos == 'AF') {
+            elseif ($pos == NESE_MOVE_AFTER) {
                 $sql = "UPDATE $tb SET $freh=$freh-1 
                         WHERE $freh BETWEEN $s_order AND $t_order AND 
                             $fid!=$s_id AND 
@@ -1433,7 +1433,7 @@ class DB_NestedSet extends PEAR {
         }
         
         if ($s_order > $t_order) {
-            if ($pos == 'BE') {
+            if ($pos == NESE_MOVE_BEFORE) {
                 $sql = "UPDATE $tb SET $freh=$freh+1 
                         WHERE $freh BETWEEN $t_order AND $s_order AND 
                             $fid != $s_id AND 
@@ -1448,8 +1448,7 @@ class DB_NestedSet extends PEAR {
                 $res = $this->db->query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
-            elseif($pos == 'AF') {
-                
+            elseif ($pos == NESE_MOVE_AFTER) {
                 $sql = "UPDATE $tb SET $freh=$freh+1 
                         WHERE $freh BETWEEN $t_order AND $s_order AND 
                             $fid!=$t_id AND 
@@ -1518,8 +1517,7 @@ class DB_NestedSet extends PEAR {
         $t_id = $target->id;
         
         if ($s_order < $t_order) {
-            if ($pos == 'BE') {
-                
+            if ($pos == NESE_MOVE_BEFORE) {
                 $sql = "UPDATE $tb SET $freh=$freh-1
                         WHERE $freh BETWEEN $s_order AND $t_order AND 
                             $fid!=$t_id AND 
@@ -1531,7 +1529,7 @@ class DB_NestedSet extends PEAR {
                 $res = $this->db->query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
-            elseif($pos == 'AF') {
+            elseif($pos == NESE_MOVE_AFTER) {
                 
                 $sql = "UPDATE $tb SET $freh=$freh-1
                         WHERE $freh BETWEEN $s_order AND $t_order AND 
@@ -1547,7 +1545,7 @@ class DB_NestedSet extends PEAR {
         }
         
         if ($s_order > $t_order) {
-            if ($pos == 'BE') {
+            if ($pos == NESE_MOVE_BEFORE) {
                 $sql = "UPDATE $tb SET $freh=$freh+1
                         WHERE $freh BETWEEN $t_order AND $s_order AND 
                             $fid != $s_id AND 
@@ -1559,7 +1557,7 @@ class DB_NestedSet extends PEAR {
                 $res = $this->db->query($sql);
                 $this->_testFatalAbort($res, __FILE__, __LINE__);
             }
-            elseif ($pos == 'AF') {
+            elseif ($pos == NESE_MOVE_AFTER) {
                 $sql = "UPDATE $tb SET $freh=$freh+1
                         WHERE $freh BETWEEN $t_order AND $s_order AND 
                         $fid!=$t_id AND 
