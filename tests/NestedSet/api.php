@@ -4,7 +4,7 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
     function test_sortMethods() {
         
         // Rootnodes
-        $this->_NeSe->sortmode = NESE_SORT_LEVEL;
+        $this->_NeSe->setSortMode(NESE_SORT_LEVEL);
         $values['STRNA'] = 'A1';
         
         $node_a1 = $this->_NeSe->createRootNode($values, false, true); 
@@ -67,7 +67,7 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         
         echo "BY NAME PRE\n";
         // Sortmode to preorder
-        $this->_NeSe->sortmode = NESE_SORT_PREORDER;
+        $this->_NeSe->setSortMode(NESE_SORT_PREORDER);
         $allnodes_default_pre = $this->_NeSe->getAllNodes(true);
         $allnodes_byname_pre = $this->_NeSe->getAllNodes(true);
         $subbranch_b11_byname_pre = $this->_NeSe->getSubBranch($node_b11, true);
@@ -86,8 +86,8 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $npl = 2;
         $this->_createSubNode($rnc, $depth, $npl);
         DB_NestedSet::convertTreeModel($this->_NeSe, $this->_NeSe2);
-        $this->_NeSe->sortmode = NESE_SORT_LEVEL;
-        $this->_NeSe2->sortmode = NESE_SORT_LEVEL;      
+        $this->_NeSe->setSortMode(NESE_SORT_LEVEL);
+        $this->_NeSe2->setSortMode(NESE_SORT_LEVEL);
         $this->assertEquals($this->_NeSe->getAllNodes(true), $this->_NeSe2->getAllNodes(true), 'Converted tree should match original');
     }
 }
