@@ -1053,9 +1053,10 @@ class DB_NestedSet extends PEAR {
 		// Open the gap within the current level
 		$sql = "UPDATE $tb SET $freh=$freh+1
                 WHERE $froot=" . $this->db->quote($rootid) . " AND 
-                $flft>$lft AND 
+                $freh>$parent_order AND 
                 $flevel=$level AND 
                 $flft BETWEEN $plft AND $prgt";
+               
 		$res = $this->db->query($sql);
 		$this->_testFatalAbort($res, __FILE__,  __LINE__);
 		
