@@ -28,6 +28,15 @@ require_once 'HTML/TreeMenu.php';
  * @access public
  */
 // }}}
+/**
+ * DB_NestedSet_TreeMenu
+ *
+ * @package
+ * @author daniel
+ * @copyright Copyright (c) 2004
+ * @version $Id$
+ * @access public
+ **/
 class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
     // {{{ properties
     /**
@@ -82,9 +91,18 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
      *
      * @param array $params The configuration parameters.  Available
      *                          params are:
-     * o 'structure' => The result from $nestedSet->getAllNodes(true)
-     * o 'textField' => The field in the table that has the text for node
-     * o 'linkField' => The field in the table that has the link for the node
+     * o 'structure'            => [REQU] The result from $nestedSet->getAllNodes(true)
+     * o 'textField'            => [REQU] The field in the table that has the text for node
+     * o 'linkField'            => [REQU] The field in the table that has the link for the node
+     * The following params are optional. Please refer to HTML_TreeMenu's manual.
+     * The params are equal to the HTML_TreeMenu::Node properties without the 'Field' appended
+     * o 'iconField'            => [OPT]
+     * o 'expandedIconField'    => [OPT]
+     * o 'classField'           => [OPT]
+     * o 'expandedField'        => [OPT]
+     * o 'linkTargetField'      => [OPT]
+     * o 'isDynamicField'       => [OPT]
+     * o 'ensureVisibleField'   => [OPT]
      * o 'options' => (optional) An array of any additional options to
      *                    pass to the node when it is created (i.e. icon,
      *                    class).  See HTML_TreeNode for the options)
