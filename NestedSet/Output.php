@@ -19,6 +19,8 @@
 // $Id$
 //
 
+require_once 'PEAR.php';
+
 // {{{ constants
 
 define('NESEO_ERROR_NO_METHOD',    'E1000');
@@ -157,7 +159,7 @@ class DB_NestedSet_Output {
      * @access public
      */		
 	function printTree() {
-		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+		PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
 
 	// }}}
@@ -170,7 +172,7 @@ class DB_NestedSet_Output {
      * @access public
      */			
 	function printListbox() {
-		$this->raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+		PEAR::raiseError("Method not available for this driver", NESEO_ERROR_NO_METHOD, PEAR_ERROR_TRIGGER, E_USER_ERROR);
 	}
 
 	// }}}
