@@ -25,7 +25,7 @@ class DB_NestedSetTest extends TestBase  {
                 "tkey"           =>      "tkey"     // Custom - specify as many fields you want
         );	
 
-        $db_driver = 'MDB2';
+        $db_driver = 'DB';
         $db_dsn    = 'mysql://user:password@localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe->setAttr(array

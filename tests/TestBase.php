@@ -96,11 +96,16 @@ Class TestBase extends PhpUnit_Testcase {
             $values = array();
             $values['STRNA'] = 'Node ' . $nodeIndex;
             // Test quoting of reserved words
+            $detNext = true;
             $values['key'] = 'SELECT';
             if ($i == 0) {
                 $nid[$i] = $this->_NeSe->createRootnode($values, false, true);
             } else {
-                $nid[$i] = $this->_NeSe->createRootnode($values, $nid[$i-1]);
+                if($detNext) {
+                    $nid[$i] = $this->_NeSe->createRootnode($values);
+                } else {
+                    $nid[$i] = $this->_NeSe->createRootnode($values, $nid[$i-1]);
+                }
             }
 
             $this->assertEquals($nodeIndex, $nid[$i], 'Rootnode $nodeIndex: creation failed');
