@@ -84,6 +84,7 @@ class DB_NestedSet extends PEAR {
     'r'     => 'r',
     'STREH' => 'norder',
     'LEVEL' => 'level',
+  //'parent'=>'parent', // Optional but very useful
     'STRNA' => 'name'
     );
     
@@ -533,7 +534,6 @@ class DB_NestedSet extends PEAR {
             }
         }
         if($this->sortmode == NESE_SORT_PREORDER && ($this->params[$this->secondarySort] != $this->_defaultSecondarySort)) {
-            // doesn't work as expected for now
             uasort($nodeSet, array($this, '_secSort'));
         }
         return $nodeSet;
@@ -622,7 +622,7 @@ class DB_NestedSet extends PEAR {
     */
     function getParent($id, $keepAsArray = false, $aliasFields = true, $addSQL = array()) {
         if ($this->debug) {
-            $this->_debugMessage('getParents($id)');
+            $this->_debugMessage('getParent($id)');
         }
         if (!($child = $this->pickNode($id, true))) {
             $epr = array('getParent()', $id);
@@ -631,6 +631,11 @@ class DB_NestedSet extends PEAR {
         
         if($child['id'] == $child['rootid']) {
             return false;
+        }
+        
+        // If parent node is set inside the db simply return it
+        if(isset($child['parent']) && !empty($child['parent'])) {
+            return $this->pickNode($child['parent'], $keepAsArray, $aliasFields, 'id', $addSQL);
         }
         
         $addSQL['append'] = sprintf('AND %s.%s = %s',
@@ -1028,6 +1033,9 @@ class DB_NestedSet extends PEAR {
             }
         }
         
+        if(isset($this->_flparams['parent'])) {
+           $addval[$this->_flparams['parent']] = 0;
+        }
         // Sequence of node id (equals to root id in this case
         $addval[$this->_flparams['rootid']] = $node_id = $addval[$this->_flparams['id']] = $this->db->nextId($this->sequence_table);
         // Left/Right values for rootnodes
@@ -1138,6 +1146,10 @@ class DB_NestedSet extends PEAR {
         );
         
         $addval = array();
+        if(isset($this->_flparams['parent'])) {
+           $addval[$this->_flparams['parent']] = $thisnode['id'];
+        }
+        
         $addval[$this->_flparams['l']] = $thisnode['r'];
         $addval[$this->_flparams['r']] = $thisnode['r'] + 1;
         $addval[$this->_flparams['rootid']] = $thisnode['rootid'];
@@ -1196,9 +1208,10 @@ class DB_NestedSet extends PEAR {
         
         
         $addval = array();
-        $parents = $this->getParents($id, true);
-        $parent = array_pop($parents);
-        
+        $parent = $this->getParent($id, true);
+        if(isset($this->_flparams['parent'])) {
+           $addval[$this->_flparams['parent']] = $parent['id'];
+        }
         
         $sql = array();
         
@@ -1327,7 +1340,9 @@ class DB_NestedSet extends PEAR {
         
         $addval = array();
         $parent = $this->getParent($id, true);
-       
+        if(isset($this->_flparams['parent'])) {
+           $addval[$this->_flparams['parent']] = $parent['id'];
+        }       
         
         $sql = array();
         
