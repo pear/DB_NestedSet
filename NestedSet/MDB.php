@@ -110,6 +110,12 @@ class DB_NestedSet_MDB extends DB_NestedSet {
     }
 
     // }}}
+    
+    // {{{ _query()
+    function _query($sql) {
+    	return $this->db->query($sql);
+    }
+    
     // {{{ _nextId()
 
     function _nextId($sequence)

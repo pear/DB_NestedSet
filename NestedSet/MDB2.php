@@ -95,6 +95,12 @@ class DB_NestedSet_MDB2 extends DB_NestedSet
     }
 
     // }}}
+    
+    // {{{ _query()
+    function _query($sql) {
+    	return $this->db->query($sql);
+    }
+    
     // {{{ _isDBError()
 
     /**

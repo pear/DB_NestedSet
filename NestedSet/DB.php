@@ -94,6 +94,11 @@ class DB_NestedSet_DB extends DB_NestedSet {
         return true;
     } 
     // }}}
+    // {{{ _query()
+    function _query($sql) {
+    	return $this->db->query($sql);
+    }
+    // }}}
     // {{{ _quote()
     function _quote($str) {
         if (method_exists($this->db, 'quoteSmart')) {
