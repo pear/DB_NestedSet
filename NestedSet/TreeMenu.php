@@ -50,7 +50,7 @@ require_once 'HTML/TreeMenu.php';
  *     'linkField' => 'link',
  * );
  * $menu =& DB_NestedSet_TreeMenu::createFromStructure($params);
- * $list =& HTML_TreeMenu_Listbox($menu);
+ * $list =& new HTML_TreeMenu_Listbox($menu);
  * $list->toHtml();
  *
  * @author       Jason Rust <jrust@rustyparts.com>
