@@ -128,7 +128,7 @@
             * The main class now uses the array representation of the tree for internal operations.
               This should gain some performance.
 
-            o Notes on next major version (1.3):
+            o Notes on next major version (2.0):
             * The API will change.
             * The class won't return objects anymore. It will act as if $keepAsArray is set to true
               when calling the query methods.
@@ -137,6 +137,7 @@
               Please mail me at dk@webcluster.at if you really see a use.
               -- To be continued --
         </notes>
+      </release>
       <release>
         <version>1.2.4</version>
         <date>2003-08-13</date>
