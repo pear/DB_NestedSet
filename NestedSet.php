@@ -69,7 +69,7 @@ define('NESE_SORT_PREORDER', 'SPO');
 */
 
 // }}}
-class DB_NestedSet extends PEAR {
+class DB_NestedSet {
     // {{{ properties
     
     /**
@@ -87,7 +87,7 @@ class DB_NestedSet extends PEAR {
     'STRNA' => 'name'
     );
     
-    
+    var $quotedParams = array('name');
     
     /**
     * @var string The table with the actual tree data
@@ -255,7 +255,7 @@ class DB_NestedSet extends PEAR {
     * @var array Map of error messages to their descriptions
     */
     var $messages = array(
-    NESE_ERROR_RECURSION    => 'This operation would lead to a recursion',
+    NESE_ERROR_RECURSION    => '%s: This operation would lead to a recursion',
     NESE_ERROR_TBLOCKED     => 'The structure Table is locked for another database operation, please retry.',
     NESE_ERROR_NODRIVER   => 'The selected database driver %s wasn\'t found',
     NESE_ERROR_NOTSUPPORTED => 'Method not supported yet',
@@ -292,7 +292,6 @@ class DB_NestedSet extends PEAR {
         if ($this->debug) {
             $this->_debugMessage('DB_NestedSet()');
         }
-        $this->PEAR();
         if (is_array($params) && count($params) > 0) {
             $this->params = $params;
         }
@@ -497,7 +496,7 @@ class DB_NestedSet extends PEAR {
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
             $this->_flparams['rootid'],
-            $this->_quote($thisnode['rootid']),
+            $thisnode['rootid'],
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
             $firstsort,
@@ -505,33 +504,20 @@ class DB_NestedSet extends PEAR {
             $this->secondarySort);
         } elseif($this->sortmode == NESE_SORT_PREORDER) {
             $firstsort = $this->_flparams['l'];
-            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s',
+            $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s ASC',
             $this->_getSelectFields($aliasFields),
             $this->_addSQL($addSQL, 'cols'),
             $this->node_table,
             $this->_addSQL($addSQL, 'join'),
             $this->node_table,
             $this->_flparams['rootid'],
-            $this->_quote($thisnode['rootid']),
+            $thisnode['rootid'],
             $this->_addSQL($addSQL, 'append'),
             $this->node_table,
             $firstsort);
         }
          
-        $sql = sprintf('SELECT %s %s FROM %s %s WHERE %s.%s=%s %s ORDER BY %s.%s, %s.%s ASC',
-        $this->_getSelectFields($aliasFields),
-        $this->_addSQL($addSQL, 'cols'),
-        $this->node_table,
-        $this->_addSQL($addSQL, 'join'),
-        $this->node_table,
-        $this->_flparams['rootid'],
-        $this->_quote($thisnode['rootid']),
-        $this->_addSQL($addSQL, 'append'),
-        $this->node_table,
-        $firstsort,
-        $this->node_table,
-        $this->secondarySort);
-        
+
         if (!$this->_caching) {
             $nodeSet = $this->_processResultSet($sql, $keepAsArray, $aliasFields);
         } else {
@@ -741,7 +727,7 @@ class DB_NestedSet extends PEAR {
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
         $this->_flparams['rootid'],
-        $this->_quote($parent['rootid']),
+        $parent['rootid'],
         $this->node_table,
         $this->_flparams['level'],
         $parent['level'],
@@ -809,11 +795,11 @@ class DB_NestedSet extends PEAR {
         $parent['r'],
         $this->node_table,
         $this->_flparams['rootid'],
-        $this->_quote($parent['rootid']),
+        $parent['rootid'],
         $this->node_table,
         $this->_flparams['id'],
         $this->_addSQL($addSQL, 'append'),
-        $this->_quote($id),
+        $id,
         $this->_flparams['l']
         );
         
@@ -869,7 +855,7 @@ class DB_NestedSet extends PEAR {
         $this->_addSQL($addSQL, 'join'),
         $this->node_table,
         $this->_flparams[$idfield],
-        $this->_quote($id),
+        $id,
         $this->_addSQL($addSQL, 'append'));
         
         if (!$this->_caching) {
@@ -982,7 +968,7 @@ class DB_NestedSet extends PEAR {
     * @param bool     $first       Danger: Deletes and (re)init's the hole tree - sequences are reset
     *
     * @access public
-    * @return int The node id
+    * @return mixed The node id or false on error
     */
     function createRootNode($values, $id = false, $first = false, $_pos = 'AF') {
         
@@ -996,10 +982,13 @@ class DB_NestedSet extends PEAR {
             $epr = array('createRootNode()', $id);
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
         } elseif($first && $id) {
+            
+            // No notice for now.
+            // But tehese 2 params don't make sense together 
             $epr = array(
             'createRootNode()',
             '[id] AND [first] were passed - that doesn\'t make sense');
-            $this->_raiseError(NESE_ERROR_WRONG_MPARAM, E_USER_WARNING, $epr);
+            //$this->_raiseError(NESE_ERROR_WRONG_MPARAM, E_USER_WARNING, $epr);
         }
         
         // Try to aquire a table lock
@@ -1067,14 +1056,12 @@ class DB_NestedSet extends PEAR {
         $sql[] = sprintf('INSERT INTO %s SET %s',
         $this->node_table,
         $qr);
-        
-        
+               
         for($i=0;$i<count($sql);$i++) {
             $res = $this->db->query($sql[$i]);
             $this->_testFatalAbort($res, __FILE__,  __LINE__);
         }
-        
-        
+
         // EVENT (nodeCreate)
         
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
@@ -1111,7 +1098,6 @@ class DB_NestedSet extends PEAR {
         if ($this->debug) {
             $this->_debugMessage('createSubNode($id, $values)');
         }
-
         
         // invalid parent id, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
@@ -1201,7 +1187,31 @@ class DB_NestedSet extends PEAR {
     
     // }}}
     // {{{ createLeftNode()
-    
+    /**
+    * Creates a node before a given node
+    * <pre>
+    * +-- root1
+    * |
+    * +-\ root2
+    * | |
+    * | |-- subnode2 [new]
+    * | |-- subnode1 [target]
+    * | |-- subnode3
+    * |
+    * +-- root3
+    * </pre>
+    *
+    * @param int   $id        Target node ID
+    * @param array      $values      Hash with param => value pairs of the node (see $this->params)
+    * @param bool       $returnID    Tell the method to return a node id instead of an object.
+    *                                ATTENTION: That the method defaults to return an object instead of the node id
+    *                                has been overseen and is basically a bug. We have to keep this to maintain BC.
+    *                                You will have to set $returnID to true to make it behave like the other creation methods.
+    *                                This flaw will get fixed with the next major version.
+    *
+    * @access public
+    * @return mixed The node id or false on error
+    */    
     function createLeftNode($id, $values) {
         
         if ($this->debug) {
@@ -1333,7 +1343,7 @@ class DB_NestedSet extends PEAR {
     *                                This flaw will get fixed with the next major version.
     *
     * @access public
-    * @return object The new node object
+    * @return mixed The node id or false on error
     */
     function createRightNode($id, $values) {
         
@@ -1439,8 +1449,6 @@ class DB_NestedSet extends PEAR {
         if (!$this->_skipCallbacks && isset($this->_hasListeners['nodeCreate'])) {
             $this->triggerEvent('nodeCreate', $this->pickNode($id));
         }
-        
-        // Dirty ugly hack to keep BC
         $this->_releaseLock();
         return $node_id;
     }
@@ -1462,8 +1470,10 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage("deleteNode($id)");
         }
         
+        // invalid target node, bail out
         if (!($thisnode = $this->pickNode($id, true))) {
-            return false;
+            $epr = array('deleteNode()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
         }
         
         if (PEAR::isError($lock = $this->_setLock())) {
@@ -1669,13 +1679,13 @@ class DB_NestedSet extends PEAR {
 
         // Get information about source and target
         if (!($source = $this->pickNode($id, true))) {
-            $this->raiseError("Node id: $id not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
-            return false;
+            $epr = array('moveTree()', $id);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
         }
         
         if (!($target = $this->pickNode($targetid, true))) {
-            $this->raiseError("Target id: $targetid not found", NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_ERROR);
-            return false;
+            $epr = array('moveTree()', $targetid);
+            return $this->_raiseError(NESE_ERROR_NOT_FOUND, E_USER_ERROR, $epr);
         }
 
         if (PEAR::isError($lock = $this->_setLock(true))) {
@@ -1693,7 +1703,8 @@ class DB_NestedSet extends PEAR {
             (($source['l'] <= $target['l']) &&
             ($source['r'] >= $target['r']))) {
                 $this->_releaseLock(true);
-                return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
+                $epr = array('moveTree()');
+                return $this->_raiseError(NESE_ERROR_RECURSION, E_USER_NOTICE, $epr);                
             }
             
             // Insert/move before or after
@@ -1709,7 +1720,8 @@ class DB_NestedSet extends PEAR {
         (($source['l'] < $target['l']) &&
         ($source['r'] > $target['r']))) {
             $this->_releaseLock(true);
-            return new PEAR_Error($this->_getMessage(NESE_ERROR_RECURSION),NESE_ERROR_RECURSION);
+            $epr = array('moveTree()');
+            return $this->_raiseError(NESE_ERROR_RECURSION, E_USER_NOTICE, $epr); 
         }
         
         
@@ -1856,14 +1868,14 @@ class DB_NestedSet extends PEAR {
             } else {
                 
                 $sql = "UPDATE $tb SET
-                            $fid=" . $this->_quote($key) . ",
-                            $froot=" . $this->_quote($key) . "
-                        WHERE $fid=" . $this->_quote($val);
+                            $fid=" . $this->quote($key) . ",
+                            $froot=" . $this->quote($key) . "
+                        WHERE $fid=" . $this->quote($val);
                 $updates[] = $sql;
                 $orootid = $clone->rootid;
                 $sql = "UPDATE $tb
-                        SET $froot=" . $this->_quote($key) . "
-                        WHERE $froot=" . $this->_quote($orootid);
+                        SET $froot=" . $this->quote($key) . "
+                        WHERE $froot=" . $this->quote($orootid);
                 $updates[] = $sql;
             }
             $this->_skipCallbacks = false;
@@ -2128,7 +2140,7 @@ class DB_NestedSet extends PEAR {
     * @access private
     */
     function _testFatalAbort($errobj, $file, $line) {
-        if (!PEAR::isError($errobj)) {
+        if (!$this->_isDBError($errobj)) {
             return false;
         }
         
@@ -2143,7 +2155,7 @@ class DB_NestedSet extends PEAR {
             $msg = $errobj->getMessage();
             $code = $errobj->getCode();     }
             
-            $this->raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+            PEAR::raiseError($msg, $code, PEAR_ERROR_TRIGGER, E_USER_ERROR);
     }
     
     // }}}
@@ -2299,20 +2311,18 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('testLock()');
         }
         
-        
-        
         if($lockID = $this->_structureTableLock) {
             return $lockID;
         }
-        $this->_lockGC();
-        $tb = $this->lock_table;
-        $stb = $this->node_table;
+        $this->_lockGC();        
+        $sql = sprintf('SELECT lockID FROM %s WHERE lockTable=%s',
+                    $this->lock_table,
+                    $this->quote($this->node_table)) ;
         
-        $sql = "SELECT lockID FROM $tb WHERE lockTable=" . $this->_quote($stb);
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
-        
-        if ($res->numRows()) {
+
+        if ($this->_numRows($res)) {
             return new PEAR_Error($this->_getMessage(NESE_ERROR_TBLOCKED),NESE_ERROR_TBLOCKED);
         }
         
@@ -2339,22 +2349,23 @@ class DB_NestedSet extends PEAR {
             $this->_caching = false;
             $this->_restcache = true;
         }
-        $tb = $this->lock_table;
-        $stb = $this->node_table;
-        $stamp = time();
+
         if (!$lockID = $this->_structureTableLock) {
             $lockID = $this->_structureTableLock = uniqid('lck-');
 
-            $sql = "INSERT INTO $tb SET
-                        lockID=" . $this->_quote($lockID) . ",
-                        lockTable=" . $this->_quote($stb) . ",
-                        lockStamp=" . $this->_quote($stamp);
+            $sql = sprintf('INSERT INTO %s SET lockID=%s, lockTable=%s, lockStamp=%s',
+            $this->lock_table,
+            $this->quote($lockID),
+            $this->quote($this->node_table),
+            time());
+
         } else {
-            $sql = "UPDATE $tb SET lockStamp=" . $this->_quote($stamp) . "
-                    WHERE lockID=" . $this->_quote($lockID) . " AND
-                        lockTable=" . $this->_quote($stb);
-        }
-        
+            $sql = sprintf('UPDATE %s set lockStamp=%s WHERE lockID=%s AND lockTable=%s',
+                        $this->lock_table,
+                        time(),
+                        $this->quote($lockID),
+                        $this->quote($this->node_table));
+        }    
         if($exclusive) {
             $this->_lockExclusive = true;   
         }
@@ -2386,8 +2397,8 @@ class DB_NestedSet extends PEAR {
         $tb = $this->lock_table;
         $stb = $this->node_table; 
         $sql = "DELETE FROM $tb
-                WHERE lockTable=" . $this->_quote($stb) . " AND
-                    lockID=" . $this->_quote($lockID);
+                WHERE lockTable=" . $this->quote($stb) . " AND
+                    lockID=" . $this->quote($lockID);
 
         $res = $this->db->query($sql);
         $this->_testFatalAbort($res, __FILE__, __LINE__);
@@ -2413,7 +2424,7 @@ class DB_NestedSet extends PEAR {
         $stb = $this->node_table;
         $lockTTL = time() - $this->lockTTL;
         $sql = "DELETE FROM $tb
-                WHERE lockTable=" . $this->_quote($stb) . " AND
+                WHERE lockTable=" . $this->quote($stb) . " AND
                     lockStamp < $lockTTL";
 
         $res = $this->db->query($sql);
@@ -2440,7 +2451,7 @@ class DB_NestedSet extends PEAR {
             $v = trim($val);
             if ($k) {
                 
-                $arq[] = "$k=" . $this->_quote($v);
+                $arq[] = "$k=" . $this->quote($v);
             }
         }
         
@@ -2533,26 +2544,7 @@ class DB_NestedSet extends PEAR {
     }
     // }}}
 
-    function _quote($str = null)
-    {
-        switch (strtolower(gettype($str))) {
-            case 'null':
-                return 'NULL';
-            case 'integer':
-            case 'double':
-                return $str;
-            case 'string':
-            default:
-                if(function_exists('mysql_real_escape_string')) {
-                    return "'".mysql_real_escape_string($str, $this->db->connection)."'";
-                } else {
-                    return "'".mysql_escape_string($str)."'";
-                }
-        }
-    }
-
-    
-    function __convertTreeModel(&$orig, &$copy, $parent=false) {
+    function convertTreeModel(&$orig, &$copy, $parent=false) {
        
         static $firstSet;
         
@@ -2599,10 +2591,10 @@ class DB_NestedSet extends PEAR {
                 $copy->createSubNode($parent, $values);  
             }
             
-            DB_NestedSet::__convertTreeModel($orig, $copy, $sid);
+            DB_NestedSet::convertTreeModel($orig, $copy, $sid);
         }
         
-    }    
+    }   
 }
 
 // {{{ DB_NestedSet_Node:: class
