@@ -1,0 +1,206 @@
++-----------------------------------------------------+
+| DB_NestedSet - Documentation                        |
++-----------------------------------------------------+
+| README                                              |
++-----------------------------------------------------+
+
+An API documentation can be found at http://oss.webcluster.at
+
+ATTENTION:
+--------------------------------------
+This package is in beta state.
+Don't shoot me if something goes wrong but I would be happy to receive bug reports
+at dk@webcluster.at ... ;)
+
+
+1. Purpose
+--------------------------------------
+
+Nested sets are a way to store trees with an infinite depth inside a relational
+database.
+This is handy for creating threaded forums, a navigation for use inside a CMS and simply
+everywhere you want to store data in a hirarchical way.
+
+This brief technical introduction isn't meant as a tutorial for nested sets.
+It just tries to show the basic concepts to the curious.
+
+2. Nested set basics
+--------------------------------------
+
+Let's say we want to store the TOC of a book:
+
+book-+
+     |
+     +-chapter1
+     |
+     +-chapter2-+
+                |
+                +-chapter2.1
+                |
+                +-chapter2.2
+                
+Now we can say that chapter1, chapter2,... belong to 'book'.
+And we can further say that 'chapter2.1' belongs to 'chapter2' and to 'book'.
+Normally the each entry is called 'node'.
+
+Now let's forget the tree structure and create boxes (bubbles) ;)
+
+    1                          10
+    +   2                  3   +
+    |   +                  +   |
+    |   | chapter1         |   |
+    |   +------------------+   |
+    |                          |
+    |   4                  9   |
+    |   +  5            6  +   |
+    |   |  +            +  |   |
+    |   |  |            |  |   |
+    |   |  | chapter2.1 |  |   |
+    |   |  +------------+  |   |
+    |   |                  |   |
+    |   |  7            8  |   |
+    |   |  +            +  |   |
+    |   |  |            |  |   | 
+    |   |  | chapter2.1 |  |   |
+    |   |  +------------+  |   |
+    |   |                  |   |
+    |   |     chapter2     |   |
+    |   +------------------+   |
+    |                          |
+    |           book           |
+    +--------------------------+
+    
+
+Let's call the left value 'L' and the right value 'R'.
+
+Now we see:
+
+- Everything whith an L (R) between 1 and 10 is a member of 'book'.
+- Everything with an L (R) between 4 and 9 is a member of 'chapter2'.
+- If R-1 = L the current chapter doesn't have subchapters (childrens).
+
+Now to get the tree structur we do a so called 'preorder walk':
+
+
+book-+ [1] ........................ [10]
+     |
+     +-chapter1 [2][3]
+     |
+     +-chapter2-+ [4] ........... [9]
+                |
+                +-chapter2.1 [5][6]
+                | 
+                +-chapter2.2 [7][8]
+     
+Understood?
+Well if not my bad ASCII art is to blame and you don't have to worry.
+
+DB_NestedSet does the job for you.
+
+
+3. Specials of DB_NestedSet
+--------------------------------------
+
+DB_NestedSet tries to improve the overall performance with the measures:
+
+- Multiple rootnodes
+----------------------
+Often a nested set contains one rootnode with all other nodes dangling from it.
+DB_NestedSet creates each node of the 1 level as rootnode:
+
++-root1
+|
++-root2-+
+|       |
+|       +sub2.1
+|
++-root3
+
+This improves performance because a branch can be handled independent from the
+the other branches of the whole nested set.
+
+- Simplified ordering
+----------------------
+Normally the order of nested set is given by it's L values.
+
+
++-root1 [L=1][R=2]
+|
++-root2-+ [L=2][R=9]
+|       |
+|       +-sub2.1 [L=3][R=4]
+|       |
+|       +-sub2.2 [L=5][R=6]
+|       |
+|       +-sub2.3 [L=7][R=8]
+|
++-root3 [L=10][R=11]
+
+So if we want to order root3 bevore root2 we would have to change the L/R values
+of root3 AND also of root3 with all it's childrens.
+
+DB_NestedSet uses an additional table field to store the order independent of the L values
+for each level of a tree:
+
++-root1 [L=1][R=2][OR=1]
+|
++-root2-+ [L=2][R=9][OR=2]
+|       |
+|       +-sub2.1 [L=3][R=4][OR=1]
+|       |
+|       +-sub2.2 [L=5][R=6][OR=2]
+|       |
+|       +-sub2.3 [L=7][R=8][OR=3]
+|
++-root3 [L=10][R=11][OR=3]
+
+So moving root3 to a position bevore root2 is easy:
+
++-root1 [L=1][R=2][OR=1]
+|
++-root3 [L=10][R=11][OR=2]
+|
++-root2-+ [L=2][R=9][OR=3]
+       |
+       +-sub2.1 [L=3][R=4][OR=1]
+       |
+       +-sub2.2 [L=5][R=6][OR=2]
+       |
+       +-sub2.3 [L=7][R=8][OR=3]
+       
+       
+- Level stored in DB:
+----------------------
+You could use a (for me) very sophisticated self join to get the
+level (depth) of a node.
+I think that this is cool but slows down the whole thing.
+
+Now if we create rootnodes and store the level (1) inside the DB we
+know the level of each following node at creation time.
+E.g. if we create a subnode we know that the level is the level of the
+target node +1 and if we create a node at the same depth we know the
+level also as it is the same as .... O.K. let's draw is:
+
++-root1 [L=1][R=2][OR=1][Le=1
+|
++-root3 [L=10][R=11][OR=2][Le=1]
+|
++-root2-+ [L=2][R=9][OR=3][Le=1]
+       |
+       +-sub2.1 [L=3][R=4][OR=1][Le=2]
+       |
+       +-sub2.2 [L=5][R=6][OR=2][Le=2]
+       |
+       +-sub2.3 [L=7][R=8][OR=3][Le=2]
+       
+       
+Now we say 'create a node *under* sub2.2' we know that the level has to be 3.
+If we say 'create a node *after* sub2.2' we know that the level has to be 2.
+
+So DB_NestedSet stores the level inside the DB.
+
+
+
+4. Reading On
+-----------------------
+See http://pear.webcluster.at for mor docs.

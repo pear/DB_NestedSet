@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <!DOCTYPE package SYSTEM "../package.dtd">
+    <package version="1.0"> 
+      <name>DB_NestedSet</name>
+      <summary>API to build and query nested sets</summary>
+      <description>Nested sets are one way to store trees inside of relational 
+        databases. This Package helps you to build a nested set and to query the 
+        tree. Please have a look at the project homepage to learn more.</description>
+      <license>PHP License</license>
+	  <homepage>http://oss.webcluster.at</homepage>
+      <maintainers> 
+        <maintainer> 
+          <user>datenpunk</user>
+          <name>Daniel Khan</name>
+          <email>dk@webcluster.at</email>
+          <role>lead</role>
+        </maintainer>
+      </maintainers>
+      <release> 
+        <version>1.0-beta</version>
+        <date>2003-03-27</date>
+        <state>beta</state>
+        <notes> This is the first release. </notes>
+        <filelist> 
+          <dir name="/" baseinstalldir="DB" role="php"> 
+            <file>NestedSet.php</file>
+            <dir name="NestedSet" role="php"> 
+              <file>DB.php</file>
+              <file>MDB.php</file>
+              <file>Event.php</file>
+            </dir>
+          </dir>
+          <dir name="docs" role="doc"> 
+            <file>README</file>
+            <file>mysql.sql</file>
+          </dir>
+        </filelist>
+      </release>
+    </package>
+  
