@@ -2101,7 +2101,7 @@ class DB_NestedSet extends PEAR {
 	//// Only itended to catch some queries to see what went wrong if something went wrong
 	function query($sql) {
 		
-		/*
+		
 		if(DB::isManip($sql)) {
 			$filename = '/home/wwwroot/pyhrn-priel.com/querylog/log.txt';
     		if (!$handle = fopen($filename, "a")) {
@@ -2115,7 +2115,7 @@ class DB_NestedSet extends PEAR {
    			 fclose($handle);
 			 
 		}
-		*/
+		
 		
 		return $this->db->query($sql);
 	}	
