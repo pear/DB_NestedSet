@@ -26,94 +26,94 @@ require_once 'MDB.php';
 // {{{ DB_NestedSet_MDB:: class
 
 /**
- * Wrapper class for PEAR::MDB
- *
- * @author       Daniel Khan <dk@webcluster.at>
- * @package      DB_NestedSet
- * @version      $Revision$
- * @access       public
- */
+* Wrapper class for PEAR::MDB
+*
+* @author       Daniel Khan <dk@webcluster.at>
+* @package      DB_NestedSet
+* @version      $Revision$
+* @access       public
+*/
 // }}}
 class DB_NestedSet_MDB extends DB_NestedSet {
     // {{{ properties
-
+    
     /**
-     * @var object The MDB object
-     */
-	var $db;
-
+    * @var object The MDB object
+    */
+    var $db;
+    
     // }}}
     // {{{ constructor
-
-	/**
-	 * Constructor
-	 *
-	 * @param mixed $dsn DSN as PEAR dsn URI or dsn Array
-	 * @param array $params Database column fields which should be returned  
-	 * 
-	 */
-	function DB_NestedSet_MDB($dsn, $params = array()) 
+    
+    /**
+    * Constructor
+    *
+    * @param mixed $dsn DSN as PEAR dsn URI or dsn Array
+    * @param array $params Database column fields which should be returned
+    *
+    */
+    function DB_NestedSet_MDB($dsn, $params = array())
     {
-		$this->_debugMessage('DB_NestedSet_MDB($dsn, $params = array())');
-		$this->DB_NestedSet($params);
-		$this->db =& $this->_db_Connect($dsn);
-		$this->db->setFetchMode(MDB_FETCHMODE_ASSOC);
-	}
-
+        $this->_debugMessage('DB_NestedSet_MDB($dsn, $params = array())');
+        $this->DB_NestedSet($params);
+        $this->db =& $this->_db_Connect($dsn);
+        $this->db->setFetchMode(MDB_FETCHMODE_ASSOC);
+    }
+    
     // }}}
     // {{{ destructor
-
-	/**
-	 * Destructor
-	 */
-	function _DB_NestedSet_MDB() 
+    
+    /**
+    * Destructor
+    */
+    function _DB_NestedSet_MDB()
     {
-		$this->_debugMessage('_DB_NestedSet_MDB()');
-		$this->_DB_NestedSet();
-		$this->_db_Disconnect();
-	}
-
+        $this->_debugMessage('_DB_NestedSet_MDB()');
+        $this->_DB_NestedSet();
+        $this->_db_Disconnect();
+    }
+    
     // }}}
     // {{{ _db_Connect()
-
-	/**
-	* Connects to the db
-	*
-	* @return object DB The database object
-	* @access private
-	*/
-	function &_db_Connect($dsn) 
+    
+    /**
+    * Connects to the db
+    *
+    * @return object DB The database object
+    * @access private
+    */
+    function &_db_Connect($dsn)
     {
-		$this->_debugMessage('_db_Connect($dsn)');
-		if (is_object($this->db)) {
-			return $this->db;
-		}
-
-		$db =& MDB::connect($dsn);
-		$this->_testFatalAbort($db, __FILE__, __LINE__);
-
-		return $db;
-	}
-
+        $this->_debugMessage('_db_Connect($dsn)');
+        if (is_object($this->db)) {
+            return $this->db;
+        }
+        
+        $db =& MDB::connect($dsn);
+        $this->_testFatalAbort($db, __FILE__, __LINE__);
+        
+        return $db;
+    }
+    
     // }}}
     // {{{ _db_Disconnect()
-
-	/**
-	* Disconnects from db
-	*
-	* @return void
-	* @access private
-	*/	
-	function _db_Disconnect() 
+    
+    /**
+    * Disconnects from db
+    *
+    * @return void
+    * @access private
+    */
+    function _db_Disconnect()
     {
-		$this->_debugMessage('_db_Disconnect()');
-		if (is_object($this->db)) {
-			@$this->db->disconnect();
-		}
-
-		return true;
-	}
-
+        $this->_debugMessage('_db_Disconnect()');
+        if (is_object($this->db)) {
+            @$this->db->disconnect();
+        }
+        
+        return true;
+    }
+    
     // }}}
 }
 
