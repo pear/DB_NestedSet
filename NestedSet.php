@@ -2101,7 +2101,7 @@ class DB_NestedSet extends PEAR {
             $this->_debugMessage('_values2Query($values, $addval = false)');
         }
         if (is_array($addval)) {
-            $values = $values + $addval;
+            $values = array_merge($values, $addval); 
         }
 
         $arq = array();
