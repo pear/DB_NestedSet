@@ -25,7 +25,7 @@ class DB_NestedSetTest extends TestBase  {
 		"key"        	=>      "key"     // Custom - specify as many fields you want
         );
 
-        $db_driver = 'DB';
+        $db_driver = 'MDB';
         $db_dsn    = 'mysql://user:password@localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe->setAttr(array
@@ -37,7 +37,7 @@ class DB_NestedSetTest extends TestBase  {
         );
 		
 		// Try to pass a DB Object as DSN
-		
+
         $this->_NeSe2 = DB_NestedSet::factory($db_driver, $this->_NeSe->db, $params);
 
         $this->_NeSe2->setAttr(array
