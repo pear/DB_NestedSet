@@ -138,7 +138,7 @@ class DB_NestedSet_MDB2 extends DB_NestedSet
      */
     function _dropSequence($sequence)
     {
-        $this->db->loadModule('manager');
+        $this->db->loadModule('Manager');
         return $this->db->manager->dropSequence($sequence);
     }
 
