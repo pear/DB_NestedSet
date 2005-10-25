@@ -343,6 +343,8 @@ class DB_NestedSet {
             }
             include_once($driverpath);
         }
+        // Todo: Only load the node class when needed
+        include_once(dirname(__FILE__) . '/NestedSet/Node.php');
         $c = & new $classname($dsn, $params);
         return $c;
     }
@@ -2474,41 +2476,5 @@ class DB_NestedSet {
     }
     // }}}
 }
-// {{{ DB_NestedSet_Node:: class
-/**
-* Generic class for node objects
-*
-* @autor Daniel Khan <dk@webcluster.at>;
-* @version $Revision$
-* @package DB_NestedSet
-* @access private
-*/
 
-class DB_NestedSet_Node {
-    // {{{ constructor
-    /**
-    * Constructor
-    */
-    function DB_NestedSet_Node($data) {
-        if (!is_array($data) || count($data) == 0) {
-            return new PEAR_ERROR($data, NESE_ERROR_PARAM_MISSING);
-        }
-
-        $this->setAttr($data);
-        return true;
-    }
-    // }}}
-    // {{{ setAttr()
-    function setAttr($data) {
-        if (!is_array($data) || count($data) == 0) {
-            return false;
-        }
-
-        foreach ($data as $key => $val) {
-            $this->$key = $val;
-        }
-    }
-    // }}}
-}
-// }}}
 ?>
