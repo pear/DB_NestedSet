@@ -110,6 +110,9 @@ class DB_NestedSet_CoolMenu extends DB_NestedSet_Output {
 
         static $rootlevel;
 
+        // variable init
+        $coolMenu = '';
+
         // always start at level 1
         if (!isset($params['currentLevel'])) {
             $params['currentLevel'] = 1;
@@ -145,7 +148,7 @@ class DB_NestedSet_CoolMenu extends DB_NestedSet_Output {
             $params['structure'][$key]['hit'] = $node['hit'] = true;
 
             // figure out max length for textfields, increase if necessary--NEEDED?
-            if (!$this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset] ||
+            if (empty($this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset]) ||
             strlen($node[$params['textField']]) > $this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset]) {
                 $this->_strlenByLevel[$params['currentLevel'] - $this->_levelOffset] = strlen($node[$params['textField']]);
             };
@@ -286,6 +289,8 @@ class DB_NestedSet_CoolMenu extends DB_NestedSet_Output {
     */
     function _buildMenuProperties($properties)
     {
+        // variable init
+        $menu_properties = '';
         foreach($properties as $prop_key => $prop_val){
             $menu_properties .= $this->_menuName . ".$prop_key=$prop_val\n";
         }
