@@ -261,11 +261,27 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         // Create a new tree
         $relationTree = $this->_createSubNode($rnc, $depth, $npl);
         $allnodes = $this->_NeSe->getAllNodes(true);
+
+        $test_nid = false;
         foreach($relationTree AS $nid => $relations) {
             $subbranch = $this->_NeSe->getSubBranch($nid, true, true, $this->addSQL);
+            if($subbranch && !$test_nid) {
+                $test_nid = $nid;
+            }
             $exp_subbranch = $this->_traverseChildRelations($relationTree, $nid, true, true);
             $this->assertEquals($subbranch, $exp_subbranch, 'Differs from relation traversal result.');
         }
+
+        $this->_NeSe->setSortMode(NESE_SORT_PREORDER);
+        $this->_NeSe->secondarySort = 'STRNA';
+        $res1 = $this->_NeSe->getSubBranch($test_nid, true, true, $this->addSQL);
+        $testnode1 = current($res1);
+
+        $res2 = $this->_NeSe->getSubBranch($test_nid, false, true, $this->addSQL);
+        $testnode2 = current($res2);
+
+        $this->assertEquals($testnode1['id'], $testnode2->id, 'Array content differs from object');
+
         return true;
     }
 

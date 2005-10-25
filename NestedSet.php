@@ -1856,7 +1856,12 @@ class DB_NestedSet {
 
         $retArray = array();
         foreach($nodeSet AS $nodeID=>$node) {
-            $deepArray[$node['parent']][$nodeID] = $node;
+            if(is_object($node)) {
+                $parent = $node->parent;
+            } else {
+                $parent = $node['parent'];
+            }
+            $deepArray[$parent][$nodeID] = $node;
         }
 
         $reset = true;
