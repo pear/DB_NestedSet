@@ -280,7 +280,7 @@ class tests_NestedSet_query extends DB_NestedSetTest {
             // Pick the current node and do the tests
             $nnode = $this->_NeSe->pickNode($nid, true, true, 'id', $this->addSQL);
             // Test Array
-            $this->assertEquals(is_array($nnode), "Node $nname: No array given.");
+            $this->assertTrue(is_array($nnode), "Node $nname: No array given.");
             // Test lft/rgt
             $this->assertEquals(1, $nnode['l'], "Node $nname: Wrong LFT");
             $this->assertEquals(2, $nnode['r'], "Node $nname: Wrong RGT");

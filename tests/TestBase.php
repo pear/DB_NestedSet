@@ -258,7 +258,7 @@ Class TestBase extends PhpUnit_Testcase {
                 $exp_name = 'Node ' . $nodeIndex;
             }
             // Test Array
-            $this->assertEquals(is_array($node[$nodes[$i]]), "Rootnode $nodeIndex: No array given.");
+            $this->assertTrue(is_array($node[$nodes[$i]]), "Rootnode $nodeIndex: No array given.");
             // Test NodeID==RootID
             $this->assertEquals($node[$nodes[$i]]['id'], $node[$nodes[$i]]['rootid'], "Rootnode $nodeIndex: NodeID/RootID not equal.");
             // Test lft/rgt
@@ -322,7 +322,7 @@ Class TestBase extends PhpUnit_Testcase {
             $exp_rgt = $prgt - 1;
             $exp_rootid = $pnode['rootid'];
             // Test Array
-            $this->assertEquals(is_array($nnode), "Node {$values['STRNA']}: No array given.");
+            $this->assertTrue(is_array($nnode), "Node {$values['STRNA']}: No array given.");
             // Test rootid
             $this->assertEquals($exp_rootid, $nnode['rootid'], "Node {$values['STRNA']}: Wrong rootid");
             // Test lft/rgt

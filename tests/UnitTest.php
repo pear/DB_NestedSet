@@ -23,7 +23,7 @@ class DB_NestedSetTest extends TestBase  {
         "STRNA"         =>      "name",     // Custom - specify as many fields you want
         "parent"        =>      "parent",     // Custom - specify as many fields you want
                 "tkey"           =>      "tkey"     // Custom - specify as many fields you want
-        );	
+        );
 
         $db_driver = 'DB';
         $db_dsn    = 'mysql://user:password@localhost/test';
