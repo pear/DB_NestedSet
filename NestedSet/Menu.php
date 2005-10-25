@@ -78,8 +78,15 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
      * @param $params
      * @return array The menu array
      **/
-    function _createFromStructure($params) {
+    function _createFromStructure($params, $iterate = false) {
         static $menuStructure, $menuParts, $offset;
+
+        if(!$iterate) {
+            $menuStructure = array();
+            $menuParts = array();
+            $offset = false;
+        }
+
         // always start at level 1
         if (!isset($params['currentLevel'])) {
             $params['currentLevel'] = 1;
@@ -153,7 +160,7 @@ class DB_NestedSet_Menu extends DB_NestedSet_Output {
                 $recurseParams['structure'] = $children;
                 $recurseParams['currentLevel']++;
                 $recurseParams['currentParent'] = & $node;
-                $this->_createFromStructure($recurseParams);
+                $this->_createFromStructure($recurseParams, true);
             }
         }
         return $menuStructure;

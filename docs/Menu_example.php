@@ -79,15 +79,15 @@ $params = array(
     'r'  => 'r',
     'STREH' => 'norder',
     'LEVEL'     => 'level',
-    'STRNA'      => 'name', 
+    'STRNA'      => 'name',
     'parent'	=> 'parent'
 );
 
-$nestedSet =& DB_NestedSet::factory('DB', $dsn, $params); 
+$nestedSet =& DB_NestedSet::factory('DB', $dsn, $params);
 // we want the nodes to be displayed ordered by name, so we add the secondarySort attribute
 $nestedSet->setAttr(array(
-        'node_table' => 'tb_nodes', 
-        'lock_table' => 'tb_locks', 
+        'node_table' => 'tb_nodes',
+        'lock_table' => 'tb_locks',
         'secondarySort' => 'STRNA',
     )
 );
@@ -110,6 +110,7 @@ $nestedSet->setAttr(array(
 // get data (important to fetch it as an array, using the true flag)
 // $data = $nestedSet->getAllNodes(true);
 $data = $nestedSet->getSubBranch($eh, true);
+$data2 = $nestedSet->getSubBranch($eh4, true);
 
 
 // }}}
@@ -127,8 +128,14 @@ $params = array(
     'titleField' => 'name',
     'urlField' => 'url');
 
-// Create the output driver object	
+$params2 = array(
+    'structure' => $data2,
+    'titleField' => 'name',
+    'urlField' => 'url');
+
+// Create the output driver object
 $output =& DB_NestedSet_Output::factory($params, 'Menu');
+
 
 // Fetch the menu array
 $structure = $output->returnStructure();
@@ -144,7 +151,6 @@ $menu = & new HTML_Menu($structure, 'sitemap');
 $menu->forceCurrentUrl($currentUrl);
 // Output the menu
 $menu->show();
-echo "<hr>";
 
 echo "Menu type 'tree'<br>";
 // Set another type
