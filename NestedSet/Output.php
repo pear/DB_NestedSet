@@ -106,7 +106,8 @@ class DB_NestedSet_Output {
 
         require_once($path);
         $driverClass = 'DB_NestedSet_'.$driver;
-        return new $driverClass($params);
+        $cls = new $driverClass($params);
+        return $cls;
     }
 
     // }}}
