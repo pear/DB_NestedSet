@@ -71,6 +71,8 @@ class tests_NestedSet_query extends DB_NestedSetTest {
         return true;
     }
 
+
+
     /**
      * tests_NestedSet_common::test_getParents()
      *
@@ -144,6 +146,13 @@ class tests_NestedSet_query extends DB_NestedSetTest {
                 $this->assertEquals($children, $siblings, 'Children don\'t match getSiblings()');
             }
         }
+
+        $rootnodes = $this->_NeSe->getRootNodes(true, true, $this->addSQL);
+        $rootnode = current($rootnodes);
+        $siblings_of_rootnode = $this->_NeSe->getSiblings($rootnode['id'], true, true, $this->addSQL);
+
+        $this->assertEquals($rootnodes, $siblings_of_rootnode, 'Siblings of a rootnode should be all rootnodes');
+
         return true;
     }
 

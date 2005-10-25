@@ -659,6 +659,10 @@ class DB_NestedSet {
             return $this->_raiseError(NESE_ERROR_NOT_FOUND, PEAR_ERROR_TRIGGER, E_USER_NOTICE, $epr);
         }
 
+        if($sibling['id'] == $sibling['rootid']) {
+            return $this->getRootNodes($keepAsArray, $aliasFields, $addSQL);
+        }
+
         $parent = $this->getParent($sibling, true);
         return $this->getChildren($parent, $keepAsArray, $aliasFields, false, $addSQL);
     }
@@ -1844,17 +1848,17 @@ class DB_NestedSet {
     * @access private
     */
     function _secSort($nodeSet) {
-        
+
         // Nothing to do - empty tree
         if(empty($nodeSet)) {
             return $nodeSet;
         }
-        
+
         $retArray = array();
         foreach($nodeSet AS $nodeID=>$node) {
             $deepArray[$node['parent']][$nodeID] = $node;
         }
-        
+
         $reset = true;
         foreach($deepArray AS $parentID=>$children) {
             $retArray = $this->_secSortCollect($children, $deepArray, $reset);
