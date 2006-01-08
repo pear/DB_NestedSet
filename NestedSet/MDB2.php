@@ -209,7 +209,7 @@ class DB_NestedSet_MDB2 extends DB_NestedSet
     function _quoteIdentifier($str)
     {
         if (method_exists($this->db, 'quoteIdentifier')) {
-            return $this->db->quoteIdentifier($str);
+            return $this->db->quoteIdentifier($str, false);
         }
         return $str;
     }
