@@ -72,7 +72,7 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
      * @access public
      * @return void
      */
-    function & DB_NestedSet_TreeMenu($params) {
+    function DB_NestedSet_TreeMenu($params) {
         $this->_structTreeMenu = & $this->_createFromStructure($params);
     }
     // }}}
@@ -152,6 +152,13 @@ class DB_NestedSet_TreeMenu extends DB_NestedSet_Output {
                 'ensureVisible' => isset($node[$params['ensureVisibleField']]) ? $node[$params['ensureVisibleField']] : false);
 
             $options = isset($params['options']) ? array_merge($params['options'], $tag) : $tag;
+            
+            foreach ($params['options'] as $key => $value) {
+            	if ($options[$key] === false) {
+            		$options[$key] = $value;
+            	}
+            }
+
             $events = isset($node['events']) ? $node['events'] : array();
             $parentNode = & $treeMenu->addItem(new HTML_TreeNode($options, $events));
             // see if it has children

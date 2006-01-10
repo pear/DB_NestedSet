@@ -386,7 +386,7 @@ class DB_NestedSet {
 
         } elseif ($this->_sortMode == NESE_SORT_PREORDER) {
             $nodeSet = array();
-            $rootnodes = $this->getRootNodes(true);
+            $rootnodes = $this->getRootNodes(true, true, $addSQL);
             foreach($rootnodes AS $rid => $rootnode) {
                 $nodeSet = $nodeSet + $this->getBranch($rootnode, $keepAsArray, $aliasFields, $addSQL);
             }
@@ -888,7 +888,27 @@ class DB_NestedSet {
             $this->_debugMessage('isParent($parent, $child)');
         }
 
-        if (!isset($parent) || !isset($child)) {
+		/**
+		 * if the given values are integer's fetch the specific nodes
+		 * return false if there any error
+		 */
+		if ((INT)$parent>0 && (INT)$child>0) {
+			if (!$parent = $this->pickNode($parent, true, true)) {
+				return false;
+			}
+			
+			if (!$child = $this->pickNode($child, true, true)) {
+				return false;
+			}
+		}
+
+		/**
+		 * if parent or child not an array or a object return false
+		 */
+		if (!isset($parent) || !isset($child)
+			|| (!is_array($parent) && !is_object($parent))
+			|| (!is_array($child) && !is_object($child))
+			) {
             return false;
         }
 
