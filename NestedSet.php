@@ -24,6 +24,7 @@
 // - Thanks to my parents for ... just kidding :]
 require_once 'PEAR.php';
 // {{{ constants
+
 // Error and message codes
 define('NESE_ERROR_RECURSION', 'E100');
 define('NESE_ERROR_NODRIVER', 'E200');
