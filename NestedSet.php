@@ -258,6 +258,9 @@ class DB_NestedSet {
     */
     var $_dumbmode = false;
 
+
+
+
     /**
     *
     * @var array Map of error messages to their descriptions
@@ -336,8 +339,15 @@ class DB_NestedSet {
     * @return object The DB_NestedSet object
     */
     function & factory($driver, $dsn, $params = array()) {
+
+        $_dbdrivers = array('MDB', 'MDB2', 'DB');
+        if(!in_array($driver, $_dbdrivers)) {
+            return PEAR::raiseError("factory(): The database driver '$driver' is not supported!", NESE_ERROR_NODRIVER, PEAR_ERROR_TRIGGER, E_USER_ERROR);
+        }
+
         $classname = 'DB_NestedSet_' . $driver;
         if (!class_exists($classname)) {
+
             $driverpath = dirname(__FILE__) . '/NestedSet/' . $driver . '.php';
             if (!file_exists($driverpath) || !$driver) {
                 return PEAR::raiseError("factory(): The database driver '$driver' wasn't found", NESE_ERROR_NODRIVER, PEAR_ERROR_TRIGGER, E_USER_ERROR);
@@ -345,7 +355,7 @@ class DB_NestedSet {
             include_once($driverpath);
         }
         // Todo: Only load the node class when needed
-        include_once(dirname(__FILE__) . '/NestedSet/Node.php');
+        include_once('NestedSet/Node.php');
         $c = & new $classname($dsn, $params);
         return $c;
     }
@@ -889,27 +899,27 @@ class DB_NestedSet {
             $this->_debugMessage('isParent($parent, $child)');
         }
 
-		/**
+        /**
 		 * if the given values are integer's fetch the specific nodes
 		 * return false if there any error
 		 */
-		if ((INT)$parent>0 && (INT)$child>0) {
-			if (!$parent = $this->pickNode($parent, true, true)) {
-				return false;
-			}
-			
-			if (!$child = $this->pickNode($child, true, true)) {
-				return false;
-			}
-		}
+        if ((INT)$parent>0 && (INT)$child>0) {
+            if (!$parent = $this->pickNode($parent, true, true)) {
+                return false;
+            }
 
-		/**
+            if (!$child = $this->pickNode($child, true, true)) {
+                return false;
+            }
+        }
+
+        /**
 		 * if parent or child not an array or a object return false
 		 */
-		if (!isset($parent) || !isset($child)
-			|| (!is_array($parent) && !is_object($parent))
-			|| (!is_array($child) && !is_object($child))
-			) {
+        if (!isset($parent) || !isset($child)
+        || (!is_array($parent) && !is_object($parent))
+        || (!is_array($child) && !is_object($child))
+        ) {
             return false;
         }
 
@@ -1637,14 +1647,14 @@ class DB_NestedSet {
 
         switch ($pos) {
             case NESE_MOVE_BEFORE:
-            $clone_id = $this->createLeftNode($target['id'], $values);
-            break;
+                $clone_id = $this->createLeftNode($target['id'], $values);
+                break;
             case NESE_MOVE_AFTER:
-            $clone_id = $this->createRightNode($target['id'], $values);
-            break;
+                $clone_id = $this->createRightNode($target['id'], $values);
+                break;
             case NESE_MOVE_BELOW:
-            $clone_id = $this->createSubNode($target['id'], $values);
-            break;
+                $clone_id = $this->createSubNode($target['id'], $values);
+                break;
         }
 
         if ($first && isset($this->flparams['parent'])) {
@@ -1937,11 +1947,11 @@ class DB_NestedSet {
 
         switch ($type) {
             case 'cols':
-            return ', ' . $addSQL[$type];
+                return ', ' . $addSQL[$type];
             case 'where':
-            return $prefix . ' (' . $addSQL[$type] . ')';
+                return $prefix . ' (' . $addSQL[$type] . ')';
             default:
-            return $addSQL[$type];
+                return $addSQL[$type];
         }
     }
     // }}}
