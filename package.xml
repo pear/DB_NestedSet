@@ -39,14 +39,14 @@ o output the tree with
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
- ATTENTION: The 1.2 api may not be fully backward compatible to the current 1.3 api. To avoid surprises when we go stable
- please make sure that you test this release candidate with your 1.2 apps.
+ ATTENTION: The 1.2 api may not be fully backward compatible to the current 1.3 api. To avoid surprises when we go stable please make sure that you test this release 
+candidate with your 1.2 apps.
  Please look at http://pear.php.net/package/DB_NestedSet/download/1.3 for informations on the major changes between
  the 1.2 and the 1.3+ releases.
 
  The 1.3.6 release is used in many projects and is considered to be quite solid.
  This release fixes some minor bugs. Finally there is also an end user documentation available!
- Thanks to Lukas Linemayr (ll@shopping.at) for writing and maintaining it.
+ Thanks to Lukas Linemayr (ll@shopping.at) for writing and maintaining them.
  I'd also like to thank tacker (http://pear.php.net/user/tacker) for providing lots of bug reports and patches.
  If everything goes well this will be the last beta release. Please test it and report every problem you have with it!
 
