@@ -48,9 +48,9 @@ class DB_NestedSet_DB extends DB_NestedSet {
         $this->_debugMessage('DB_NestedSet_DB($dsn, $params = array())');
         $this->DB_NestedSet($params);
         $this->db = & $this->_db_Connect($dsn);
-	if ($this->_isDBError($this->db)) {
-	    return false;
-	}
+        if ($this->_isDBError($this->db)) {
+            return false;
+        }
         $this->db->setFetchMode(DB_FETCHMODE_ASSOC);
     }
     // }}}
@@ -99,7 +99,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
     // }}}
     // {{{ _query()
     function _query($sql) {
-      return $this->db->query($sql);
+        return $this->db->query($sql);
     }
     // }}}
     // {{{ _quote()
@@ -128,7 +128,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
         return $this->db->nextId($sequence);
     }
     // }}}
-    
+
     // {{{ _getOne()
 
     /**
@@ -142,7 +142,7 @@ class DB_NestedSet_DB extends DB_NestedSet {
     }
 
     // }}}
-    
+
     // {{{ _getAll()
     function _getAll($sql) {
         return $this->db->getAll($sql, null, DB_FETCHMODE_ASSOC);

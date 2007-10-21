@@ -73,7 +73,7 @@ class DB_NestedSet_TigraMenu extends DB_NestedSet_Output {
     * @see _createFromStructure()
     * @return bool
     **/
-    function &DB_NestedSet_TigraMenu($params) {
+    function DB_NestedSet_TigraMenu($params) {
         $this->_menu_id = $params['menu_id'];
         $this->_structTigraMenu = $this->_createFromStructure($params);
         return true;

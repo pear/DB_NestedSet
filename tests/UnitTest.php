@@ -10,6 +10,17 @@
 */
 class DB_NestedSetTest extends TestBase  {
 
+    /**
+     *
+     * @var DB_NestedSet
+     */
+    protected $NeSe = false;
+
+    /**
+     *
+     * @var DB_NestedSet
+     */
+    protected $NeSe2 = false;
 
     function setUp() {
 
