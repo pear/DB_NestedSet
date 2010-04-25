@@ -9,7 +9,7 @@
  * @version $Revision$
  * @access public
  */
-Class TestBase extends PhpUnit_Testcase {
+Class TestBase extends PHPUnit_Framework_TestCase {
     // +----------------------------------------------+
     // | Internal helper methods                      |
     // |----------------------------------------------+
@@ -446,19 +446,20 @@ Class TestBase extends PhpUnit_Testcase {
     }
 
     function _indentTree($tree) {
-        echo "<pre>";
+        echo "\n";
         foreach($tree AS $nid => $node) {
-            printf('%s %02d-%02d [%02d|%02d|%02d] | %s ',
+            printf('%s %02d-%02d [%02d|%02d|%02d] | %s (%s)',
                 str_repeat('-', $node['level']),
                 $node['l'],
                 $node['r'],
                 $node['level'],
                 $node['norder'],
                 $node['rootid'],
-                $node['name']);
+                $node['name'],
+                $node['id']);
             echo "\n";
         }
-        echo "</pre>\n";
+         echo "\n";
     }
 }
 

@@ -196,6 +196,7 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
         return true;
     }
 
+
     /**
     * tests_NestedSet_common::createSubNode__random()
     *
@@ -215,5 +216,8 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
         $this->_createRandomNodes(3, 150);
         return true;
     }
+    
+   
+        
 }
 ?>

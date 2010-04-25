@@ -1,4 +1,6 @@
 <?php
+require_once 'TestBase.php';
+
 /**
 * UnitTest
 * Unit test interface for DB_NestedSet
@@ -37,7 +39,7 @@ class DB_NestedSetTest extends TestBase  {
         );
 
         $db_driver = 'DB';
-        $db_dsn    = 'mysql://user:password@localhost/test';
+        $db_dsn    = 'mysql://localhost/test';
         $this->_NeSe = DB_NestedSet::factory($db_driver, $db_dsn, $params);
         $this->_NeSe->setAttr(array
         (
