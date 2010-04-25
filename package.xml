@@ -93,7 +93,7 @@ o output the tree with
      <file baseinstalldir="DB" name="manipulation.php" role="test" />
      <file baseinstalldir="DB" name="query.php" role="test" />
     </dir> <!-- /tests/NestedSet -->
-    <file baseinstalldir="DB" name="index.php" role="test" />
+    <file baseinstalldir="DB" name="testSuite.php" role="test" />
     <file baseinstalldir="DB" name="TestBase.php" role="test" />
     <file baseinstalldir="DB" name="UnitTest.php" role="test" />
    </dir> <!-- /tests -->
