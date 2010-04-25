@@ -4,7 +4,7 @@ ini_set('include_path',realpath(dirname(__FILE__).'/../').PATH_SEPARATOR.ini_get
 
 require_once 'PHPUnit/Framework/TestSuite.php';
 
-require_once 'NestedSet.php';
+require_once 'DB/NestedSet.php';
 
 
 
