@@ -1,5 +1,5 @@
 <?php
-class tests_NestedSet_api extends DB_NestedSetTest  {
+class DB_NestedSet_APITest extends DB_NestedSetTest {
 
     function test_sortMethods() {
 
@@ -9,14 +9,14 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $values['STRNA'] = 'Skireisen';
         $skireisen = $this->_NeSe->createRootNode($values, false, true);
 
-                
+
         $values['STRNA'] = 'Schweiz';
         $schweiz = $this->_NeSe->createSubNode($skireisen, $values);
         $values['STRNA'] = 'Grindelwald';
         $grindelwald = $this->_NeSe->createSubNode($schweiz, $values);
 
 
-        
+
         $values['STRNA'] = 'Österreich';
         $oesterreich = $this->_NeSe->createSubNode($skireisen, $values);
         $values['STRNA'] = 'Arlberg';
@@ -24,14 +24,14 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $values['STRNA'] = 'Saalbach';
         $saalbach = $this->_NeSe->createSubNode($oesterreich, $values);
         $values['STRNA'] = 'Obertauern';
-        $obertauern = $this->_NeSe->createSubNode($oesterreich, $values);        
+        $obertauern = $this->_NeSe->createSubNode($oesterreich, $values);
 
         $values['STRNA'] = 'Italien';
         $italien = $this->_NeSe->createSubNode($skireisen, $values);
         $values['STRNA'] = 'Meransen';
         $meransen = $this->_NeSe->createSubNode($italien, $values);
 
-        
+
         echo "DEFAULT\n";
         $this->_NeSe->setSortMode(NESE_SORT_LEVEL);
         $allnodes_default = $this->_NeSe->getAllNodes(true);
@@ -59,28 +59,28 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $this->_NeSe->setSortMode(NESE_SORT_PREORDER);
         $this->_NeSe->secondarySort = 'STRNA';
         $allnodes_preorder = $this->_NeSe->getSubBranch($oesterreich, true);
-        $this->_indentTree($allnodes_preorder);      
+        $this->_indentTree($allnodes_preorder);
 
         echo "BY NAME PREORDER getSubBranch empty subbranch\n";
         $this->_NeSe->setSortMode(NESE_SORT_PREORDER);
         $this->_NeSe->secondarySort = 'STRNA';
         $allnodes_preorder = $this->_NeSe->getSubBranch($grindelwald, true);
-        $this->_indentTree($allnodes_preorder);  
-                
-        
-        
+        $this->_indentTree($allnodes_preorder);
+
+
+
         echo "TRYING getBranch()\n";
         $atbranch = $this->_NeSe->getBranch($oesterreich, true);
         $this->_indentTree($atbranch);
-        
+
         echo "TRYING getChildren()\n";
         $atbranch = $this->_NeSe->getChildren($oesterreich, true);
         $this->_indentTree($atbranch);
-        
+
         echo "TRYING getSubBranch()\n";
         $atbranch = $this->_NeSe->getSubBranch($skireisen, true);
         $this->_indentTree($atbranch);
-        echo "</code>";        
+        echo "</code>";
     }
 
     function test_convertModel() {
@@ -94,4 +94,3 @@ class tests_NestedSet_api extends DB_NestedSetTest  {
         $this->assertEquals($this->_NeSe->getAllNodes(true), $this->_NeSe2->getAllNodes(true), 'Converted tree should match original');
     }
 }
-?>

@@ -9,7 +9,7 @@
  * @access public
  */
 
-class tests_NestedSet_query extends DB_NestedSetTest {
+class DB_NestedSet_QueryTest extends DB_NestedSetTest {
     // +----------------------------------------------+
     // | Testing query methods                        |
     // |----------------------------------------------+

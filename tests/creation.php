@@ -10,7 +10,7 @@
 */
 
 
-class tests_NestedSet_creation extends DB_NestedSetTest {
+class DB_NestedSet_CreationTest extends DB_NestedSetTest {
 
 
     // +----------------------------------------------+
@@ -85,10 +85,10 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
             $values['STRNA'] = 'RS'.$x;
             $sid = $this->_NeSe->createSubNode($rn1, $values);
             $values['STRNA'] = 'RSR'.$x;
-			
+
 			// Test quoting of reserved words
 			$values['key'] = 'SELECT';
-			
+
             // Try to overwrite the ROOTID which should be set inside the method
             // $values['ROOTID'] = -100;
             $rn2 = $this->_NeSe->createRightNode($sid, $values, true);
@@ -152,8 +152,8 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
             $sid = $this->_NeSe->createSubNode($rn1, $values);
             $values['STRNA'] = 'RSR'.$x;
 			// Test quoting of reserved words
-			$values['key'] = 'SELECT';	
-			
+			$values['key'] = 'SELECT';
+
             // Try to overwrite the ROOTID which should be set inside the method
             // $values['ROOTID'] = -100;
             $rn2 = $this->_NeSe->createLeftNode($sid, $values);
@@ -216,8 +216,8 @@ class tests_NestedSet_creation extends DB_NestedSetTest {
         $this->_createRandomNodes(3, 150);
         return true;
     }
-    
-   
-        
+
+
+
 }
 ?>
