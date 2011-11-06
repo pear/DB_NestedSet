@@ -1,5 +1,5 @@
 <?php
-require_once 'DB_NestedSet_TestCase.php';
+require_once 'DB/NestedSet/TestCase.php';
 
 /**
  * UnitTest
