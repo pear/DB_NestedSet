@@ -341,7 +341,7 @@ class DB_NestedSet {
     * @access public
     * @return object The DB_NestedSet object
     */
-    function & factory($driver, $dsn, $params = array()) {
+    function &factory($driver, $dsn, $params = array()) {
 
         $_dbdrivers = array('MDB', 'MDB2', 'DB');
         if(!in_array($driver, $_dbdrivers)) {
@@ -358,8 +358,8 @@ class DB_NestedSet {
             include_once($driverpath);
         }
         // Todo: Only load the node class when needed
-        include_once('NestedSet/Node.php');
-        $c = & new $classname($dsn, $params);
+        include_once('DB/NestedSet/Node.php');
+        $c = new $classname($dsn, $params);
         return $c;
     }
     // }}}
