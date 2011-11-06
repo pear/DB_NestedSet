@@ -1,5 +1,7 @@
 <?php
-class DB_NestedSet_APITest extends DB_NestedSetTest {
+require_once 'DB_NestedSet_TestCase.php';
+
+class DB_NestedSet_APITest extends DB_NestedSet_TestCase {
 
     function test_sortMethods() {
 

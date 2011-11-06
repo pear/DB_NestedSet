@@ -1,4 +1,5 @@
 <?php
+require_once 'DB_NestedSet_TestCase.php';
 /**
 * UnitTest
 * Creation method tests
@@ -10,7 +11,7 @@
 */
 
 
-class DB_NestedSet_CreationTest extends DB_NestedSetTest {
+class DB_NestedSet_CreationTest extends DB_NestedSet_TestCase {
 
 
     // +----------------------------------------------+

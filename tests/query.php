@@ -1,4 +1,6 @@
 <?php
+require_once 'DB_NestedSet_TestCase.php';
+
 /**
  * UnitTest
  * Query method tests
@@ -9,7 +11,7 @@
  * @access public
  */
 
-class DB_NestedSet_QueryTest extends DB_NestedSetTest {
+class DB_NestedSet_QueryTest extends DB_NestedSet_TestCase {
     // +----------------------------------------------+
     // | Testing query methods                        |
     // |----------------------------------------------+

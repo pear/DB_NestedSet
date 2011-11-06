@@ -10,7 +10,7 @@ require_once 'TestBase.php';
 * @version      $Revision$
 * @access       public
 */
-class DB_NestedSetTest extends TestBase  {
+class DB_NestedSet_TestCase extends TestBase  {
 
     /**
      *
