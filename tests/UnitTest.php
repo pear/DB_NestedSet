@@ -69,4 +69,3 @@ class DB_NestedSetTest extends TestBase  {
         $this->_NeSe->db->query($sql);
     }
 }
-?>

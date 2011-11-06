@@ -1,4 +1,5 @@
 <?php
+require_once 'PHPUnit/Framework/TestCase.php';
 
 /**
  * UnitTest
@@ -9,7 +10,7 @@
  * @version $Revision$
  * @access public
  */
-Class TestBase extends PHPUnit_Framework_TestCase {
+class TestBase extends PHPUnit_Framework_TestCase {
     // +----------------------------------------------+
     // | Internal helper methods                      |
     // |----------------------------------------------+
@@ -462,5 +463,3 @@ Class TestBase extends PHPUnit_Framework_TestCase {
          echo "\n";
     }
 }
-
-?>
