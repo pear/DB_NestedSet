@@ -61,6 +61,7 @@ Bug #17768 file included with relative path
    <file baseinstalldir="DB" md5sum="8943c4c5bc65106755c89d6e23301608" name="docs/TigraMenu_example.php" role="doc" />
    <file baseinstalldir="DB" md5sum="a22f2dc2fb21c6ea5cac627f83457961" name="docs/TreeMenu_example.php" role="doc" />
    <file baseinstalldir="DB" md5sum="345c30ec2a2c10a1f559791eb4a07934" name="tests/TestBase.php" role="test" />
+   <file baseinstalldir="/" name="tests/config.php" role="test" />
    <file baseinstalldir="/" md5sum="4c9280fbfa4aaf0c2a6473ea1e23f9c1" name="tests/testdb.sql" role="test" />
    <file baseinstalldir="DB" md5sum="cbdcca2bdd33bddc17c6f55cd1e373e5" name="tests/testSuite.php" role="test" />
    <file baseinstalldir="DB" md5sum="c4869bcd835d07f9cbdd2dad70b00019" name="tests/UnitTest.php" role="test" />
