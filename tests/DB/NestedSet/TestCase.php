@@ -18,13 +18,13 @@ class DB_NestedSet_TestCase extends PHPUnit_Framework_TestCase  {
      *
      * @var DB_NestedSet
      */
-    protected $NeSe = false;
+    protected $_NeSe = false;
 
     /**
      *
      * @var DB_NestedSet
      */
-    protected $NeSe2 = false;
+    protected $_NeSe2 = false;
 
     function setUp() {
 
@@ -45,11 +45,11 @@ class DB_NestedSet_TestCase extends PHPUnit_Framework_TestCase  {
             $this->markTestSkipped('DSN information not provided');
         }
 
-        $this->_NeSe = DB_NestedSet::factory(
-                DB_NESTEDSET_TEST_DRIVER, $dsn, $params);
+        $nese = DB_NestedSet::factory(DB_NESTEDSET_TEST_DRIVER, $dsn, $params);
         if (PEAR::isError($this->_NeSe)) {
             $this->markTestSkipped($this->_NeSe->getMessage());
         }
+        $this->_NeSe = $nese;
 
         $this->_NeSe->setAttr(array
         (
@@ -74,7 +74,9 @@ class DB_NestedSet_TestCase extends PHPUnit_Framework_TestCase  {
     }
 
     function tearDown() {
-
+        if (!$this->_NeSe || !$this->_NeSe->node_table) {
+            return;
+        }
         $tb = $this->_NeSe->node_table;
         $sql = "DELETE FROM $tb";
         $this->_NeSe->db->query($sql);
