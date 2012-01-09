@@ -1,5 +1,5 @@
 <?php
-require_once 'DB/NestedSet/TestCase.php';
+require_once dirname(__FILE__) . '/DB/NestedSet/TestCase.php';
 
 class DB_NestedSet_APITest extends DB_NestedSet_TestCase {
 
