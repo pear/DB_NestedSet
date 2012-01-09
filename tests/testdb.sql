@@ -1,5 +1,5 @@
-# $Id$
-# Use this schema if you want to run the unit tests bundled with DB_NestedSet
+-- $Id$
+-- Use this schema if you want to run the unit tests bundled with DB_NestedSet
 
 
 CREATE TABLE `tb_locks` (
