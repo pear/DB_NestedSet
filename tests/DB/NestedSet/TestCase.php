@@ -108,14 +108,14 @@ class DB_NestedSet_TestCase extends PHPUnit_Framework_TestCase  {
                     if ($p['id'] != $mnode['parent']) {
                         // <DEBUG>
                         // <DEBUG>
-                        echo "\n<pre>\n";
+                        // echo "\n<pre>\n";
                         print_r($p);
-                        echo "\n</pre>\n";
+                        // echo "\n</pre>\n";
                         // </DEBUG>
                         // <DEBUG>
-                        echo "\n<pre>\n";
+                        // echo "\n<pre>\n";
                         print_r($mnode);
-                        echo "\n</pre>\n";
+                        // echo "\n</pre>\n";
                         // </DEBUG>
                         // </DEBUG>
                     }
@@ -518,6 +518,8 @@ class DB_NestedSet_TestCase extends PHPUnit_Framework_TestCase  {
     }
 
     function _indentTree($tree) {
+        return;
+
         echo "\n";
         foreach($tree AS $nid => $node) {
             printf('%s %02d-%02d [%02d|%02d|%02d] | %s (%s)',
