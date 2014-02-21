@@ -1,0 +1,36 @@
+{
+    "authors": [
+        {
+            "email": "khan@php.net",
+            "name": "Daniel Khan",
+            "role": "Lead"
+        },
+        {
+            "email": "ll@khan-it.at",
+            "name": "Lukas Linemayr",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "DB": "./"
+        }
+    },
+    "description": "More info available on: http://pear.php.net/package/DB_NestedSet",
+    "include-path": [
+        "./"
+    ],
+    "license": "New BSD License",
+    "name": "pear/db_nestedset",
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=DB_NestedSet",
+        "source": "https://github.com/pear/DB_NestedSet"
+    },
+    "type": "library",
+    "require": {
+        "pear/pear_exception": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    }
+}
